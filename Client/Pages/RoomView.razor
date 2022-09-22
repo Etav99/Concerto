@@ -1,0 +1,43 @@
+﻿@attribute [Authorize]
+@page "/rooms/{SelectedRoomId:long}"
+
+@using Concerto.Client.Chat
+@using Concerto.Client.Contacts
+@using Concerto.Shared.Extensions
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager NavigationManager
+@inject HttpClient Http;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Room</PageTitle>
+
+
+<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Width="100%" Elevation="0">
+
+	<Concerto.Client.Components.ChatBox SelectedConversation="SelectedRoom?.Conversation"/>
+	<MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary pa-4" Width="50%" Elevation="0">
+
+	</MudPaper>
+</MudPaper>
+
+
+@code {
+	[Parameter]
+	public long SelectedRoomId { get; set; } = 0;
+	private Dto.Room? SelectedRoom { get; set; }
+	
+	
+	protected override async Task OnInitializedAsync()
+	{
+		SelectedRoom = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={SelectedRoomId}");
+		if (SelectedRoom == null)
+		{
+			NavigationManager.NavigateTo("/rooms");
+		}
+	}
+
+}

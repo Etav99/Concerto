@@ -13,6 +13,24 @@ using static System.Net.WebRequestMethods;
 
 namespace Concerto.Client.Chat;
 
+public interface IChatManager
+{
+    public bool IsConnected { get; }
+    public Task ConnectToChatAsync();
+    public Task SendChatMessageAsync(Dto.ChatMessage message);
+
+    public delegate void OnMessageEventCallback(Dto.ChatMessage message);
+    public OnMessageEventCallback OnMessageReceivedCallback { get; set; }
+    public OnMessageEventCallback OnMessageSentCallback { get; set; }
+
+    public Dictionary<long, Dto.Conversation> Conversations { get; }
+    public Dictionary<long, List<Dto.ChatMessage>> Messages { get; }
+
+    public Task LoadChatMessagesAsync(long contactId);
+    public Task LoadConversationsAsync();
+    public void InvalidateCache();
+}
+
 public class CachedChatManager : IChatManager
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
@@ -22,7 +40,8 @@ public class CachedChatManager : IChatManager
     private readonly IContactsManager _contactsManager;
     private readonly ISnackbar _snackbar;
 
-    public IChatManager.OnMessageReceivedCallback onMessageReceivedCallback { get; set; }
+    public IChatManager.OnMessageEventCallback OnMessageReceivedCallback { get; set; } = delegate { };
+    public IChatManager.OnMessageEventCallback OnMessageSentCallback { get; set; } = delegate { };
 
     private HubConnection ChatHubConnection { get; set; }
     public bool IsConnected
@@ -82,14 +101,11 @@ public class CachedChatManager : IChatManager
                 messagesCache[message.ConversationId].Insert(0, message);
             }
             string name = await _contactsManager.GetContactNameAsync(message.SenderId);
-            if (!_navigationManager.Uri.Contains("chat"))
+            if (!(_navigationManager.Uri.Contains("chat") || _navigationManager.Uri.Contains("rooms/")))
             {
                 _snackbar.Add($"{name}: {message.Content.Truncate(20)}", Severity.Info);
             }
-            else if (onMessageReceivedCallback != null)
-            {
-                onMessageReceivedCallback(message);
-            }
+            OnMessageReceivedCallback(message);
         });
 
     }
@@ -130,9 +146,13 @@ public class CachedChatManager : IChatManager
 
     public async Task SendChatMessageAsync(Dto.ChatMessage message)
     {
-        conversationsCache[message.ConversationId].LastMessage = message;
+        if(conversationsCache.ContainsKey(message.ConversationId))
+        {
+            conversationsCache[message.ConversationId].LastMessage = message;
+        }
         messagesCache[message.ConversationId].Insert(0, message);
         await ChatHubConnection.SendAsync("SendMessage", message.ConversationId, message.Content);
+        OnMessageSentCallback(message);
     }
 
     public void InvalidateCache()

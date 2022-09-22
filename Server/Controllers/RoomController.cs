@@ -2,6 +2,7 @@
 using Concerto.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Concerto.Server.Extensions;
 
 namespace Concerto.Server.Controllers;
 
@@ -26,5 +27,16 @@ public class RoomController : ControllerBase
         long? userId = User.GetUserId();
         if (userId == null) return Enumerable.Empty<Dto.Room>();
         return await _roomService.GetUserRooms(userId.Value);
+    }
+
+    [HttpGet]
+    public async Task<Dto.Room?> GetRoom(long roomId)
+    {
+        long? userId = User.GetUserId();
+        if (userId == null) return null;
+        if (!await _roomService.IsUserRoomMember(userId.Value, roomId)) return null;
+
+        var room = await _roomService.GetRoom(roomId);
+        return room?.ToDto();
     }
 }

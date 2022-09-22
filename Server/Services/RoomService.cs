@@ -18,7 +18,22 @@ public class RoomService
 
     public async Task<Room?> GetRoom(long roomId)
     {
-        return await _context.Rooms.FindAsync(roomId);
+        var room = await _context.Rooms.FindAsync(roomId);
+        if (room == null)
+            return null;
+        
+        await _context.Entry(room)
+            .Collection(r => r.RoomUsers)
+            .Query()
+            .Include(ru => ru.User)
+            .LoadAsync();
+        await _context.Entry(room)
+            .Reference(r => r.Conversation)
+            .Query()
+            .Include(c => c.ConversationUsers)
+            .ThenInclude(cu => cu.User)
+            .LoadAsync();
+        return room;
     }
     public async Task<IEnumerable<Dto.Room>> GetUserRooms(long userId)
     {
@@ -33,6 +48,20 @@ public class RoomService
             .ThenInclude(cu => cu.User)
             .Select(r => r.ToDto())
             .ToListAsync();
+    }
+
+    public async Task<bool> IsUserRoomMember(long userId, long roomId)
+    {
+        var room = await _context.Rooms
+            .FindAsync(roomId);
+
+        if (room == null)
+            return false;
+
+        return await _context.Entry(room)
+            .Collection(c => c.RoomUsers)
+            .Query()
+            .AnyAsync(cu => cu.UserId == userId);
     }
 
 }

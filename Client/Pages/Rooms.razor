@@ -1,5 +1,4 @@
 ﻿@attribute [Authorize]
-@page "/rooms/{SelectedRoomId:long}"
 @page "/rooms"
 
 @using Concerto.Client.Chat
@@ -77,8 +76,6 @@ else
 
 
 @code {
-	[Parameter]
-	public long SelectedRoomId { get; set; } = 0;
 	public string MessageContent { get; set; } = string.Empty;
 	private string searchString = string.Empty;
 	bool loading = true;
@@ -104,7 +101,7 @@ else
 
 	private void SelectRoom(Dto.Room room)
 	{
-		NavigationManager.NavigateTo($"/room/{room.RoomId}");
+		NavigationManager.NavigateTo($"/rooms/{room.RoomId}");
 	}
 	
 	private bool RoomFilter(Dto.Room room)
