@@ -41,9 +41,20 @@ public class UserService
         return contacts;
     }
 
-    public async Task<IEnumerable<Dto.User>> SearchUsers(string usernamePart)
+    public async Task<IEnumerable<Dto.User>> SearchWithoutUser(long userId, string searchString)
     {
-        return await _context.Users.Where(u => u.Username.Contains(usernamePart)).Select(u => u.ToDto()).ToListAsync();
+        return await _context.Users
+            .Where(u => u.UserId != userId && (u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString)))
+            .Select(u => u.ToDto())
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Dto.User>> Search(string searchString)
+    {
+        return await _context.Users
+            .Where(u => u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString))
+            .Select(u => u.ToDto())
+            .ToListAsync();
     }
 
 }

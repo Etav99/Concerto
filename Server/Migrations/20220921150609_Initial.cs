@@ -40,6 +40,26 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Rooms",
+                columns: table => new
+                {
+                    RoomId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ConversationId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Rooms", x => x.RoomId);
+                    table.ForeignKey(
+                        name: "FK_Rooms_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChatMessages",
                 columns: table => new
                 {
@@ -116,6 +136,52 @@ namespace Concerto.Server.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RoomUsers",
+                columns: table => new
+                {
+                    RoomId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomUsers", x => new { x.RoomId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_RoomUsers_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RoomUsers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sessions",
+                columns: table => new
+                {
+                    SessionId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RoomId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sessions", x => x.SessionId);
+                    table.ForeignKey(
+                        name: "FK_Sessions_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Conversations",
                 columns: new[] { "ConversationId", "IsPrivate" },
@@ -126,7 +192,9 @@ namespace Concerto.Server.Migrations
                     { 3L, true },
                     { 4L, true },
                     { 5L, true },
-                    { 6L, true }
+                    { 6L, true },
+                    { 7L, false },
+                    { 8L, false }
                 });
 
             migrationBuilder.InsertData(
@@ -145,11 +213,11 @@ namespace Concerto.Server.Migrations
                 columns: new[] { "ChatMessageId", "Content", "ConversationId", "SendTimestamp", "SenderId" },
                 values: new object[,]
                 {
-                    { 1L, "Test message 1", 1L, new DateTime(2022, 9, 19, 12, 6, 44, 218, DateTimeKind.Utc).AddTicks(9779), 1L },
-                    { 2L, "Test message 2", 1L, new DateTime(2022, 9, 19, 12, 8, 44, 218, DateTimeKind.Utc).AddTicks(9782), 1L },
-                    { 3L, "Test reply 1", 1L, new DateTime(2022, 9, 19, 12, 9, 44, 218, DateTimeKind.Utc).AddTicks(9783), 2L },
-                    { 4L, "Test reply 2", 1L, new DateTime(2022, 9, 19, 12, 10, 44, 218, DateTimeKind.Utc).AddTicks(9783), 2L },
-                    { 5L, "Test message 3", 1L, new DateTime(2022, 9, 19, 12, 10, 44, 218, DateTimeKind.Utc).AddTicks(9784), 1L }
+                    { 1L, "Test message 1", 1L, new DateTime(2022, 9, 21, 15, 1, 9, 494, DateTimeKind.Utc).AddTicks(9950), 1L },
+                    { 2L, "Test message 2", 1L, new DateTime(2022, 9, 21, 15, 3, 9, 494, DateTimeKind.Utc).AddTicks(9954), 1L },
+                    { 3L, "Test reply 1", 1L, new DateTime(2022, 9, 21, 15, 4, 9, 494, DateTimeKind.Utc).AddTicks(9954), 2L },
+                    { 4L, "Test reply 2", 1L, new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9955), 2L },
+                    { 5L, "Test message 3", 1L, new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9956), 1L }
                 });
 
             migrationBuilder.InsertData(
@@ -181,7 +249,33 @@ namespace Concerto.Server.Migrations
                     { 5L, 2L },
                     { 5L, 4L },
                     { 6L, 3L },
-                    { 6L, 4L }
+                    { 6L, 4L },
+                    { 7L, 1L },
+                    { 7L, 2L },
+                    { 7L, 3L },
+                    { 8L, 1L },
+                    { 8L, 4L }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Rooms",
+                columns: new[] { "RoomId", "ConversationId", "Name" },
+                values: new object[,]
+                {
+                    { 1L, 7L, "Room 1" },
+                    { 2L, 8L, "Room 2" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "RoomUsers",
+                columns: new[] { "RoomId", "UserId", "Role" },
+                values: new object[,]
+                {
+                    { 1L, 1L, 0 },
+                    { 1L, 2L, 0 },
+                    { 1L, 3L, 0 },
+                    { 2L, 1L, 0 },
+                    { 2L, 4L, 0 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -205,6 +299,21 @@ namespace Concerto.Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Rooms_ConversationId",
+                table: "Rooms",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoomUsers_UserId",
+                table: "RoomUsers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sessions_RoomId",
+                table: "Sessions",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_SubjectId",
                 table: "Users",
                 column: "SubjectId",
@@ -223,10 +332,19 @@ namespace Concerto.Server.Migrations
                 name: "ConversationUser");
 
             migrationBuilder.DropTable(
-                name: "Conversations");
+                name: "RoomUsers");
+
+            migrationBuilder.DropTable(
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
+
+            migrationBuilder.DropTable(
+                name: "Conversations");
         }
     }
 }

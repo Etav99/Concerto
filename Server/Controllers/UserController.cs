@@ -21,7 +21,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<Dto.User?> GetUser(long userId)
+    public async Task<Dto.User?> GetUser([FromQuery] long userId)
     {
         return await _userService.GetUser(userId);
     }
@@ -45,8 +45,10 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<Dto.User>> SearchUsers(string usernamePart)
+    public async Task<IEnumerable<Dto.User>> Search([FromQuery] string searchString)
     {
-        return await _userService.SearchUsers(usernamePart);
+        long? userId = User.GetUserId();
+        if (userId == null) return Enumerable.Empty<Dto.User>();
+        return await _userService.SearchWithoutUser(userId.Value, searchString);
     }
 }

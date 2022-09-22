@@ -3,13 +3,6 @@
 namespace Concerto.Server.Extensions;
 public static class DtoConversions
 {
-    public static IEnumerable<Dto.User> ToDto(this IEnumerable<User>? contacts)
-    {
-        if (contacts == null)
-            return Enumerable.Empty<Dto.User>();
-        return contacts.Select(c => c.ToDto());
-    }
-
     public static Dto.User ToDto(this User user)
     {
         return new Dto.User
@@ -20,6 +13,14 @@ public static class DtoConversions
             LastName = user.LastName
         };
     }
+    
+    public static IEnumerable<Dto.User> ToDto(this IEnumerable<User>? users)
+    {
+        if (users == null)
+            return Enumerable.Empty<Dto.User>();
+        return users.Select(c => c.ToDto());
+    }
+
     public static Dto.Conversation ToDto(this Conversation conversation)
     {
         return new Dto.Conversation
@@ -27,7 +28,7 @@ public static class DtoConversions
             ConversationId = conversation.ConversationId,
             IsPrivate = conversation.IsPrivate,
             Users = conversation.ConversationUsers.Select(cu => cu.User).ToDto(),
-            LastMessage = conversation.ChatMessages.FirstOrDefault()?.ToDto()
+            LastMessage = conversation.ChatMessages?.FirstOrDefault()?.ToDto()
         };
     }
     public static Dto.Conversation ToDto(this Conversation conversation, long userId)
@@ -51,6 +52,7 @@ public static class DtoConversions
             Content = message.Content
         };
     }
+    
     public static ChatMessage ToModel(this Dto.ChatMessage message, DateTime sendTimestamp)
     {
         return new ChatMessage
@@ -59,6 +61,18 @@ public static class DtoConversions
             SenderId = message.SenderId,
             ConversationId = message.ConversationId,
             Content = message.Content,
+        };
+    }
+
+
+    public static Dto.Room ToDto(this Room room)
+    {
+        return new Dto.Room
+        {
+            RoomId = room.RoomId,
+            Name = room.Name,
+            Users = room.RoomUsers.Select(ru => ru.User.ToDto()),
+            Conversation = room.Conversation.ToDto()
         };
     }
 

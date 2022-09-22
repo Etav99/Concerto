@@ -7,6 +7,6 @@ public class Conversation
     [Key]
     public long ConversationId { get; set; }
     public bool IsPrivate { get; set; }
-    public ICollection<ChatMessage> ChatMessages { get; set; }
-    public ICollection<ConversationUser> ConversationUsers { get; set; }
+    public virtual ICollection<ChatMessage> ChatMessages { get; set; }
+    public virtual ICollection<ConversationUser> ConversationUsers { get; set; }
 }

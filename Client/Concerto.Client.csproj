@@ -19,4 +19,10 @@
 		<ProjectReference Include="..\Shared\Concerto.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Pages\Rooms.razor">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	  </Content>
+	</ItemGroup>
+
 </Project>

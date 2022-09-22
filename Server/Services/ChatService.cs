@@ -38,43 +38,72 @@ public class ChatService
 
     public async Task<IEnumerable<Dto.ChatMessage>> GetLastMessagesAsync(long conversationId, int numberOfMessages)
     {
-        IEnumerable<Dto.ChatMessage>? messages = await _context.ChatMessages
-            .Where(cm => (cm.ConversationId == conversationId))
+        var conversation = await _context.Conversations
+            .FindAsync(conversationId);
+
+        if (conversation == null)
+            return Enumerable.Empty<Dto.ChatMessage>();
+
+        IEnumerable<Dto.ChatMessage>? messages = await _context.Entry(conversation)
+            .Collection(c => c.ChatMessages)
+            .Query()
             .OrderByDescending(cm => cm.SendTimestamp)
             .Take(numberOfMessages)
             .Select(cm => cm.ToDto())
             .ToListAsync();
+
         return messages ?? Enumerable.Empty<Dto.ChatMessage>();
     }
 
     public async Task<IEnumerable<Dto.ChatMessage>> GetLastMessagesBeforeAsync(long conversationId, DateTime startingMessageTimestamp, int numberOfMessages)
     {
-        IEnumerable<Dto.ChatMessage>? messages = await _context.ChatMessages
-            .Where(cm => (cm.SendTimestamp <= startingMessageTimestamp) && (cm.ConversationId == conversationId))
+        var conversation = await _context.Conversations
+            .FindAsync(conversationId);
+
+        if (conversation == null)
+            return Enumerable.Empty<Dto.ChatMessage>();
+
+        IEnumerable<Dto.ChatMessage>? messages = await _context.Entry(conversation)
+            .Collection(c => c.ChatMessages)
+            .Query()
+            .Where(cm => (cm.SendTimestamp <= startingMessageTimestamp))
             .OrderByDescending(cm => cm.SendTimestamp)
             .Take(numberOfMessages)
             .Select(cm => cm.ToDto())
             .ToListAsync();
+
         return messages ?? Enumerable.Empty<Dto.ChatMessage>();
     }
 
     public async Task<bool> IsUserInCoversationAsync(long userId, long conversationId)
     {
-        return await _context.Conversations
-                 .Where(c => c.ConversationId == conversationId)
-                 .Include(c => c.ConversationUsers)
-                 .AnyAsync(c => c.ConversationUsers.Any(cu => cu.UserId == userId));
+        var conversation = await _context.Conversations
+            .FindAsync(conversationId);
+
+        if (conversation == null)
+            return false;
+
+        return await _context.Entry(conversation)
+            .Collection(c => c.ConversationUsers)
+            .Query()
+            .AnyAsync(cu => cu.UserId == userId);
     }
 
     public async Task<IEnumerable<User>> GetReceipentsInConversationAsync(long senderId, long conversationId)
     {
-        var a = await _context.Conversations
-            .Where(c => c.ConversationId == conversationId)
-            .Include(c => c.ConversationUsers)
-            .ThenInclude(cu => cu.User)
-            .SingleAsync();
+        var conversation = await _context.Conversations
+            .FindAsync(conversationId);
 
-        return a.ConversationUsers.Where(cu => cu.UserId != senderId).Select(cu => cu.User);
+        if (conversation == null)
+            return Enumerable.Empty<User>();
+
+        return await _context.Entry(conversation)
+            .Collection(c => c.ConversationUsers)
+            .Query()
+            .Where(cu => cu.UserId != senderId)
+            .Include(cu => cu.User)
+            .Select(cu => cu.User)
+            .ToListAsync();
     }
 }
-    
+

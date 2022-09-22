@@ -85,6 +85,7 @@ builder.Services.AddScoped<AppDataContext>();
 // Add Services
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<RoomService>();
 
 var app = builder.Build();
 

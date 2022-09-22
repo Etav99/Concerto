@@ -57,7 +57,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 1L,
                             Content = "Test message 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 19, 12, 6, 44, 218, DateTimeKind.Utc).AddTicks(9779),
+                            SendTimestamp = new DateTime(2022, 9, 21, 15, 1, 9, 494, DateTimeKind.Utc).AddTicks(9950),
                             SenderId = 1L
                         },
                         new
@@ -65,7 +65,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 2L,
                             Content = "Test message 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 19, 12, 8, 44, 218, DateTimeKind.Utc).AddTicks(9782),
+                            SendTimestamp = new DateTime(2022, 9, 21, 15, 3, 9, 494, DateTimeKind.Utc).AddTicks(9954),
                             SenderId = 1L
                         },
                         new
@@ -73,7 +73,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 3L,
                             Content = "Test reply 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 19, 12, 9, 44, 218, DateTimeKind.Utc).AddTicks(9783),
+                            SendTimestamp = new DateTime(2022, 9, 21, 15, 4, 9, 494, DateTimeKind.Utc).AddTicks(9954),
                             SenderId = 2L
                         },
                         new
@@ -81,7 +81,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 4L,
                             Content = "Test reply 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 19, 12, 10, 44, 218, DateTimeKind.Utc).AddTicks(9783),
+                            SendTimestamp = new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9955),
                             SenderId = 2L
                         },
                         new
@@ -89,7 +89,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 5L,
                             Content = "Test message 3",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 19, 12, 10, 44, 218, DateTimeKind.Utc).AddTicks(9784),
+                            SendTimestamp = new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9956),
                             SenderId = 1L
                         });
                 });
@@ -195,6 +195,16 @@ namespace Concerto.Server.Migrations
                         {
                             ConversationId = 6L,
                             IsPrivate = true
+                        },
+                        new
+                        {
+                            ConversationId = 7L,
+                            IsPrivate = false
+                        },
+                        new
+                        {
+                            ConversationId = 8L,
+                            IsPrivate = false
                         });
                 });
 
@@ -272,7 +282,143 @@ namespace Concerto.Server.Migrations
                         {
                             ConversationId = 6L,
                             UserId = 4L
+                        },
+                        new
+                        {
+                            ConversationId = 7L,
+                            UserId = 1L
+                        },
+                        new
+                        {
+                            ConversationId = 7L,
+                            UserId = 2L
+                        },
+                        new
+                        {
+                            ConversationId = 7L,
+                            UserId = 3L
+                        },
+                        new
+                        {
+                            ConversationId = 8L,
+                            UserId = 1L
+                        },
+                        new
+                        {
+                            ConversationId = 8L,
+                            UserId = 4L
                         });
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Room", b =>
+                {
+                    b.Property<long>("RoomId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("RoomId"));
+
+                    b.Property<long>("ConversationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RoomId");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("Rooms");
+
+                    b.HasData(
+                        new
+                        {
+                            RoomId = 1L,
+                            ConversationId = 7L,
+                            Name = "Room 1"
+                        },
+                        new
+                        {
+                            RoomId = 2L,
+                            ConversationId = 8L,
+                            Name = "Room 2"
+                        });
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.RoomUser", b =>
+                {
+                    b.Property<long>("RoomId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RoomId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RoomUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            RoomId = 1L,
+                            UserId = 1L,
+                            Role = 0
+                        },
+                        new
+                        {
+                            RoomId = 1L,
+                            UserId = 2L,
+                            Role = 0
+                        },
+                        new
+                        {
+                            RoomId = 1L,
+                            UserId = 3L,
+                            Role = 0
+                        },
+                        new
+                        {
+                            RoomId = 2L,
+                            UserId = 1L,
+                            Role = 0
+                        },
+                        new
+                        {
+                            RoomId = 2L,
+                            UserId = 4L,
+                            Role = 0
+                        });
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
+                {
+                    b.Property<long>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SessionId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("RoomId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
@@ -397,11 +543,59 @@ namespace Concerto.Server.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Concerto.Server.Data.Models.Room", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Conversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.RoomUser", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Room", "Room")
+                        .WithMany("RoomUsers")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Concerto.Server.Data.Models.User", "User")
+                        .WithMany("RoomsUser")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Room", "Room")
+                        .WithMany("Sessions")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("Concerto.Server.Data.Models.Conversation", b =>
                 {
                     b.Navigation("ChatMessages");
 
                     b.Navigation("ConversationUsers");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Room", b =>
+                {
+                    b.Navigation("RoomUsers");
+
+                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
@@ -411,6 +605,8 @@ namespace Concerto.Server.Migrations
                     b.Navigation("InvitedContacts");
 
                     b.Navigation("InvitingContacts");
+
+                    b.Navigation("RoomsUser");
                 });
 #pragma warning restore 612, 618
         }
