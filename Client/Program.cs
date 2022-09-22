@@ -1,7 +1,6 @@
 global using Dto = Concerto.Shared.Models.Dto;
 using Concerto.Client;
-using Concerto.Client.Chat;
-using Concerto.Client.Contacts;
+using Concerto.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;

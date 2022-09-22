@@ -1,8 +1,5 @@
 ﻿using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.VisualBasic;
-using System.Reflection.Metadata;
 
 namespace Concerto.Server.Data.DatabaseContext;
 
@@ -112,7 +109,7 @@ public class AppDataContext : DbContext
                 new ConversationUser { ConversationId = 5, UserId = 4 },
                 new ConversationUser { ConversationId = 6, UserId = 3 },
                 new ConversationUser { ConversationId = 6, UserId = 4 },
-                
+
                 // Room 1
                 new ConversationUser { ConversationId = 7, UserId = 1 },
                 new ConversationUser { ConversationId = 7, UserId = 2 },
@@ -142,7 +139,7 @@ public class AppDataContext : DbContext
                  new RoomUser { RoomId = 2, UserId = 1 },
                  new RoomUser { RoomId = 2, UserId = 4 }
              );
-        
+
         modelBuilder
             .Entity<Conversation>()
             .HasData(

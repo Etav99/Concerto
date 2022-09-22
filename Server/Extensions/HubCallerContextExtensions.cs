@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Concerto.Shared.Extensions;
+﻿using Concerto.Shared.Extensions;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Concerto.Server.Extensions;
 

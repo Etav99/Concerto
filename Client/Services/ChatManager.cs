@@ -1,17 +1,12 @@
-﻿using Concerto.Client.Contacts;
-using Concerto.Client.Pages;
-using Concerto.Shared.Extensions;
-using Concerto.Shared.Models.Dto;
+﻿using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
 using System.Net.Http.Json;
-using System.Security.AccessControl;
-using static System.Net.WebRequestMethods;
 
-namespace Concerto.Client.Chat;
+namespace Concerto.Client.Services;
 
 public interface IChatManager
 {
@@ -51,7 +46,7 @@ public class CachedChatManager : IChatManager
             return ChatHubConnection?.State == HubConnectionState.Connected;
         }
     }
-    
+
     private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
     private bool conversationCacheInvalidated = true;
@@ -78,7 +73,7 @@ public class CachedChatManager : IChatManager
         _authenticationStateProvider = authenticationStateProvider;
         _navigationManager = navigationManager;
         _http = http;
-        this._contactsManager = contactsManager;
+        _contactsManager = contactsManager;
         _accessTokenProvider = accessTokenProvider;
         _snackbar = snackbar;
 
@@ -146,7 +141,7 @@ public class CachedChatManager : IChatManager
 
     public async Task SendChatMessageAsync(Dto.ChatMessage message)
     {
-        if(conversationsCache.ContainsKey(message.ConversationId))
+        if (conversationsCache.ContainsKey(message.ConversationId))
         {
             conversationsCache[message.ConversationId].LastMessage = message;
         }

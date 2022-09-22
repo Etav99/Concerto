@@ -21,7 +21,7 @@ public class RoomService
         var room = await _context.Rooms.FindAsync(roomId);
         if (room == null)
             return null;
-        
+
         await _context.Entry(room)
             .Collection(r => r.RoomUsers)
             .Query()

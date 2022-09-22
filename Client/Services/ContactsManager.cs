@@ -1,7 +1,14 @@
-﻿using Concerto.Shared.Models.Dto;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
-namespace Concerto.Client.Contacts;
+namespace Concerto.Client.Services;
+
+public interface IContactsManager
+{
+    public List<Dto.User> Contacts { get; }
+    public Task LoadContactsAsync();
+    public Task<String> GetContactNameAsync(long contactId);
+    public void InvalidateCache();
+}
 
 public class CachedContactsManager : IContactsManager
 {
@@ -36,7 +43,7 @@ public class CachedContactsManager : IContactsManager
         }
         semaphore.Release();
     }
-    
+
     public void InvalidateCache()
     {
         cacheInvalidated = true;

@@ -1,5 +1,5 @@
-﻿using Concerto.Shared.Extensions;
-using Concerto.Server.Services;
+﻿using Concerto.Server.Services;
+using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -13,7 +13,7 @@ public static class DtoConversions
             LastName = user.LastName
         };
     }
-    
+
     public static IEnumerable<Dto.User> ToDto(this IEnumerable<User>? users)
     {
         if (users == null)
@@ -52,7 +52,7 @@ public static class DtoConversions
             Content = message.Content
         };
     }
-    
+
     public static ChatMessage ToModel(this Dto.ChatMessage message, DateTime sendTimestamp)
     {
         return new ChatMessage

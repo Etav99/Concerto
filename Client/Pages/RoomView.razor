@@ -1,8 +1,8 @@
 ﻿@attribute [Authorize]
 @page "/rooms/{SelectedRoomId:long}"
 
-@using Concerto.Client.Chat
-@using Concerto.Client.Contacts
+@using Concerto.Client.Services
+@using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
 @using Microsoft.AspNetCore.Authorization
@@ -20,8 +20,9 @@
 
 	<Concerto.Client.Components.ChatBox SelectedConversation="SelectedRoom?.Conversation"/>
 	<MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary pa-4" Width="50%" Elevation="0">
-
+		
 	</MudPaper>
+	
 </MudPaper>
 
 
@@ -30,6 +31,8 @@
 	public long SelectedRoomId { get; set; } = 0;
 	private Dto.Room? SelectedRoom { get; set; }
 	
+	
+
 	
 	protected override async Task OnInitializedAsync()
 	{
