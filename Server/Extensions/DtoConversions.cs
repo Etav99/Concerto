@@ -13,7 +13,7 @@ public static class DtoConversions
             LastName = user.LastName
         };
     }
-    
+
     public static IEnumerable<Dto.User> ToDto(this IEnumerable<User>? users)
     {
         if (users == null)
@@ -52,7 +52,7 @@ public static class DtoConversions
             Content = message.Content
         };
     }
-    
+
     public static ChatMessage ToModel(this Dto.ChatMessage message, DateTime sendTimestamp)
     {
         return new ChatMessage
@@ -72,9 +72,68 @@ public static class DtoConversions
             RoomId = room.RoomId,
             Name = room.Name,
             Users = room.RoomUsers.Select(ru => ru.User.ToDto()),
-            Conversation = room.Conversation.ToDto()
+            Conversation = room.Conversation.ToDto(),
+            Sessions = room.Sessions?.Select(s => s.ToDto()) ?? Enumerable.Empty<Dto.Session>()
         };
     }
+
+    public static Dto.Session ToDto(this Session session)
+    {
+        return new Dto.Session
+        {
+            SessionId = session.SessionId,
+            Name = session.Name,
+            ScheduledDateTime = session.ScheduledDate,
+            Conversation = session.Conversation.ToDto()
+        };
+    }
+
+    public static Conversation ToGroupConversation(this IEnumerable<User> users)
+    {
+        var conversation = new Conversation();
+        conversation.IsPrivate = false;
+        conversation.ConversationUsers = users.ToConversationUsers(conversation).ToList();
+        return conversation;
+    }
+
+
+    public static IEnumerable<ConversationUser> ToConversationUsers(this IEnumerable<User> users, Conversation conversation)
+    {
+        return users.Select(u => new ConversationUser
+        {
+            Conversation = conversation,
+            User = u
+        });
+    }
+
+    public static Dto.UploadedFile ToDto(this UploadedFile file)
+    {
+        return new Dto.UploadedFile
+        {
+            Id = file.Id,
+            Name = file.DisplayName,
+        };
+    }
+    public static IEnumerable<Dto.UploadedFile> ToDto(this IEnumerable<UploadedFile> files)
+    {
+        return files.Select(u => u.ToDto());
+    }
+
+    public static Dto.FileUploadResult ToDto(this FileUploadResult fileUploadResult)
+    {
+        return new Dto.FileUploadResult
+        {
+            DisplayFileName = fileUploadResult.DisplayFileName,
+            ErrorCode = fileUploadResult.ErrorCode,
+            Uploaded = fileUploadResult.Uploaded
+        };
+    }
+
+    public static IEnumerable<Dto.FileUploadResult> ToDto(this IEnumerable<FileUploadResult> fileUploadResults)
+    {
+        return fileUploadResults.Select(u => u.ToDto());
+    }
+
 
 
 }

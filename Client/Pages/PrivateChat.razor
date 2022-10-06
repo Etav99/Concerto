@@ -1,0 +1,58 @@
+﻿@attribute [Authorize]
+@page "/chat/{SelectedConversationId:long}"
+@page "/chat"
+
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Lists
+@using Concerto.Client.Services
+@using Concerto.Shared.Extensions
+
+@using Concerto.Shared.Models.Dto
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IChatManager ChatManager
+@inject IContactManager ContactsManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Chat</PageTitle>
+
+@if (loading)
+{
+	<MudPaper Class="d-flex align-content-center align-center" Width="100%" Height="100%" Elevation="0">
+		<MudProgressCircular Class="ma-auto" Size="Size.Large" Color="Color.Default" Indeterminate="true" />
+	</MudPaper>
+}
+else
+{
+	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
+		
+		<ChatBox SelectedConversation="SelectedConversation" @ref="chatBox"/>
+
+		<ConversationList SelectedConversationId="SelectedConversationId" OnConversationSelected="ConversationSelected" />
+		
+	</MudPaper>
+
+}
+
+@code
+{
+	[Parameter]
+	public long? SelectedConversationId { get; set; }
+
+	public Dto.Conversation? SelectedConversation { get; set; }
+
+	private Concerto.Client.Components.ChatBox? chatBox;
+
+	bool loading = false;
+
+	public async Task ConversationSelected(Dto.Conversation conversation)
+	{
+		NavigationManager.NavigateTo($"/chat/{conversation.ConversationId}");
+		SelectedConversation = conversation;
+		StateHasChanged();
+	}
+}

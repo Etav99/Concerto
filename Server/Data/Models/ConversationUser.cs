@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Concerto.Server.Data.Models;
+﻿namespace Concerto.Server.Data.Models;
 
 public class ConversationUser
 {

@@ -13,7 +13,7 @@ public class ChatMessage
     [Required]
     public long ConversationId { get; set; }
     public Conversation Conversation { get; set; }
-    
+
     [Required]
     public DateTime SendTimestamp { get; set; }
 

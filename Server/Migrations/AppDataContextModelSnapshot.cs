@@ -57,7 +57,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 1L,
                             Content = "Test message 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 21, 15, 1, 9, 494, DateTimeKind.Utc).AddTicks(9950),
+                            SendTimestamp = new DateTime(2022, 10, 2, 23, 9, 8, 351, DateTimeKind.Utc).AddTicks(421),
                             SenderId = 1L
                         },
                         new
@@ -65,7 +65,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 2L,
                             Content = "Test message 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 21, 15, 3, 9, 494, DateTimeKind.Utc).AddTicks(9954),
+                            SendTimestamp = new DateTime(2022, 10, 2, 23, 11, 8, 351, DateTimeKind.Utc).AddTicks(424),
                             SenderId = 1L
                         },
                         new
@@ -73,7 +73,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 3L,
                             Content = "Test reply 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 21, 15, 4, 9, 494, DateTimeKind.Utc).AddTicks(9954),
+                            SendTimestamp = new DateTime(2022, 10, 2, 23, 12, 8, 351, DateTimeKind.Utc).AddTicks(425),
                             SenderId = 2L
                         },
                         new
@@ -81,7 +81,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 4L,
                             Content = "Test reply 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9955),
+                            SendTimestamp = new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426),
                             SenderId = 2L
                         },
                         new
@@ -89,7 +89,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 5L,
                             Content = "Test message 3",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9956),
+                            SendTimestamp = new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426),
                             SenderId = 1L
                         });
                 });
@@ -404,6 +404,9 @@ namespace Concerto.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SessionId"));
 
+                    b.Property<long>("ConversationId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -416,9 +419,37 @@ namespace Concerto.Server.Migrations
 
                     b.HasKey("SessionId");
 
+                    b.HasIndex("ConversationId");
+
                     b.HasIndex("RoomId");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.UploadedFile", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("SessionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("UploadedFiles");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
@@ -575,13 +606,32 @@ namespace Concerto.Server.Migrations
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
                 {
+                    b.HasOne("Concerto.Server.Data.Models.Conversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Concerto.Server.Data.Models.Room", "Room")
                         .WithMany("Sessions")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Conversation");
+
                     b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.UploadedFile", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Session", "Session")
+                        .WithMany("Files")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Conversation", b =>
@@ -596,6 +646,11 @@ namespace Concerto.Server.Migrations
                     b.Navigation("RoomUsers");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>

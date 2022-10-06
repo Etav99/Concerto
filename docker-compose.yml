@@ -3,7 +3,9 @@ version: '3.4'
 volumes:
   postgres_data:
       driver: local
-
+  pgadmin_data:
+  keycloak_data:
+  
 services:
   concerto.server:
     image: ${DOCKER_REGISTRY-}concertoserver
@@ -38,6 +40,8 @@ services:
         PGADMIN_DEFAULT_PASSWORD: admin
       ports:
         - "7100:80"
+      volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
   keycloak:
       image: quay.io/keycloak/keycloak:18.0.2
@@ -49,11 +53,12 @@ services:
         KC_DB_PASSWORD: admin
         KEYCLOAK_ADMIN: admin
         KEYCLOAK_ADMIN_PASSWORD: admin
-        # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
         # JDBC_PARAMS: "ssl=true"
       ports:
         - 7200:8080
         - 7201:8443
       depends_on:
         - postgres
+      volumes:
+        - keycloak_data:/var/lib/keycloak/data
       command: start-dev

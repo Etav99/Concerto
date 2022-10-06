@@ -1,6 +1,6 @@
-﻿using Concerto.Shared.Extensions;
-using Concerto.Server.Extensions;
+﻿using Concerto.Server.Extensions;
 using Concerto.Server.Services;
+using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -44,7 +44,7 @@ public class ChatHub : Hub
 
         if (!await _chatService.IsUserInCoversationAsync(senderId.Value, conversationId))
             return;
-        
+
         var message = new Dto.ChatMessage
         {
             SenderId = senderId.Value,

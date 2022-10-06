@@ -1,0 +1,54 @@
+﻿@attribute [Authorize]
+@page "/rooms/{SelectedRoomId:long}"
+@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Lists
+@using Concerto.Client.Services
+@using Concerto.Shared.Extensions
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager NavigationManager
+@inject HttpClient Http;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Room</PageTitle>
+
+<MudStack>
+	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
+		@if (SelectedRoom != null)
+		{
+			<MudText Align="Align.Center">@($"Room - {SelectedRoom.Name}")</MudText>
+		}
+	</MudPaper>
+
+	<MudPaper Class="d-flex flex-wrap mud-border-primary pa-2" Width="100%" Elevation="0">
+
+		<ChatBox SelectedConversation="SelectedRoom?.Conversation" />
+		<RoomSessionList Room="SelectedRoom" OnSessionSelected="OnSessionSelected" />
+		
+	</MudPaper>
+</MudStack>
+
+
+@code {
+	[Parameter]
+	public long SelectedRoomId { get; set; } = 0;
+	private Dto.Room? SelectedRoom { get; set; }
+	
+	protected override async Task OnInitializedAsync()
+	{
+		SelectedRoom = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={SelectedRoomId}");
+		if (SelectedRoom == null)
+		{
+			NavigationManager.NavigateTo("/rooms");
+		}
+	}
+
+	private void OnSessionSelected(Dto.Session session) {
+		NavigationManager.NavigateTo($"/sessions/{session.SessionId}");
+	}
+
+}

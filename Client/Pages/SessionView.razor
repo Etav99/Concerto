@@ -1,0 +1,47 @@
+﻿@attribute [Authorize]
+@page "/sessions/{SelectedSessionId:long}"
+
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Lists
+@using Concerto.Client.Services
+@using Concerto.Shared.Extensions
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager NavigationManager
+@inject HttpClient Http;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
+
+<MudStack>
+	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
+		@if (SelectedSession != null)
+		{
+			<MudText Align="Align.Center">@($"Session - {SelectedSession.Name}")</MudText>
+		}
+	</MudPaper>
+
+	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
+		<ChatBox SelectedConversation="SelectedSession?.Conversation" />
+		<SessionFileList Session="SelectedSession" />
+	</MudPaper>
+</MudStack>
+
+
+@code {
+	[Parameter]
+	public long SelectedSessionId { get; set; } = 0;
+	private Dto.Session? SelectedSession { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		SelectedSession = await Http.GetFromJsonAsync<Dto.Session?>($"Session/GetSession?sessionId={SelectedSessionId}");
+		if (SelectedSession == null)
+		{
+			NavigationManager.NavigateTo("/rooms");
+		}
+	}
+}

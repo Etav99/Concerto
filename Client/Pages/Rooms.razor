@@ -1,15 +1,17 @@
 ﻿@attribute [Authorize]
-@page "/rooms/{SelectedRoomId:long}"
 @page "/rooms"
 
-@using Concerto.Client.Chat
-@using Concerto.Client.Contacts
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
+@using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IChatManager ChatManager
@@ -26,59 +28,59 @@
 }
 else
 {
-	<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Width="100%" Elevation="0">
+	<MudStack Row="true" Justify="Justify.SpaceEvenly">
+		<MudPaper Class="d-flex flex-wrap mud-border-primary" Width="100%" Elevation="0">
 
-		@if(RoomsList == null || !RoomsList.Any())
-		{
-		<MudAlert Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
-		}
-		else
-		{
-		<MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-				<MudTable Items="RoomsList" Hover="true" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
-					<ToolBarContent>
-						<MudText Typo="Typo.h6">Your rooms</MudText>
-						<MudSpacer />
-						<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-					</ToolBarContent>
-				<HeaderContent>
-					<MudTh>Room name</MudTh>
-					<MudTh>Members</MudTh>
-				</HeaderContent>
-				<RowTemplate>
-					<MudTd>
-							<MudText>@context.Name</MudText>
-					</MudTd>
-					<MudTd>
-						<MudList>
-							@foreach (var user in context.Users)
-							{
-								<MudListItem>
-									@($"{user.FirstName} {user.LastName}")
-								</MudListItem>
-							}
-						</MudList>
+			@if (RoomsList == null || !RoomsList.Any())
+			{
+				<MudAlert Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
+			}
+			else
+			{
+				<MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
+					<MudTable Items="RoomsList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
+						<ToolBarContent>
+							<MudText Typo="Typo.h6">Your rooms</MudText>
+							<MudSpacer />
+							<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+							<MudSpacer />
+							<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateRoom">Create room</MudButton>
+						</ToolBarContent>
+						<HeaderContent>
+							<MudTh>Room name</MudTh>
+							<MudTh>Members</MudTh>
+						</HeaderContent>
+						<RowTemplate>
+							<MudTd>
+								<MudText>@context.Name</MudText>
+							</MudTd>
+							<MudTd>
+								<MudList>
+									@foreach (var user in context.Users)
+									{
+										<MudListItem>
+											@($"{user.FirstName} {user.LastName}")
+										</MudListItem>
+									}
+								</MudList>
 
-					</MudTd>
-					<MudTd Style="text-align:right">
-							<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectRoom(@context))">Enter</MudButton>
-					</MudTd>
-				</RowTemplate>
-				<PagerContent>
-					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-				</PagerContent>
-			</MudTable>
+							</MudTd>
+							<MudTd Style="text-align:right">
+								<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectRoom(@context))">Enter</MudButton>
+							</MudTd>
+						</RowTemplate>
+						<PagerContent>
+							<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+						</PagerContent>
+					</MudTable>
+				</MudPaper>
+			}
 		</MudPaper>
-		}
-	</MudPaper>
-
-
+	</MudStack>
 }
 
 
 @code {
-	[Parameter]
-	public long SelectedRoomId { get; set; } = 0;
 	public string MessageContent { get; set; } = string.Empty;
 	private string searchString = string.Empty;
 	bool loading = true;
@@ -89,24 +91,28 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var getAuthStateTask = AuthenticationStateProvider.GetAuthenticationStateAsync();
 		loading = true;
 
 		var roomsResponse = await Http.GetFromJsonAsync<Dto.Room[]>($"Room/GetCurrentUserRooms");
-
-		RoomsList = roomsResponse == null ? RoomsList = new List<Dto.Room>()
-												: roomsResponse.ToList();
-
-		AuthenticationState = await getAuthStateTask;
-		UserId = AuthenticationState.User.GetUserId();
+		RoomsList = roomsResponse?.ToList() ?? new List<Dto.Room>();
+		
 		loading = false;
 	}
 
 	private void SelectRoom(Dto.Room room)
 	{
-		NavigationManager.NavigateTo($"/room/{room.RoomId}");
+		NavigationManager.NavigateTo($"/rooms/{room.RoomId}");
 	}
 	
+	private async Task CreateRoom(MouseEventArgs mouseEventArgs){
+		var result = await DialogService.Show<CreateRoomDialog>("Create new room").Result;
+		if((bool)(result.Data ?? false))
+		{
+			var roomsResponse = await Http.GetFromJsonAsync<Dto.Room[]>($"Room/GetCurrentUserRooms");
+			RoomsList = roomsResponse?.ToList() ?? new List<Dto.Room>();
+		}
+	}
+
 	private bool RoomFilter(Dto.Room room)
 	{
 		if (string.IsNullOrWhiteSpace(searchString))

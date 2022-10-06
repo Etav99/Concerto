@@ -2,6 +2,7 @@
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Concerto.Server.Services;
 

@@ -33,6 +33,9 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
    {
+       options.RequireHttpsMetadata = false;
+       // options.RequireHttpsMetadata = builder.Environment.IsProduction();
+       
        if (builder.Environment.IsDevelopment())
        {
            options.BackchannelHttpHandler = new HttpClientHandler()
@@ -41,8 +44,6 @@ builder.Services.AddAuthentication(options =>
                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
            };
        }
-
-       options.RequireHttpsMetadata = builder.Environment.IsProduction();
 
        if (builder.Environment.IsDocker())
        {
@@ -72,6 +73,7 @@ builder.Services.AddAuthentication(options =>
                return Task.CompletedTask;
            }
        };
+
    });
 
 builder.Services.AddAuthorization();
@@ -86,8 +88,11 @@ builder.Services.AddScoped<AppDataContext>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<RoomService>();
+builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<FileService>();
 
 var app = builder.Build();
+app.Logger.LogInformation($"IsDocker = {builder.Environment.IsDocker()}");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -101,7 +106,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseBlazorFrameworkFiles();

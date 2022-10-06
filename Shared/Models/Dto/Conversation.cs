@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Concerto.Shared.Models.Dto;
+﻿namespace Concerto.Shared.Models.Dto;
 public record Conversation
 {
     public long ConversationId { get; init; }

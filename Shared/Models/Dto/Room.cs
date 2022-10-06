@@ -7,5 +7,11 @@ public record Room
 
     public IEnumerable<Dto.User> Users { get; set; }
     public Dto.Conversation Conversation { get; set; }
-    // public IEnumerable<Dto.Session> Sessions { get; set; }
+    public IEnumerable<Dto.Session> Sessions { get; set; }
+}
+
+public record CreateRoomRequest
+{
+    public string Name { get; set; }
+    public IEnumerable<Dto.User> Members { get; set; }
 }
