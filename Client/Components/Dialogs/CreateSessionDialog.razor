@@ -1,0 +1,66 @@
+﻿@using Concerto.Client.Services
+@inject IDialogService DialogService
+@inject IContactManager ContactManager
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_sessionName" T="string" Label="Name"></MudTextField>
+        <MudDatePicker Label="Date" @bind-Date="_date" />
+		<MudTimePicker Label="Time" @bind-Time="_time" />
+    </DialogContent>
+	
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+
+    [Parameter] public long RoomId { get; set; }
+
+    private string? _sessionName;
+    private DateTime? _date = DateTime.Today.AddDays(1);
+    private TimeSpan? _time = DateTime.Now.TimeOfDay;
+
+    private async Task Submit()
+    {
+        if(String.IsNullOrEmpty(_sessionName)){
+            Snackbar.Add("Room name cannot be empty", Severity.Error);
+            return;
+        }
+        if (!_time.HasValue)
+        {
+            Snackbar.Add("Time not set", Severity.Error);
+            return;
+        }
+
+        if (!_date.HasValue)
+        {
+            Snackbar.Add("Date not set", Severity.Error);
+            return;
+        }
+
+        // Move to room manager
+        var createSessionRequest = new Dto.CreateSessionRequest {
+                Name = _sessionName,
+                ScheduledDateTime = _date.Value + _time.Value,
+                RoomId = RoomId
+        };
+		
+        var response = await Http.PostAsJsonAsync("Session/CreateSession", createSessionRequest);
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Session created", Severity.Success);
+			Dialog.Close(DialogResult.Ok(true));
+		}
+		else
+		{
+			Snackbar.Add("Failed to create session", Severity.Error);
+		}
+	}
+
+    void Cancel() => Dialog.Cancel();
+}

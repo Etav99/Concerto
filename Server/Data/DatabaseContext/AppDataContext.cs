@@ -13,6 +13,7 @@ public class AppDataContext : DbContext
     public DbSet<Room> Rooms { get; set; }
     public DbSet<RoomUser> RoomUsers { get; set; }
     public DbSet<Session> Sessions { get; set; }
+    public DbSet<UploadedFile> UploadedFiles { get; set; }
 
     public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
 

@@ -37,6 +37,22 @@ public class RoomController : ControllerBase
         if (!await _roomService.IsUserRoomMember(userId.Value, roomId)) return null;
 
         var room = await _roomService.GetRoom(roomId);
-        return room?.ToDto();
+        return room;
     }
+    
+    [HttpPost]
+    public async Task<ActionResult> CreateRoomForCurrentUser([FromBody] Dto.CreateRoomRequest room)
+    {
+        long? userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+        
+        if(await _roomService.CreateRoom(room, userId.Value))
+        {
+            return Ok();
+        }
+        return BadRequest();
+    }
+
+
+    
 }

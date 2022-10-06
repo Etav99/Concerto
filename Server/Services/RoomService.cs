@@ -1,6 +1,7 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Services;
@@ -16,7 +17,7 @@ public class RoomService
         _context = context;
     }
 
-    public async Task<Room?> GetRoom(long roomId)
+    public async Task<Dto.Room?> GetRoom(long roomId)
     {
         var room = await _context.Rooms.FindAsync(roomId);
         if (room == null)
@@ -33,7 +34,13 @@ public class RoomService
             .Include(c => c.ConversationUsers)
             .ThenInclude(cu => cu.User)
             .LoadAsync();
-        return room;
+        await _context.Entry(room)
+            .Collection(r => r.Sessions)
+            .Query()
+            .Include(s => s.Conversation)
+            .ThenInclude(c => c.ConversationUsers)
+            .LoadAsync();
+        return room.ToDto();
     }
     public async Task<IEnumerable<Dto.Room>> GetUserRooms(long userId)
     {
@@ -42,7 +49,6 @@ public class RoomService
             .Where(r => r.RoomUsers.Any(ru => ru.UserId == userId))
             .Include(r => r.RoomUsers)
             .ThenInclude(ru => ru.User)
-            //.Include(r => r.Sessions)
             .Include(r => r.Conversation)
             .ThenInclude(c => c.ConversationUsers)
             .ThenInclude(cu => cu.User)
@@ -64,4 +70,30 @@ public class RoomService
             .AnyAsync(cu => cu.UserId == userId);
     }
 
+    public async Task<bool> CreateRoom(Dto.CreateRoomRequest request, long userId)
+    {
+        var userIds = request.Members.Select(m => m.UserId).Append(userId).Distinct();
+        var users = await _context.Users
+            .Where(u => userIds.Contains(u.UserId))
+            .ToListAsync();
+
+        if (users.Count != request.Members.Count() + 1)
+            return false;
+
+        var room = new Room();
+        var roomConversation = users.ToGroupConversation();
+        var roomUsers = users.Select(u => new RoomUser
+        {
+            User = u,
+            Room = room,
+        }).ToList();
+
+        room.Name = request.Name;
+        room.Conversation = roomConversation;
+        room.RoomUsers = roomUsers;
+
+        var deg = await _context.Rooms.AddAsync(room);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

@@ -6,4 +6,9 @@ public static class IWebHostEnvironmentExtensions
     {
         return EnvironmentHelper.GetVariable("ASPNETCORE_DOCKER").Equals("true");
     }
+
+    public static bool IsRemote(this IWebHostEnvironment environment)
+    {
+        return EnvironmentHelper.GetVariable("ASPNETCORE_REMOTE").Equals("true");
+    }
 }

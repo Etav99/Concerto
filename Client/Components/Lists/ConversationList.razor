@@ -5,6 +5,9 @@
 
 <MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
 	<MudTable Items="ConversationsList" Hover="true" Elevation="0">
+		<ToolBarContent>
+			<MudText Typo="Typo.h6">Conversations</MudText>
+		</ToolBarContent>
 		<RowTemplate>
 			<MudTd>@String.Join(',', context.Users.Select(u => $"{u.FirstName} {u.LastName}"))</MudTd>
 			<MudTd>@(context.LastMessage?.Content ?? string.Empty)</MudTd>
@@ -43,6 +46,10 @@
 		{
 			await SelectLatestConversation();
 		}
+		else
+		{
+			SelectConversation(ChatManager.Conversations[SelectedConversationId.Value]);
+		}
 	}
 
 	private void Refresh(Dto.ChatMessage message)
@@ -50,9 +57,9 @@
 		StateHasChanged();
 	}
 
-	private async Task SelectConversation(Dto.Conversation conversation)
+	private void SelectConversation(Dto.Conversation conversation)
 	{
-		await OnConversationSelected.InvokeAsync(conversation);
+		OnConversationSelected.InvokeAsync(conversation).Wait();
 	}
 
 	private async Task SelectLatestConversation()

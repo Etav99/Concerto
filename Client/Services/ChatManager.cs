@@ -32,7 +32,7 @@ public class CachedChatManager : IChatManager
     private readonly NavigationManager _navigationManager;
     private readonly IAccessTokenProvider _accessTokenProvider;
     private readonly HttpClient _http;
-    private readonly IContactsManager _contactsManager;
+    private readonly IContactManager _contactsManager;
     private readonly ISnackbar _snackbar;
 
     public IChatManager.OnMessageEventCallback OnMessageReceivedCallback { get; set; } = delegate { };
@@ -68,7 +68,7 @@ public class CachedChatManager : IChatManager
         }
     }
 
-    public CachedChatManager(AuthenticationStateProvider authenticationStateProvider, NavigationManager navigationManager, HttpClient http, IContactsManager contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
+    public CachedChatManager(AuthenticationStateProvider authenticationStateProvider, NavigationManager navigationManager, HttpClient http, IContactManager contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
     {
         _authenticationStateProvider = authenticationStateProvider;
         _navigationManager = navigationManager;
@@ -107,6 +107,8 @@ public class CachedChatManager : IChatManager
 
     public async Task ConnectToChatAsync()
     {
+        if (IsConnected)
+            return;
         AuthenticationState authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
         if (authenticationState.User.Identity?.IsAuthenticated == true)
         {

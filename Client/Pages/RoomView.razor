@@ -1,7 +1,8 @@
 ﻿@attribute [Authorize]
 @page "/rooms/{SelectedRoomId:long}"
-
-@using Concerto.Client.Services
+@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Lists
 @using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
@@ -15,24 +16,27 @@
 
 <PageTitle>Room</PageTitle>
 
+<MudStack>
+	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
+		@if (SelectedRoom != null)
+		{
+			<MudText Align="Align.Center">@($"Room - {SelectedRoom.Name}")</MudText>
+		}
+	</MudPaper>
 
-<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Width="100%" Elevation="0">
+	<MudPaper Class="d-flex flex-wrap mud-border-primary pa-2" Width="100%" Elevation="0">
 
-	<Concerto.Client.Components.ChatBox SelectedConversation="SelectedRoom?.Conversation"/>
-	<MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary pa-4" Width="50%" Elevation="0">
+		<ChatBox SelectedConversation="SelectedRoom?.Conversation" />
+		<RoomSessionList Room="SelectedRoom" OnSessionSelected="OnSessionSelected" />
 		
 	</MudPaper>
-	
-</MudPaper>
+</MudStack>
 
 
 @code {
 	[Parameter]
 	public long SelectedRoomId { get; set; } = 0;
 	private Dto.Room? SelectedRoom { get; set; }
-	
-	
-
 	
 	protected override async Task OnInitializedAsync()
 	{
@@ -41,6 +45,10 @@
 		{
 			NavigationManager.NavigateTo("/rooms");
 		}
+	}
+
+	private void OnSessionSelected(Dto.Session session) {
+		NavigationManager.NavigateTo($"/sessions/{session.SessionId}");
 	}
 
 }

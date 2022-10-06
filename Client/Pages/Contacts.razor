@@ -24,9 +24,9 @@ else
 	}
 	else
 	{
-		<MudStack Row="true" Justify="Justify.SpaceEvenly" Class="border-solid border-2 mud-border-primary pa-4 ma-2">
+		<MudStack Row="true" Justify="Justify.SpaceEvenly" Class="mud-border-primary pa-4 ma-2">
 			<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-				<MudTable Items="contacts" Hover="true" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.User, bool>(UserFilter)">
+				<MudTable Items="contacts" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.User, bool>(UserFilter)">
 					<ToolBarContent>
 						<MudText Typo="Typo.h6">Contacts</MudText>
 						<MudSpacer />
@@ -49,7 +49,7 @@ else
 
 			</MudPaper>
 			<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-				<MudTable Items="searchResult" Hover="true" SortLabel="Sort By" Elevation="0">
+				<MudTable Items="searchResult" Height="65vh" Hover="true" SortLabel="Sort By" Elevation="0">
 					<ToolBarContent>
 						<MudText Typo="Typo.h6">Search for users</MudText>
 						<MudSpacer />

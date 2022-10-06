@@ -8,7 +8,7 @@
 @inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
 @inject IChatManager ChatManager
-@inject IContactsManager ContactsManager
+@inject IContactManager ContactsManager
 @inject ISnackbar Snackbar
 
 <MudThemeProvider />
@@ -44,18 +44,9 @@
 		<NavMenu />
 	</MudDrawer>
 	<MudMainContent>
-		@if (Navigation.Uri.Contains("chat"))
-		{
-			<MudContainer Class="my-1 pt-1">
-						@Body
-			</MudContainer>
-		}
-		else
-		{
-			<MudContainer MaxWidth="MaxWidth.False" Class="my-8 pt-8">
-				@Body
-			</MudContainer>
-		}
+		<MudContainer MaxWidth="MaxWidth.False" Class="ma-auto pt-4">
+			@Body
+		</MudContainer>
 	</MudMainContent>
 </MudLayout>
 

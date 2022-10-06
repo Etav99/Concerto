@@ -2,6 +2,8 @@
 @page "/chat/{SelectedConversationId:long}"
 @page "/chat"
 
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Lists
 @using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
@@ -13,7 +15,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IChatManager ChatManager
-@inject IContactsManager ContactsManager
+@inject IContactManager ContactsManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Chat</PageTitle>
@@ -26,17 +28,15 @@
 }
 else
 {
-	<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Width="100%" Elevation="0">
+	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
 		
-		<Concerto.Client.Components.ChatBox SelectedConversation="SelectedConversation" @ref="chatBox"/>
+		<ChatBox SelectedConversation="SelectedConversation" @ref="chatBox"/>
 
-		<Concerto.Client.Components.ConversationList SelectedConversationId="SelectedConversationId" OnConversationSelected="ConversationSelected" />
+		<ConversationList SelectedConversationId="SelectedConversationId" OnConversationSelected="ConversationSelected" />
 		
 	</MudPaper>
-	
-	
-}
 
+}
 
 @code
 {

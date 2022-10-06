@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -168,16 +169,44 @@ namespace Concerto.Server.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    RoomId = table.Column<long>(type: "bigint", nullable: false)
+                    RoomId = table.Column<long>(type: "bigint", nullable: false),
+                    ConversationId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sessions", x => x.SessionId);
                     table.ForeignKey(
+                        name: "FK_Sessions_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Sessions_Rooms_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Rooms",
                         principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UploadedFiles",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SessionId = table.Column<long>(type: "bigint", nullable: false),
+                    DisplayName = table.Column<string>(type: "text", nullable: false),
+                    StorageName = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UploadedFiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UploadedFiles_Sessions_SessionId",
+                        column: x => x.SessionId,
+                        principalTable: "Sessions",
+                        principalColumn: "SessionId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -212,11 +241,11 @@ namespace Concerto.Server.Migrations
                 columns: new[] { "ChatMessageId", "Content", "ConversationId", "SendTimestamp", "SenderId" },
                 values: new object[,]
                 {
-                    { 1L, "Test message 1", 1L, new DateTime(2022, 9, 21, 15, 1, 9, 494, DateTimeKind.Utc).AddTicks(9950), 1L },
-                    { 2L, "Test message 2", 1L, new DateTime(2022, 9, 21, 15, 3, 9, 494, DateTimeKind.Utc).AddTicks(9954), 1L },
-                    { 3L, "Test reply 1", 1L, new DateTime(2022, 9, 21, 15, 4, 9, 494, DateTimeKind.Utc).AddTicks(9954), 2L },
-                    { 4L, "Test reply 2", 1L, new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9955), 2L },
-                    { 5L, "Test message 3", 1L, new DateTime(2022, 9, 21, 15, 5, 9, 494, DateTimeKind.Utc).AddTicks(9956), 1L }
+                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 2, 23, 9, 8, 351, DateTimeKind.Utc).AddTicks(421), 1L },
+                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 2, 23, 11, 8, 351, DateTimeKind.Utc).AddTicks(424), 1L },
+                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 2, 23, 12, 8, 351, DateTimeKind.Utc).AddTicks(425), 2L },
+                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426), 2L },
+                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426), 1L }
                 });
 
             migrationBuilder.InsertData(
@@ -308,9 +337,19 @@ namespace Concerto.Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_ConversationId",
+                table: "Sessions",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sessions_RoomId",
                 table: "Sessions",
                 column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UploadedFiles_SessionId",
+                table: "UploadedFiles",
+                column: "SessionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_SubjectId",
@@ -334,10 +373,13 @@ namespace Concerto.Server.Migrations
                 name: "RoomUsers");
 
             migrationBuilder.DropTable(
-                name: "Sessions");
+                name: "UploadedFiles");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Rooms");

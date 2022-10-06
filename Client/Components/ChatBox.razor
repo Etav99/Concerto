@@ -10,9 +10,9 @@
 @inject IChatManager ChatManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary pa-4" Width="50%" Elevation="0">
+<MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary" Width="50%" Elevation="0">
 
-	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
+	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Square="true" Elevation="0">
 		@if (SelectedConversation != null)
 		{
 			<MudText Align="Align.Center">@ConversationName</MudText>
@@ -67,6 +67,7 @@
 	{
 		ChatManager.OnMessageReceivedCallback += OnMessageReceivedCallback;
 		var getAuthStateTask = AuthenticationStateProvider.GetAuthenticationStateAsync();
+		await ChatManager.ConnectToChatAsync();
 		loading = true;
 		AuthenticationState = await getAuthStateTask;
 		UserId = AuthenticationState.User.GetUserId();
@@ -125,7 +126,7 @@
 
 	private void GenerateConversationName()
 	{
-		ConversationName = String.Join(',', SelectedConversation.Users.Select(u => $"{u.FirstName} {u.LastName}"));
+		ConversationName = String.Join(", ", SelectedConversation.Users.Select(u => u.FullName));
 	}
 
 	public void Dispose() {

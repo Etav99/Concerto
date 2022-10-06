@@ -11,5 +11,5 @@ public class Room
     public virtual ICollection<RoomUser> RoomUsers { get; set; }
     public long ConversationId { get; set; }
     public Conversation Conversation { get; set; }
-    public virtual ICollection<Session> Sessions { get; set; }
+    public virtual ICollection<Session>? Sessions { get; set; }
 }
