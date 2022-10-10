@@ -12,7 +12,7 @@
 @inject IUserService UserService
 @inject ISnackbar Snackbar
 
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="@_darkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -21,6 +21,7 @@
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudText Typo="Typo.h4">Concerto</MudText>
 		<MudSpacer />
+		<MudSwitch @bind-Checked="@_darkMode" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Toggle theme</MudSwitch>
 		<AuthorizeView>
 			<Authorized>
 				<MudText Class="mx-4">Welcome, @context.User.Identity.Name!</MudText>
@@ -55,6 +56,7 @@
 	[CascadingParameter]
 	private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+	bool _darkMode = false;
 	bool _drawerOpen = true;
 
 	void DrawerToggle()
