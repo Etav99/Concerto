@@ -2,7 +2,7 @@
 
 namespace Concerto.Client.Services;
 
-public interface IContactManager
+public interface IContactService
 {
     public List<Dto.User> Contacts { get; }
     public Task LoadContactsAsync();
@@ -10,13 +10,13 @@ public interface IContactManager
     public void InvalidateCache();
 }
 
-public class CachedContactManager : IContactManager
+public class ContactService : IContactService
 {
     private readonly HttpClient _http;
 
     private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
-    public CachedContactManager(HttpClient http)
+    public ContactService(HttpClient http)
     {
         _http = http;
     }

@@ -89,10 +89,11 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<RoomService>();
 builder.Services.AddScoped<SessionService>();
-builder.Services.AddScoped<FileService>();
+builder.Services.AddScoped<StorageService>();
 
 var app = builder.Build();
 app.Logger.LogInformation($"IsDocker = {builder.Environment.IsDocker()}");
+app.UsePathBase("/Concerto");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

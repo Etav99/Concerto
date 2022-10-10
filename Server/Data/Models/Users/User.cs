@@ -19,5 +19,5 @@ public class User
     public virtual ICollection<Contact>? InvitingContacts { get; set; }
     public virtual ICollection<ConversationUser>? ConversationsUser { get; set; }
     public virtual ICollection<RoomUser>? RoomsUser { get; set; }
-
+    public virtual ICollection<Catalog> CatalogsSharedTo { get; set; } = null!;
 }

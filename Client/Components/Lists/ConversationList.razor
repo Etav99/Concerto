@@ -1,6 +1,6 @@
 ﻿@using Concerto.Client.Services
 @inject NavigationManager NavigationManager
-@inject IChatManager ChatManager
+@inject IChatService ChatService
 @implements IDisposable
 
 <MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
@@ -33,22 +33,22 @@
 	{
 		get
 		{
-			return ChatManager.Conversations.Values.ToList();
+			return ChatService.Conversations.Values.ToList();
 		}
 	}
 
 	protected override async Task OnInitializedAsync()
 	{
-		ChatManager.OnMessageReceivedCallback += Refresh;
-		ChatManager.OnMessageSentCallback += Refresh;
-		await ChatManager.LoadConversationsAsync();
+		ChatService.OnMessageReceivedCallback += Refresh;
+		ChatService.OnMessageSentCallback += Refresh;
+		await ChatService.LoadConversationsAsync();
 		if (SelectedConversationId == null || SelectedConversationId <= 0)
 		{
 			await SelectLatestConversation();
 		}
 		else
 		{
-			SelectConversation(ChatManager.Conversations[SelectedConversationId.Value]);
+			SelectConversation(ChatService.Conversations[SelectedConversationId.Value]);
 		}
 	}
 
@@ -71,7 +71,7 @@
 
 	public void Dispose()
 	{
-		ChatManager.OnMessageReceivedCallback -= Refresh;
-		ChatManager.OnMessageSentCallback -= Refresh;
+		ChatService.OnMessageReceivedCallback -= Refresh;
+		ChatService.OnMessageSentCallback -= Refresh;
 	}
 }

@@ -14,7 +14,7 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
-@inject IChatManager ChatManager
+@inject IChatService ChatService
 @inject HttpClient Http;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -101,7 +101,7 @@ else
 
 	private void SelectRoom(Dto.Room room)
 	{
-		NavigationManager.NavigateTo($"/rooms/{room.RoomId}");
+		NavigationManager.NavigateTo($"rooms/{room.RoomId}");
 	}
 	
 	private async Task CreateRoom(MouseEventArgs mouseEventArgs){

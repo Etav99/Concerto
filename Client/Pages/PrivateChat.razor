@@ -14,8 +14,8 @@
 
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
-@inject IChatManager ChatManager
-@inject IContactManager ContactsManager
+@inject IChatService ChatService
+@inject IContactService ContactsManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Chat</PageTitle>
@@ -49,9 +49,9 @@ else
 
 	bool loading = false;
 
-	public async Task ConversationSelected(Dto.Conversation conversation)
+	public void ConversationSelected(Dto.Conversation conversation)
 	{
-		NavigationManager.NavigateTo($"/chat/{conversation.ConversationId}");
+		NavigationManager.NavigateTo($"chat/{conversation.ConversationId}");
 		SelectedConversation = conversation;
 		StateHasChanged();
 	}

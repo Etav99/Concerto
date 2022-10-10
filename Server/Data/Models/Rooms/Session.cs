@@ -13,4 +13,6 @@ public class Session
     public long ConversationId { get; set; }
     public Conversation Conversation { get; set; }
     public virtual ICollection<UploadedFile>? Files { get; set; }
+
+    public virtual ICollection<Catalog> SharedCatalogs { get; set; } = null!;
 }

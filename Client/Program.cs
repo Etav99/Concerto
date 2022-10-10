@@ -26,8 +26,11 @@ builder.Services.AddHttpClient("WebAPI",
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("WebAPI"));
 
-builder.Services.AddScoped<IChatManager, CachedChatManager>();
-builder.Services.AddScoped<IContactManager, CachedContactManager>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IContactService, ContactService>();
+builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddMudServices();
 
 builder.Services.AddOidcAuthentication(options =>

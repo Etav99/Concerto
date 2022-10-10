@@ -5,7 +5,8 @@ volumes:
       driver: local
   pgadmin_data:
   keycloak_data:
-  
+  concerto_files:
+
 services:
   concerto.server:
     image: ${DOCKER_REGISTRY-}concertoserver
@@ -18,6 +19,8 @@ services:
     environment:
       ASPNETCORE_DOCKER: "true"
       DB_STRING: "Host=postgres;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
+    volumes:
+      - concerto_files:/var/lib/concerto/storage
 
   postgres:
       image: postgres

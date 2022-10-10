@@ -8,9 +8,10 @@ using System.Net.Http.Json;
 
 namespace Concerto.Client.Services;
 
-public interface IChatManager
+public interface IChatService
 {
-    public bool IsConnected { get; }
+    public bool Connected { get; }
+    public bool Disconnected { get; }
     public Task ConnectToChatAsync();
     public Task SendChatMessageAsync(Dto.ChatMessage message);
 
@@ -26,24 +27,30 @@ public interface IChatManager
     public void InvalidateCache();
 }
 
-public class CachedChatManager : IChatManager
+public class ChatService : IChatService
 {
-    private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly NavigationManager _navigationManager;
     private readonly IAccessTokenProvider _accessTokenProvider;
     private readonly HttpClient _http;
-    private readonly IContactManager _contactsManager;
+    private readonly IContactService _contactsManager;
     private readonly ISnackbar _snackbar;
 
-    public IChatManager.OnMessageEventCallback OnMessageReceivedCallback { get; set; } = delegate { };
-    public IChatManager.OnMessageEventCallback OnMessageSentCallback { get; set; } = delegate { };
+    public IChatService.OnMessageEventCallback OnMessageReceivedCallback { get; set; } = delegate { };
+    public IChatService.OnMessageEventCallback OnMessageSentCallback { get; set; } = delegate { };
 
     private HubConnection ChatHubConnection { get; set; }
-    public bool IsConnected
+    public bool Connected
     {
         get
         {
             return ChatHubConnection?.State == HubConnectionState.Connected;
+        }
+    }
+    public bool Disconnected
+    {
+        get
+        {
+            return ChatHubConnection?.State == HubConnectionState.Disconnected;
         }
     }
 
@@ -68,9 +75,8 @@ public class CachedChatManager : IChatManager
         }
     }
 
-    public CachedChatManager(AuthenticationStateProvider authenticationStateProvider, NavigationManager navigationManager, HttpClient http, IContactManager contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
+    public ChatService(NavigationManager navigationManager, HttpClient http, IContactService contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
     {
-        _authenticationStateProvider = authenticationStateProvider;
         _navigationManager = navigationManager;
         _http = http;
         _contactsManager = contactsManager;
@@ -107,13 +113,7 @@ public class CachedChatManager : IChatManager
 
     public async Task ConnectToChatAsync()
     {
-        if (IsConnected)
-            return;
-        AuthenticationState authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-        if (authenticationState.User.Identity?.IsAuthenticated == true)
-        {
-            await ChatHubConnection.StartAsync();
-        }
+        if (Disconnected) await ChatHubConnection.StartAsync();
     }
 
     public async Task LoadConversationsAsync()

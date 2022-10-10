@@ -7,7 +7,8 @@
 
 @implements IDisposable
 @inject IJSRuntime JsRuntime
-@inject IChatManager ChatManager
+@inject IChatService ChatService
+@inject IUserService UserService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudPaper Class="d-flex justify-space-between flex-column flex-grow-1 ma-2 border-solid border-2 mud-border-primary" Width="50%" Elevation="0">
@@ -20,11 +21,11 @@
 	</MudPaper>
 
 	<MudPaper Class="d-flex flex-column-reverse mx-1" Elevation="0" Style="max-height:65vh;min-height:65vh; overflow:scroll;" id="messagesContainer">
-		@if (SelectedConversation != null && ChatManager.Messages.ContainsKey(SelectedConversation.ConversationId))
+		@if (SelectedConversation != null && ChatService.Messages.ContainsKey(SelectedConversation.ConversationId))
 		{
-			foreach (var message in ChatManager.Messages[SelectedConversation.ConversationId])
+			foreach (var message in ChatService.Messages[SelectedConversation.ConversationId])
 			{
-				if (message.SenderId == UserId || message.SenderId == 0)
+			if (message.SenderId == UserService.UserId || message.SenderId == 0)
 				{
 					<MudPaper Class="d-inline-flex mt-1 mx-2 justify-end ps-2" Elevation="0">
 						<MudPaper Class="pa-2 mud-theme-secondary" Elevation="0">
@@ -60,33 +61,26 @@
 	[Parameter]
 	public Dto.Conversation? SelectedConversation { get; set; }
 	private string ConversationName { get; set; } = string.Empty;
-	private long? UserId { get; set; }
-	private AuthenticationState AuthenticationState { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
-		ChatManager.OnMessageReceivedCallback += OnMessageReceivedCallback;
-		var getAuthStateTask = AuthenticationStateProvider.GetAuthenticationStateAsync();
-		await ChatManager.ConnectToChatAsync();
+		ChatService.OnMessageReceivedCallback += OnMessageReceivedCallback;
+		await ChatService.ConnectToChatAsync();
 		loading = true;
-		AuthenticationState = await getAuthStateTask;
-		UserId = AuthenticationState.User.GetUserId();
-
 		await LoadSelectedConversation();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		await JsRuntime.InvokeAsync<string>("console.log", "onafterrender");
 		await JsRuntime.InvokeAsync<string>("scrollToBottom", "messagesContainer");
 	}
 
 	private async Task Send()
 	{
-		if (ChatManager.IsConnected && !string.IsNullOrEmpty(MessageContent) && SelectedConversation != null && SelectedConversation.ConversationId > 0)
+		if (ChatService.Connected && !string.IsNullOrEmpty(MessageContent) && SelectedConversation != null && SelectedConversation.ConversationId > 0)
 		{
 			Dto.ChatMessage message = new Dto.ChatMessage { ConversationId = SelectedConversation!.ConversationId, SendTimestamp = DateTime.UtcNow, Content = MessageContent };
-			await ChatManager.SendChatMessageAsync(message);
+			await ChatService.SendChatMessageAsync(message);
 			MessageContent = string.Empty;
 			ShouldRender();
 		}
@@ -114,7 +108,7 @@
 	{
 		if (SelectedConversation == null)
 			return;
-		await ChatManager.LoadChatMessagesAsync(SelectedConversation.ConversationId);
+		await ChatService.LoadChatMessagesAsync(SelectedConversation.ConversationId);
 		GenerateConversationName();
 		StateHasChanged();
 	}
@@ -126,10 +120,10 @@
 
 	private void GenerateConversationName()
 	{
-		ConversationName = String.Join(", ", SelectedConversation.Users.Select(u => u.FullName));
+		ConversationName = String.Join(", ", SelectedConversation?.Users?.Select(u => u.FullName) ?? Enumerable.Empty<string>());
 	}
 
 	public void Dispose() {
-		ChatManager.OnMessageReceivedCallback -= OnMessageReceivedCallback;
+		ChatService.OnMessageReceivedCallback -= OnMessageReceivedCallback;
 	}
 }

@@ -2,7 +2,7 @@
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
-@inject IChatManager ChatManager
+@inject IChatService ChatService
 
 <RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="OnLogInSucceeded" />
 
@@ -12,6 +12,6 @@
 	public string? Action { get; set; }
 
 	async Task OnLogInSucceeded() {
-		await ChatManager.ConnectToChatAsync();
+		await ChatService.ConnectToChatAsync();
 	}
 }

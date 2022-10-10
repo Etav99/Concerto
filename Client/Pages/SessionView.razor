@@ -26,22 +26,23 @@
 
 	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
 		<ChatBox SelectedConversation="SelectedSession?.Conversation" />
-		<SessionFileList Session="SelectedSession" />
+		<CatalogList Type="CatalogList.ListType.Session" SessionId="SelectedSessionId" />
 	</MudPaper>
 </MudStack>
 
 
 @code {
 	[Parameter]
-	public long SelectedSessionId { get; set; } = 0;
+	public long SelectedSessionId { get; set; }
 	private Dto.Session? SelectedSession { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
+
+
+	protected override async Task OnInitializedAsync() {
 		SelectedSession = await Http.GetFromJsonAsync<Dto.Session?>($"Session/GetSession?sessionId={SelectedSessionId}");
 		if (SelectedSession == null)
 		{
-			NavigationManager.NavigateTo("/rooms");
+			NavigationManager.NavigateTo("rooms");
 		}
 	}
 }

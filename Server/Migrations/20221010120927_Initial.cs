@@ -60,6 +60,26 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Catalogs",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalogs_Users_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChatMessages",
                 columns: table => new
                 {
@@ -190,24 +210,78 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CatalogUser",
+                columns: table => new
+                {
+                    CatalogsSharedToId = table.Column<long>(type: "bigint", nullable: false),
+                    UsersSharedToUserId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CatalogUser", x => new { x.CatalogsSharedToId, x.UsersSharedToUserId });
+                    table.ForeignKey(
+                        name: "FK_CatalogUser_Catalogs_CatalogsSharedToId",
+                        column: x => x.CatalogsSharedToId,
+                        principalTable: "Catalogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CatalogUser_Users_UsersSharedToUserId",
+                        column: x => x.UsersSharedToUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CatalogSession",
+                columns: table => new
+                {
+                    SharedCatalogsId = table.Column<long>(type: "bigint", nullable: false),
+                    SharedInSessionsSessionId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CatalogSession", x => new { x.SharedCatalogsId, x.SharedInSessionsSessionId });
+                    table.ForeignKey(
+                        name: "FK_CatalogSession_Catalogs_SharedCatalogsId",
+                        column: x => x.SharedCatalogsId,
+                        principalTable: "Catalogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CatalogSession_Sessions_SharedInSessionsSessionId",
+                        column: x => x.SharedInSessionsSessionId,
+                        principalTable: "Sessions",
+                        principalColumn: "SessionId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UploadedFiles",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SessionId = table.Column<long>(type: "bigint", nullable: false),
+                    CatalogId = table.Column<long>(type: "bigint", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: false),
-                    StorageName = table.Column<string>(type: "text", nullable: false)
+                    StorageName = table.Column<string>(type: "text", nullable: false),
+                    SessionId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UploadedFiles", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_UploadedFiles_Catalogs_CatalogId",
+                        column: x => x.CatalogId,
+                        principalTable: "Catalogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_UploadedFiles_Sessions_SessionId",
                         column: x => x.SessionId,
                         principalTable: "Sessions",
-                        principalColumn: "SessionId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "SessionId");
                 });
 
             migrationBuilder.InsertData(
@@ -241,11 +315,11 @@ namespace Concerto.Server.Migrations
                 columns: new[] { "ChatMessageId", "Content", "ConversationId", "SendTimestamp", "SenderId" },
                 values: new object[,]
                 {
-                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 2, 23, 9, 8, 351, DateTimeKind.Utc).AddTicks(421), 1L },
-                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 2, 23, 11, 8, 351, DateTimeKind.Utc).AddTicks(424), 1L },
-                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 2, 23, 12, 8, 351, DateTimeKind.Utc).AddTicks(425), 2L },
-                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426), 2L },
-                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426), 1L }
+                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 10, 12, 4, 27, 699, DateTimeKind.Utc).AddTicks(7128), 1L },
+                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 10, 12, 6, 27, 699, DateTimeKind.Utc).AddTicks(7131), 1L },
+                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 10, 12, 7, 27, 699, DateTimeKind.Utc).AddTicks(7131), 2L },
+                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132), 2L },
+                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132), 1L }
                 });
 
             migrationBuilder.InsertData(
@@ -307,6 +381,21 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Catalogs_OwnerId",
+                table: "Catalogs",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CatalogSession_SharedInSessionsSessionId",
+                table: "CatalogSession",
+                column: "SharedInSessionsSessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CatalogUser_UsersSharedToUserId",
+                table: "CatalogUser",
+                column: "UsersSharedToUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_ConversationId",
                 table: "ChatMessages",
                 column: "ConversationId");
@@ -347,6 +436,11 @@ namespace Concerto.Server.Migrations
                 column: "RoomId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UploadedFiles_CatalogId",
+                table: "UploadedFiles",
+                column: "CatalogId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UploadedFiles_SessionId",
                 table: "UploadedFiles",
                 column: "SessionId");
@@ -360,6 +454,12 @@ namespace Concerto.Server.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CatalogSession");
+
+            migrationBuilder.DropTable(
+                name: "CatalogUser");
+
             migrationBuilder.DropTable(
                 name: "ChatMessages");
 
@@ -376,10 +476,13 @@ namespace Concerto.Server.Migrations
                 name: "UploadedFiles");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Catalogs");
 
             migrationBuilder.DropTable(
                 name: "Sessions");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Rooms");

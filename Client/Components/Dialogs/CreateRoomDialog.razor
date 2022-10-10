@@ -1,6 +1,6 @@
 ﻿@using Concerto.Client.Services
 @inject IDialogService DialogService
-@inject IContactManager ContactManager
+@inject IContactService ContactService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
@@ -33,10 +33,10 @@
 
     private async Task<IEnumerable<Dto.User>> SearchContacts(string searchString)
     {
-        await ContactManager.LoadContactsAsync();
+        await ContactService.LoadContactsAsync();
         if (string.IsNullOrWhiteSpace(searchString))
-            return ContactManager.Contacts.Where(c => !_members.Contains(c));
-        return ContactManager.Contacts.Where(c => (c.FullName.Contains(searchString) || c.Username.Contains(searchString)) && !_members.Contains(c));
+            return ContactService.Contacts.Where(c => !_members.Contains(c));
+        return ContactService.Contacts.Where(c => (c.FullName.Contains(searchString) || c.Username.Contains(searchString)) && !_members.Contains(c));
     }
 
     private async Task AddMember(Dto.User user)

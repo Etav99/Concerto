@@ -12,15 +12,13 @@ namespace Concerto.Server.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ILogger<SessionController> _logger;
-    private readonly FileService _fileService;
     private readonly RoomService _roomService;
     private readonly SessionService _sessionService;
 
 
-    public SessionController(ILogger<SessionController> logger, FileService fileService, RoomService roomService, SessionService sessionService)
+    public SessionController(ILogger<SessionController> logger, RoomService roomService, SessionService sessionService)
     {
         _logger = logger;
-        _fileService = fileService;
         _roomService = roomService;
         _sessionService = sessionService;
     }
@@ -49,40 +47,16 @@ public class SessionController : ControllerBase
         var session = await _sessionService.GetSession(sessionId);
         return session;
     }
-
+    
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.UploadedFile>>> GetSessionFiles(long sessionId)
+    public async Task<ActionResult<IEnumerable<Dto.Session?>>> GetRoomSessions(long roomId)
     {
         long? userId = User.GetUserId();
         if (userId == null) return Unauthorized();
 
-        if (!await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return Unauthorized();
+        if (!await _roomService.IsUserRoomMember(userId.Value, roomId)) return Unauthorized();
 
-        return Ok(await _fileService.GetSessionFiles(sessionId));
+        return Ok(await _sessionService.GetRoomSessions(roomId));
     }
 
-    [HttpPost]
-    public async Task<ActionResult<IEnumerable<Dto.FileUploadResult>>> UploadSessionFiles([FromForm] IEnumerable<IFormFile> files, [FromQuery] long sessionId)
-    {
-        long? userId = User.GetUserId();
-        if (userId == null || !await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return Unauthorized();
-
-        var fileUploadResults = await _sessionService.UploadSessionFiles(files, sessionId);
-        return Ok(fileUploadResults);
-    }
-
-    [HttpGet]
-    public async Task<ActionResult> DownloadSessionFile([FromQuery] long fileId)
-    {
-        var file = await _fileService.GetSessionFile(fileId);
-        if (file == null) return NotFound();
-
-        long? userId = User.GetUserId();
-        if (userId == null || !await _sessionService.IsUserSessionMember(userId.Value, file.SessionId)) return Unauthorized();
-
-        byte[] fileBytes = System.IO.File.ReadAllBytes(file.Path);
-        string fileName = file.DisplayName;
-        return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
-    }
-    
 }

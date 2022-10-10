@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20221002231408_Initial")]
+    [Migration("20221010120927_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,58 @@ namespace Concerto.Server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CatalogSession", b =>
+                {
+                    b.Property<long>("SharedCatalogsId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SharedInSessionsSessionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("SharedCatalogsId", "SharedInSessionsSessionId");
+
+                    b.HasIndex("SharedInSessionsSessionId");
+
+                    b.ToTable("CatalogSession");
+                });
+
+            modelBuilder.Entity("CatalogUser", b =>
+                {
+                    b.Property<long>("CatalogsSharedToId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UsersSharedToUserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CatalogsSharedToId", "UsersSharedToUserId");
+
+                    b.HasIndex("UsersSharedToUserId");
+
+                    b.ToTable("CatalogUser", (string)null);
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Catalog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("OwnerId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Catalogs");
+                });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.ChatMessage", b =>
                 {
@@ -59,7 +111,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 1L,
                             Content = "Test message 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 2, 23, 9, 8, 351, DateTimeKind.Utc).AddTicks(421),
+                            SendTimestamp = new DateTime(2022, 10, 10, 12, 4, 27, 699, DateTimeKind.Utc).AddTicks(7128),
                             SenderId = 1L
                         },
                         new
@@ -67,7 +119,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 2L,
                             Content = "Test message 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 2, 23, 11, 8, 351, DateTimeKind.Utc).AddTicks(424),
+                            SendTimestamp = new DateTime(2022, 10, 10, 12, 6, 27, 699, DateTimeKind.Utc).AddTicks(7131),
                             SenderId = 1L
                         },
                         new
@@ -75,7 +127,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 3L,
                             Content = "Test reply 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 2, 23, 12, 8, 351, DateTimeKind.Utc).AddTicks(425),
+                            SendTimestamp = new DateTime(2022, 10, 10, 12, 7, 27, 699, DateTimeKind.Utc).AddTicks(7131),
                             SenderId = 2L
                         },
                         new
@@ -83,7 +135,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 4L,
                             Content = "Test reply 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426),
+                            SendTimestamp = new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132),
                             SenderId = 2L
                         },
                         new
@@ -91,7 +143,7 @@ namespace Concerto.Server.Migrations
                             ChatMessageId = 5L,
                             Content = "Test message 3",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 2, 23, 13, 8, 351, DateTimeKind.Utc).AddTicks(426),
+                            SendTimestamp = new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132),
                             SenderId = 1L
                         });
                 });
@@ -436,11 +488,14 @@ namespace Concerto.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long>("CatalogId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("SessionId")
+                    b.Property<long?>("SessionId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("StorageName")
@@ -448,6 +503,8 @@ namespace Concerto.Server.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CatalogId");
 
                     b.HasIndex("SessionId");
 
@@ -517,6 +574,47 @@ namespace Concerto.Server.Migrations
                             SubjectId = new Guid("f2c0a648-82bb-44a9-908e-8006577cb276"),
                             Username = "user4"
                         });
+                });
+
+            modelBuilder.Entity("CatalogSession", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Catalog", null)
+                        .WithMany()
+                        .HasForeignKey("SharedCatalogsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concerto.Server.Data.Models.Session", null)
+                        .WithMany()
+                        .HasForeignKey("SharedInSessionsSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CatalogUser", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Catalog", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogsSharedToId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concerto.Server.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersSharedToUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Catalog", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.ChatMessage", b =>
@@ -627,13 +725,22 @@ namespace Concerto.Server.Migrations
 
             modelBuilder.Entity("Concerto.Server.Data.Models.UploadedFile", b =>
                 {
-                    b.HasOne("Concerto.Server.Data.Models.Session", "Session")
+                    b.HasOne("Concerto.Server.Data.Models.Catalog", "Catalog")
                         .WithMany("Files")
-                        .HasForeignKey("SessionId")
+                        .HasForeignKey("CatalogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Session");
+                    b.HasOne("Concerto.Server.Data.Models.Session", null)
+                        .WithMany("Files")
+                        .HasForeignKey("SessionId");
+
+                    b.Navigation("Catalog");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Catalog", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Conversation", b =>

@@ -7,8 +7,9 @@
 
 @inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
-@inject IChatManager ChatManager
-@inject IContactManager ContactsManager
+@inject IChatService ChatService
+@inject IContactService ContactsManager
+@inject IUserService UserService
 @inject ISnackbar Snackbar
 
 <MudThemeProvider />
@@ -51,6 +52,9 @@
 </MudLayout>
 
 @code {
+	[CascadingParameter]
+	private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
 	bool _drawerOpen = true;
 
 	void DrawerToggle()
@@ -69,8 +73,11 @@
 		Navigation.NavigateTo("authentication/login");
 	}
 	
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
-
+		if (authenticationStateTask == null) return;
+		UserService.SetAuthenticationState(await authenticationStateTask);
+		if (UserService.IsLoggedIn)
+			await ChatService.ConnectToChatAsync();
 	}
 }

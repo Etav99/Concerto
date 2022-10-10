@@ -43,12 +43,12 @@
 		SelectedRoom = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={SelectedRoomId}");
 		if (SelectedRoom == null)
 		{
-			NavigationManager.NavigateTo("/rooms");
+			NavigationManager.NavigateTo("rooms");
 		}
 	}
 
 	private void OnSessionSelected(Dto.Session session) {
-		NavigationManager.NavigateTo($"/sessions/{session.SessionId}");
+		NavigationManager.NavigateTo($"sessions/{session.SessionId}");
 	}
 
 }

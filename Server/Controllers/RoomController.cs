@@ -39,7 +39,7 @@ public class RoomController : ControllerBase
         var room = await _roomService.GetRoom(roomId);
         return room;
     }
-    
+
     [HttpPost]
     public async Task<ActionResult> CreateRoomForCurrentUser([FromBody] Dto.CreateRoomRequest room)
     {

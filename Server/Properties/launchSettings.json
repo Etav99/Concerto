@@ -26,6 +26,7 @@
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",
+      "launchUrl": "Concerto",
       "dotnetRunMessages": true
     },
     "Docker": {
@@ -36,7 +37,7 @@
         "ASPNETCORE_DOCKER": "true",
         "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
       },
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/Concerto",
       "useSSL": true,
       "httpPort": 7000,
       "sslPort": 7001,

@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace Concerto.Server.Data.DatabaseContext;
 
@@ -14,6 +15,7 @@ public class AppDataContext : DbContext
     public DbSet<RoomUser> RoomUsers { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<UploadedFile> UploadedFiles { get; set; }
+    public DbSet<Catalog> Catalogs { get; set; }
 
     public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
 
@@ -72,6 +74,20 @@ public class AppDataContext : DbContext
             .WithMany(r => r.RoomUsers)
             .HasForeignKey(ru => ru.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Catalog entity configuration
+        modelBuilder.Entity<Catalog>()
+            .HasOne(c => c.Owner)
+            .WithMany()
+            .IsRequired()
+            .HasForeignKey(c => c.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder
+            .Entity<Catalog>()
+            .HasMany(c => c.UsersSharedTo)
+            .WithMany(u => u.CatalogsSharedTo)
+            .UsingEntity(j => j.ToTable("CatalogUser"));
 
         // Data seed
         modelBuilder

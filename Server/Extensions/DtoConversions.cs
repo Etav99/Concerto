@@ -84,7 +84,7 @@ public static class DtoConversions
             SessionId = session.SessionId,
             Name = session.Name,
             ScheduledDateTime = session.ScheduledDate,
-            Conversation = session.Conversation.ToDto()
+            Conversation = session.Conversation?.ToDto()
         };
     }
 
@@ -133,7 +133,18 @@ public static class DtoConversions
     {
         return fileUploadResults.Select(u => u.ToDto());
     }
-
-
+    
+    public static Dto.Catalog ToDto(this Catalog catalog, bool writeAccess = false, bool includeFiles = false)
+    {
+        return new Dto.Catalog
+        {
+            Id = catalog.Id,
+            Name = catalog.Name,
+            OwnerId = catalog.OwnerId,
+            WriteAccess = writeAccess,
+            Files = includeFiles ? catalog.Files.Select(f => f.ToDto())
+                                 : null
+        };
+    }
 
 }

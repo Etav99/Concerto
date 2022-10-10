@@ -1,7 +1,6 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
-using Concerto.Server.Data.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +10,8 @@ public class SessionService
 {
     private readonly ILogger<SessionService> _logger;
     private readonly AppDataContext _context;
-    private readonly FileService _fileService;
-    public SessionService(ILogger<SessionService> logger, AppDataContext context, FileService fileService)
+    private readonly StorageService _fileService;
+    public SessionService(ILogger<SessionService> logger, AppDataContext context, StorageService fileService)
     {
         _logger = logger;
         _context = context;
@@ -73,24 +72,11 @@ public class SessionService
         return true;
     }
 
-    public async Task<IEnumerable<Dto.FileUploadResult>> UploadSessionFiles(IEnumerable<IFormFile> files, long sessionId)
+    internal async Task<IEnumerable<Dto.Session>> GetRoomSessions(long roomId)
     {
-        var fileUploadResults = await _fileService.UploadFiles(files);
-        
-        foreach(var fileUploadResult in fileUploadResults){
-            if (fileUploadResult.Uploaded && !String.IsNullOrEmpty(fileUploadResult.DisplayFileName) && !String.IsNullOrEmpty(fileUploadResult.StorageFileName))
-            {
-                var uploadedFile = new UploadedFile()
-                {
-                    DisplayName = fileUploadResult.DisplayFileName,
-                    StorageName = fileUploadResult.StorageFileName,
-                    SessionId = sessionId
-                };
-                 _context.Add(uploadedFile);
-            }
-        }
-        
-        _context.SaveChanges();
-        return fileUploadResults.ToDto();
+        return await _context.Sessions
+            .Where(s => s.Room.RoomId == roomId)
+            .Select(s => s.ToDto())
+            .ToListAsync();
     }
 }

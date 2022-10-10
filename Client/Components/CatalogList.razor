@@ -1,0 +1,175 @@
+﻿@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
+@inject HttpClient Http;
+@inject IDialogService DialogService
+@inject IStorageService StorageService
+@inject IJSRuntime JS;
+
+<MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
+	@if (SelectedCatalog == null)
+	{
+		<MudTable Items="Catalogs" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.Catalog, bool>(CatalogFilter)">
+			<ToolBarContent>
+				<MudText Typo="Typo.h6">Catalogs</MudText>
+				<MudSpacer />
+				<MudTextField @bind-Value="_catalogSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				<MudSpacer />
+				<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCatalog">Create</MudButton>
+			</ToolBarContent>
+			<HeaderContent>
+				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.Catalog, object>(x=>x.Name)">Catalog name</MudTableSortLabel></MudTh>
+			</HeaderContent>
+			<RowTemplate>
+				<MudTd DataLabel="Catalog name">@context.Name</MudTd>
+				<MudTd Style="text-align:right">
+					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OpenCatalog(context))">Open</MudButton>
+				</MudTd>
+			</RowTemplate>
+		</MudTable>
+	}
+	else
+	{
+		<MudTable Items="@SelectedCatalog.Files" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.UploadedFile, bool>(FileFilter)">
+			<ToolBarContent>
+				<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="() => SelectedCatalog = null" aria-label="Back"></MudIconButton>
+				<MudSpacer />
+				<MudText Typo="Typo.h6">SelectedCatalog.Name</MudText>
+				<MudSpacer />
+				<MudTextField @bind-Value="_fileSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				<MudSpacer />
+				@if(SelectedCatalog.WriteAccess) {
+					
+					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="UploadFiles">Upload</MudButton>
+				}
+			</ToolBarContent>
+			<HeaderContent>
+				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.UploadedFile, object>(x=>x.Name)">File name</MudTableSortLabel></MudTh>
+			</HeaderContent>
+			<RowTemplate>
+				<MudTd DataLabel="File name">@context.Name</MudTd>
+				<MudTd Style="text-align:right">
+					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => DownloadFile(context))">Download</MudButton>
+				</MudTd>
+			</RowTemplate>
+		</MudTable>
+	}
+</MudPaper>
+
+
+@code {
+	[Parameter]
+	public ListType Type { get; set; }
+	[Parameter]
+	public long? SessionId { get; set; }
+
+	private IEnumerable<Dto.Catalog> Catalogs {
+		get
+		{
+			switch(Type) {
+				case ListType.Owned:
+					return StorageService.OwnedCatalogs;
+				case ListType.Shared:
+					return StorageService.SharedCatalogs;
+				case ListType.Session:
+					if (!SessionId.HasValue) throw new ArgumentNullException("SessionId is null");
+					return StorageService.SessionCatalogs(SessionId.Value);
+				default:
+					throw new ArgumentException("Invalid list type");
+			}
+		}
+	}
+	private Dto.Catalog? SelectedCatalog { get; set; }
+
+	private bool _loading = true;
+
+	private string? _fileSearchString;
+	private string? _catalogSearchString;
+	private IEnumerable<Dto.UploadedFile> _files = Enumerable.Empty<Dto.UploadedFile>();
+
+	public enum ListType
+	{
+		Owned,
+		Shared,
+		Session
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await LoadCatalogs();
+		StateHasChanged();
+	}
+
+	private async Task LoadCatalogs() {
+		switch (Type)
+		{
+			case ListType.Owned:
+				await StorageService.LoadOwnedCatalogsAsync(); break;
+			case ListType.Shared:
+				await StorageService.LoadSharedCatalogsAsync(); break;
+			case ListType.Session:
+				if (!SessionId.HasValue) throw new ArgumentNullException("SessionId is null");
+				await StorageService.LoadSessionCatalogsAsync(SessionId.Value); break;
+			default:
+				throw new ArgumentException("Invalid list type");
+		}
+	}
+
+	private bool FileFilter(Dto.UploadedFile file)
+	{
+		if (string.IsNullOrWhiteSpace(_fileSearchString))
+			return true;
+		if (file.Name.Contains(_fileSearchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return false;
+	}
+
+	private bool CatalogFilter(Dto.Catalog catalog)
+	{
+		if (string.IsNullOrWhiteSpace(_catalogSearchString))
+			return true;
+		if (catalog.Name.Contains(_catalogSearchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return false;
+	}
+
+	public async Task UploadFiles()
+	{
+		var parameters = new DialogParameters { ["CatalogId"] = SelectedCatalog!.Id };
+		var result = await DialogService.Show<UploadFilesDialog>("Upload files to catalog", parameters).Result;
+		if ((bool)(result.Data ?? false))
+		{
+			_loading = true;
+			await StorageService.LoadCatalogFilesAsync(SelectedCatalog);
+			_loading = false;
+		}
+	}
+
+	public async Task CreateCatalog()
+	{
+		_loading = true;
+		var parameters = new DialogParameters();
+		if (Type == ListType.Session && SessionId.HasValue)
+		{
+			parameters.Add("InitialSharedSessionId", SessionId.Value);
+		}
+		var result = await DialogService.Show<CreateCatalogDialog>("Create new catalog", parameters).Result;
+		if ((bool)(result.Data ?? false))
+		{
+			StorageService.InvalidateCache();
+			await LoadCatalogs();
+		}
+		_loading = false;
+	}
+
+	public async Task DownloadFile(Dto.UploadedFile file)
+	{
+		await JS.InvokeVoidAsync("downloadFile", file.Name, $"{Http.BaseAddress}Session/DownloadSessionFile?fileId={file.Id}");
+	}
+
+	public async Task OpenCatalog(Dto.Catalog catalog)
+	{
+		await StorageService.LoadCatalogFilesAsync(catalog);
+		SelectedCatalog = catalog;
+		ShouldRender();
+	}
+}
