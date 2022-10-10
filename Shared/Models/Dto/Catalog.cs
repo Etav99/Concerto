@@ -1,7 +1,6 @@
 ﻿namespace Concerto.Shared.Models.Dto;
-public record Catalog
+public record Catalog : EntityDto
 {
-    public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public long OwnerId { get; set; }
     public bool WriteAccess { get; set; } = false;

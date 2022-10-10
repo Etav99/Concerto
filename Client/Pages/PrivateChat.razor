@@ -51,7 +51,7 @@ else
 
 	public void ConversationSelected(Dto.Conversation conversation)
 	{
-		NavigationManager.NavigateTo($"chat/{conversation.ConversationId}");
+		NavigationManager.NavigateTo($"chat/{conversation.Id}");
 		SelectedConversation = conversation;
 		StateHasChanged();
 	}

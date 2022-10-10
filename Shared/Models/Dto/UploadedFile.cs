@@ -1,7 +1,6 @@
 ﻿namespace Concerto.Shared.Models.Dto;
 
-public record UploadedFile
+public record UploadedFile : EntityDto
 {
-    public long Id { get; init; }
     public string Name { get; init; }
 }

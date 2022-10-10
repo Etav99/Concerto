@@ -72,9 +72,9 @@ public class RoomService
 
     public async Task<bool> CreateRoom(Dto.CreateRoomRequest request, long userId)
     {
-        var userIds = request.Members.Select(m => m.UserId).Append(userId).Distinct();
+        var userIds = request.Members.Select(m => m.Id).Append(userId).Distinct();
         var users = await _context.Users
-            .Where(u => userIds.Contains(u.UserId))
+            .Where(u => userIds.Contains(u.Id))
             .ToListAsync();
 
         if (users.Count != request.Members.Count() + 1)

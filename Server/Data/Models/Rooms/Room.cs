@@ -2,12 +2,10 @@
 
 namespace Concerto.Server.Data.Models;
 
-public class Room
+public class Room : Entity
 {
-    [Key]
-    public long RoomId { get; set; }
     public string Name { get; set; }
-
+    
     public virtual ICollection<RoomUser> RoomUsers { get; set; }
     public long ConversationId { get; set; }
     public Conversation Conversation { get; set; }

@@ -21,9 +21,9 @@
 	</MudPaper>
 
 	<MudPaper Class="d-flex flex-column-reverse mx-1" Elevation="0" Style="max-height:65vh;min-height:65vh; overflow:scroll;" id="messagesContainer">
-		@if (SelectedConversation != null && ChatService.Messages.ContainsKey(SelectedConversation.ConversationId))
+		@if (SelectedConversation != null && ChatService.Messages.ContainsKey(SelectedConversation.Id))
 		{
-			foreach (var message in ChatService.Messages[SelectedConversation.ConversationId])
+			foreach (var message in ChatService.Messages[SelectedConversation.Id])
 			{
 			if (message.SenderId == UserService.UserId || message.SenderId == 0)
 				{
@@ -77,9 +77,9 @@
 
 	private async Task Send()
 	{
-		if (ChatService.Connected && !string.IsNullOrEmpty(MessageContent) && SelectedConversation != null && SelectedConversation.ConversationId > 0)
+		if (ChatService.Connected && !string.IsNullOrEmpty(MessageContent) && SelectedConversation != null && SelectedConversation.Id > 0)
 		{
-			Dto.ChatMessage message = new Dto.ChatMessage { ConversationId = SelectedConversation!.ConversationId, SendTimestamp = DateTime.UtcNow, Content = MessageContent };
+			Dto.ChatMessage message = new Dto.ChatMessage { ConversationId = SelectedConversation!.Id, SendTimestamp = DateTime.UtcNow, Content = MessageContent };
 			await ChatService.SendChatMessageAsync(message);
 			MessageContent = string.Empty;
 			ShouldRender();
@@ -108,7 +108,7 @@
 	{
 		if (SelectedConversation == null)
 			return;
-		await ChatService.LoadChatMessagesAsync(SelectedConversation.ConversationId);
+		await ChatService.LoadChatMessagesAsync(SelectedConversation.Id);
 		GenerateConversationName();
 		StateHasChanged();
 	}

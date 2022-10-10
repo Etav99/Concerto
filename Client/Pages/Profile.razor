@@ -15,36 +15,26 @@
 }
 else
 {
-
 	<MudStack>
 		<MudPaper Class="pa-4">
 			<MudStack Row="true">
-				<MudIcon Icon="@Icons.Material.Filled.Person" />
-				<MudStack Justify="Justify.Center" Spacing="0">
-					<MudText Typo="Typo.body1">@userData.Username</MudText>
-					<MudText Typo="Typo.body2">Placeholder</MudText>
-				</MudStack>
-			</MudStack>
-		</MudPaper>
-
-		<MudPaper Class="pa-4">
-			<MudStack Row="true">
 				<MudIcon Icon="@Icons.Material.Filled.TableRows" Title="Details" />
-
 				<MudStack Justify="Justify.Center" Spacing="4">
 					<MudStack Justify="Justify.Center" Spacing="0">
-						<MudText Typo="Typo.body1">User Id</MudText>
-						<MudText Class="pl-2" Typo="Typo.body2">@userData.UserId</MudText>
+						<MudText Typo="Typo.body1">User name</MudText>
+						<MudText Class="pl-2" Typo="Typo.body2">@userData.Username</MudText>
 					</MudStack>
-
 					<MudStack Justify="Justify.Center" Spacing="0">
 						<MudText Typo="Typo.body1">First name</MudText>
 						<MudText Class="pl-2" Typo="Typo.body2">@userData.FirstName</MudText>
 					</MudStack>
-
 					<MudStack Justify="Justify.Center" Spacing="0">
 						<MudText Typo="Typo.body1">Last name</MudText>
 						<MudText Class="pl-2" Typo="Typo.body2">@userData.LastName</MudText>
+					</MudStack>
+					<MudStack Justify="Justify.Center" Spacing="0">
+						<MudText Typo="Typo.body1">User Id</MudText>
+						<MudText Class="pl-2" Typo="Typo.body2">@userData.Id</MudText>
 					</MudStack>
 				</MudStack>
 			</MudStack>

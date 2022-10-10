@@ -2,11 +2,8 @@
 
 namespace Concerto.Server.Data.Models;
 
-public class UploadedFile
+public class UploadedFile : Entity
 {
-    [Key]
-    public long Id { get; set; }
-
     public long CatalogId { get; set; }
     public Catalog Catalog { get; set; }
 

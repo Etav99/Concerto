@@ -21,8 +21,8 @@ public class AppDataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
+        modelBuilder.Ignore<Entity>();
+  
         // Contact entity configuration
         modelBuilder.Entity<Contact>().HasKey(uc => new { uc.User1Id, uc.User2Id });
 
@@ -93,10 +93,10 @@ public class AppDataContext : DbContext
         modelBuilder
             .Entity<User>()
             .HasData(
-                new User { UserId = 1, FirstName = "Jan", LastName = "Administracyjny", Username = "admin", SubjectId = Guid.Parse("95f418ac-e38f-41ec-a2ad-828bdd3895d0") },
-                new User { UserId = 2, FirstName = "Piotr", LastName = "Testowy", Username = "user2", SubjectId = Guid.Parse("954af482-22dd-483f-ac99-975144f85a04") },
-                new User { UserId = 3, FirstName = "Jacek", LastName = "Testowy", Username = "user3", SubjectId = Guid.Parse("c786cbc3-9924-410f-bcdb-75a2469107be") },
-                new User { UserId = 4, FirstName = "John", LastName = "Smith", Username = "user4", SubjectId = Guid.Parse("f2c0a648-82bb-44a9-908e-8006577cb276") }
+                new User { Id = 1, FirstName = "Jan", LastName = "Administracyjny", Username = "admin", SubjectId = Guid.Parse("95f418ac-e38f-41ec-a2ad-828bdd3895d0") },
+                new User { Id = 2, FirstName = "Piotr", LastName = "Testowy", Username = "user2", SubjectId = Guid.Parse("954af482-22dd-483f-ac99-975144f85a04") },
+                new User { Id = 3, FirstName = "Jacek", LastName = "Testowy", Username = "user3", SubjectId = Guid.Parse("c786cbc3-9924-410f-bcdb-75a2469107be") },
+                new User { Id = 4, FirstName = "John", LastName = "Smith", Username = "user4", SubjectId = Guid.Parse("f2c0a648-82bb-44a9-908e-8006577cb276") }
             );
 
         modelBuilder
@@ -140,8 +140,8 @@ public class AppDataContext : DbContext
         modelBuilder
             .Entity<Room>()
             .HasData(
-                new Room { RoomId = 1, Name = "Room 1", ConversationId = 7 },
-                new Room { RoomId = 2, Name = "Room 2", ConversationId = 8 }
+                new Room { Id = 1, Name = "Room 1", ConversationId = 7 },
+                new Room { Id = 2, Name = "Room 2", ConversationId = 8 }
             );
 
         modelBuilder
@@ -160,25 +160,27 @@ public class AppDataContext : DbContext
         modelBuilder
             .Entity<Conversation>()
             .HasData(
-                new Conversation { ConversationId = 1, IsPrivate = true },
-                new Conversation { ConversationId = 2, IsPrivate = true },
-                new Conversation { ConversationId = 3, IsPrivate = true },
-                new Conversation { ConversationId = 4, IsPrivate = true },
-                new Conversation { ConversationId = 5, IsPrivate = true },
-                new Conversation { ConversationId = 6, IsPrivate = true },
-                new Conversation { ConversationId = 7, IsPrivate = false },
-                new Conversation { ConversationId = 8, IsPrivate = false }
+                new Conversation { Id = 1, IsPrivate = true },
+                new Conversation { Id = 2, IsPrivate = true },
+                new Conversation { Id = 3, IsPrivate = true },
+                new Conversation { Id = 4, IsPrivate = true },
+                new Conversation { Id = 5, IsPrivate = true },
+                new Conversation { Id = 6, IsPrivate = true },
+                new Conversation { Id = 7, IsPrivate = false },
+                new Conversation { Id = 8, IsPrivate = false }
             );
 
 
         modelBuilder
             .Entity<ChatMessage>()
             .HasData(
-                new ChatMessage { ChatMessageId = 1, SenderId = 1, ConversationId = 1, Content = "Test message 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-5) },
-                new ChatMessage { ChatMessageId = 2, SenderId = 1, ConversationId = 1, Content = "Test message 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-3) },
-                new ChatMessage { ChatMessageId = 3, SenderId = 2, ConversationId = 1, Content = "Test reply 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-2) },
-                new ChatMessage { ChatMessageId = 4, SenderId = 2, ConversationId = 1, Content = "Test reply 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) },
-                new ChatMessage { ChatMessageId = 5, SenderId = 1, ConversationId = 1, Content = "Test message 3", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) }
+                new ChatMessage { Id = 1, SenderId = 1, ConversationId = 1, Content = "Test message 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-5) },
+                new ChatMessage { Id = 2, SenderId = 1, ConversationId = 1, Content = "Test message 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-3) },
+                new ChatMessage { Id = 3, SenderId = 2, ConversationId = 1, Content = "Test reply 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-2) },
+                new ChatMessage { Id = 4, SenderId = 2, ConversationId = 1, Content = "Test reply 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) },
+                new ChatMessage { Id = 5, SenderId = 1, ConversationId = 1, Content = "Test message 3", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) }
             );
+
+        base.OnModelCreating(modelBuilder);
     }
 }

@@ -55,7 +55,7 @@ public class SessionService
         var room = await _context.Rooms
             .Include(r => r.RoomUsers)
             .ThenInclude(ru => ru.User)
-            .FirstOrDefaultAsync(r => r.RoomId == request.RoomId);
+            .FirstOrDefaultAsync(r => r.Id == request.RoomId);
 
         if (room == null)
             return false;
@@ -75,7 +75,7 @@ public class SessionService
     internal async Task<IEnumerable<Dto.Session>> GetRoomSessions(long roomId)
     {
         return await _context.Sessions
-            .Where(s => s.Room.RoomId == roomId)
+            .Where(s => s.Room.Id == roomId)
             .Select(s => s.ToDto())
             .ToListAsync();
     }

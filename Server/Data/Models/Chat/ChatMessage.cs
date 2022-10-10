@@ -1,11 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Concerto.Server.Data.Models;
-public class ChatMessage
+public class ChatMessage : Entity
 {
-    [Key]
-    public long ChatMessageId { get; set; }
-
     [Required]
     public long SenderId { get; set; }
     public User Sender { get; set; }

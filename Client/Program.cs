@@ -4,6 +4,7 @@ using Concerto.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Configuration;
 using MudBlazor.Services;
 using static System.Net.WebRequestMethods;
 
@@ -19,8 +20,30 @@ using var response = await http.GetAsync("appsettings.json");
 using var stream = await response.Content.ReadAsStreamAsync();
 builder.Configuration.AddJsonStream(stream);
 
+var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+
 builder.Services.AddHttpClient("WebAPI",
-        client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+        client => client.BaseAddress = baseAddress)
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services
+    .AddHttpClient<IChatClient, ChatClient>(client => client.BaseAddress = baseAddress)
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services
+    .AddHttpClient<IRoomClient, RoomClient>(client => client.BaseAddress = baseAddress)
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services
+    .AddHttpClient<ISessionClient, SessionClient>(client => client.BaseAddress = baseAddress)
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services
+    .AddHttpClient<IStorageClient, StorageClient>(client => client.BaseAddress = baseAddress)
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services
+    .AddHttpClient<IUserClient, UserClient>(client => client.BaseAddress = baseAddress)
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()

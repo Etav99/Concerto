@@ -14,20 +14,20 @@ namespace Concerto.Server.Migrations
                 name: "Conversations",
                 columns: table => new
                 {
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     IsPrivate = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
+                    table.PrimaryKey("PK_Conversations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SubjectId = table.Column<Guid>(type: "uuid", nullable: true),
                     Username = table.Column<string>(type: "text", nullable: false),
@@ -36,26 +36,26 @@ namespace Concerto.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
-                    RoomId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ConversationId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Rooms", x => x.RoomId);
+                    table.PrimaryKey("PK_Rooms", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Rooms_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
-                        principalColumn: "ConversationId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -75,7 +75,7 @@ namespace Concerto.Server.Migrations
                         name: "FK_Catalogs_Users_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -83,7 +83,7 @@ namespace Concerto.Server.Migrations
                 name: "ChatMessages",
                 columns: table => new
                 {
-                    ChatMessageId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SenderId = table.Column<long>(type: "bigint", nullable: false),
                     ConversationId = table.Column<long>(type: "bigint", nullable: false),
@@ -92,18 +92,18 @@ namespace Concerto.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatMessages", x => x.ChatMessageId);
+                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ChatMessages_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
-                        principalColumn: "ConversationId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ChatMessages_Users_SenderId",
                         column: x => x.SenderId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -122,13 +122,13 @@ namespace Concerto.Server.Migrations
                         name: "FK_Contacts_Users_User1Id",
                         column: x => x.User1Id,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Contacts_Users_User2Id",
                         column: x => x.User2Id,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -146,13 +146,13 @@ namespace Concerto.Server.Migrations
                         name: "FK_ConversationUser_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
-                        principalColumn: "ConversationId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ConversationUser_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -171,13 +171,13 @@ namespace Concerto.Server.Migrations
                         name: "FK_RoomUsers_Rooms_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Rooms",
-                        principalColumn: "RoomId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RoomUsers_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -185,7 +185,7 @@ namespace Concerto.Server.Migrations
                 name: "Sessions",
                 columns: table => new
                 {
-                    SessionId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -194,18 +194,18 @@ namespace Concerto.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sessions", x => x.SessionId);
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Sessions_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
-                        principalColumn: "ConversationId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sessions_Rooms_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Rooms",
-                        principalColumn: "RoomId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -214,11 +214,11 @@ namespace Concerto.Server.Migrations
                 columns: table => new
                 {
                     CatalogsSharedToId = table.Column<long>(type: "bigint", nullable: false),
-                    UsersSharedToUserId = table.Column<long>(type: "bigint", nullable: false)
+                    UsersSharedToId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CatalogUser", x => new { x.CatalogsSharedToId, x.UsersSharedToUserId });
+                    table.PrimaryKey("PK_CatalogUser", x => new { x.CatalogsSharedToId, x.UsersSharedToId });
                     table.ForeignKey(
                         name: "FK_CatalogUser_Catalogs_CatalogsSharedToId",
                         column: x => x.CatalogsSharedToId,
@@ -226,10 +226,10 @@ namespace Concerto.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CatalogUser_Users_UsersSharedToUserId",
-                        column: x => x.UsersSharedToUserId,
+                        name: "FK_CatalogUser_Users_UsersSharedToId",
+                        column: x => x.UsersSharedToId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -238,11 +238,11 @@ namespace Concerto.Server.Migrations
                 columns: table => new
                 {
                     SharedCatalogsId = table.Column<long>(type: "bigint", nullable: false),
-                    SharedInSessionsSessionId = table.Column<long>(type: "bigint", nullable: false)
+                    SharedInSessionsId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CatalogSession", x => new { x.SharedCatalogsId, x.SharedInSessionsSessionId });
+                    table.PrimaryKey("PK_CatalogSession", x => new { x.SharedCatalogsId, x.SharedInSessionsId });
                     table.ForeignKey(
                         name: "FK_CatalogSession_Catalogs_SharedCatalogsId",
                         column: x => x.SharedCatalogsId,
@@ -250,10 +250,10 @@ namespace Concerto.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CatalogSession_Sessions_SharedInSessionsSessionId",
-                        column: x => x.SharedInSessionsSessionId,
+                        name: "FK_CatalogSession_Sessions_SharedInSessionsId",
+                        column: x => x.SharedInSessionsId,
                         principalTable: "Sessions",
-                        principalColumn: "SessionId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -281,12 +281,12 @@ namespace Concerto.Server.Migrations
                         name: "FK_UploadedFiles_Sessions_SessionId",
                         column: x => x.SessionId,
                         principalTable: "Sessions",
-                        principalColumn: "SessionId");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
                 table: "Conversations",
-                columns: new[] { "ConversationId", "IsPrivate" },
+                columns: new[] { "Id", "IsPrivate" },
                 values: new object[,]
                 {
                     { 1L, true },
@@ -301,7 +301,7 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "UserId", "FirstName", "LastName", "SubjectId", "Username" },
+                columns: new[] { "Id", "FirstName", "LastName", "SubjectId", "Username" },
                 values: new object[,]
                 {
                     { 1L, "Jan", "Administracyjny", new Guid("95f418ac-e38f-41ec-a2ad-828bdd3895d0"), "admin" },
@@ -312,14 +312,14 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "ChatMessages",
-                columns: new[] { "ChatMessageId", "Content", "ConversationId", "SendTimestamp", "SenderId" },
+                columns: new[] { "Id", "Content", "ConversationId", "SendTimestamp", "SenderId" },
                 values: new object[,]
                 {
-                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 10, 12, 4, 27, 699, DateTimeKind.Utc).AddTicks(7128), 1L },
-                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 10, 12, 6, 27, 699, DateTimeKind.Utc).AddTicks(7131), 1L },
-                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 10, 12, 7, 27, 699, DateTimeKind.Utc).AddTicks(7131), 2L },
-                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132), 2L },
-                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 10, 12, 8, 27, 699, DateTimeKind.Utc).AddTicks(7132), 1L }
+                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 10, 17, 11, 28, 18, DateTimeKind.Utc).AddTicks(7480), 1L },
+                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 10, 17, 13, 28, 18, DateTimeKind.Utc).AddTicks(7483), 1L },
+                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 10, 17, 14, 28, 18, DateTimeKind.Utc).AddTicks(7484), 2L },
+                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7485), 2L },
+                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7486), 1L }
                 });
 
             migrationBuilder.InsertData(
@@ -361,7 +361,7 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "Rooms",
-                columns: new[] { "RoomId", "ConversationId", "Name" },
+                columns: new[] { "Id", "ConversationId", "Name" },
                 values: new object[,]
                 {
                     { 1L, 7L, "Room 1" },
@@ -386,14 +386,14 @@ namespace Concerto.Server.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CatalogSession_SharedInSessionsSessionId",
+                name: "IX_CatalogSession_SharedInSessionsId",
                 table: "CatalogSession",
-                column: "SharedInSessionsSessionId");
+                column: "SharedInSessionsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CatalogUser_UsersSharedToUserId",
+                name: "IX_CatalogUser_UsersSharedToId",
                 table: "CatalogUser",
-                column: "UsersSharedToUserId");
+                column: "UsersSharedToId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_ConversationId",

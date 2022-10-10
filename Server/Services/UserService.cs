@@ -45,7 +45,7 @@ public class UserService
     public async Task<IEnumerable<Dto.User>> SearchWithoutUser(long userId, string searchString)
     {
         return await _context.Users
-            .Where(u => u.UserId != userId && (u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString)))
+            .Where(u => u.Id != userId && (u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString)))
             .Select(u => u.ToDto())
             .ToListAsync();
     }

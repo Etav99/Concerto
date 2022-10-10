@@ -58,7 +58,7 @@ public class ChatHub : Hub
         var receipents = await _chatService.GetReceipentsInConversationAsync(senderId.Value, conversationId);
         foreach (var user in receipents)
         {
-            tasks.Add(Clients.Group($"{user.UserId}").SendAsync("ReceiveMessage", message));
+            tasks.Add(Clients.Group($"{user.Id}").SendAsync("ReceiveMessage", message));
         }
         await Task.WhenAll(tasks);
     }

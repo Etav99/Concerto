@@ -55,12 +55,12 @@
 
 	private async Task CreateSession(MouseEventArgs mouseEventArgs)
 	{
-		var parameters = new DialogParameters { ["RoomId"] = Room!.RoomId };
+		var parameters = new DialogParameters { ["RoomId"] = Room!.Id };
 		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
 		if ((bool)(result.Data ?? false))
 		{
 			_loading = true;
-			var room = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={Room.RoomId}");
+			var room = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={Room.Id}");
 			Room.Sessions = room?.Sessions ?? Enumerable.Empty<Dto.Session>();
 			_sessions = Room?.Sessions ?? Enumerable.Empty<Dto.Session>();
 			_loading = Room?.Sessions == null;

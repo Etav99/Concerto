@@ -84,7 +84,7 @@
 		
         if (upload)
         {
-            var response = await Http.PostAsync($"Session/UploadFiles?catalogId={CatalogId}", content);
+            var response = await Http.PostAsync($"Storage/UploadFiles?catalogId={CatalogId}", content);
             var newUploadResults = await response.Content.ReadFromJsonAsync<IList<Dto.FileUploadResult>>();
 
             if (newUploadResults != null)

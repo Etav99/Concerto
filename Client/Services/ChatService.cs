@@ -31,7 +31,7 @@ public class ChatService : IChatService
 {
     private readonly NavigationManager _navigationManager;
     private readonly IAccessTokenProvider _accessTokenProvider;
-    private readonly HttpClient _http;
+    private readonly IChatClient _chatClient;
     private readonly IContactService _contactsManager;
     private readonly ISnackbar _snackbar;
 
@@ -75,10 +75,10 @@ public class ChatService : IChatService
         }
     }
 
-    public ChatService(NavigationManager navigationManager, HttpClient http, IContactService contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
+    public ChatService(NavigationManager navigationManager, IChatClient chatClient, IContactService contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
     {
         _navigationManager = navigationManager;
-        _http = http;
+        _chatClient = chatClient;
         _contactsManager = contactsManager;
         _accessTokenProvider = accessTokenProvider;
         _snackbar = snackbar;
@@ -121,8 +121,8 @@ public class ChatService : IChatService
         await semaphore.WaitAsync();
         if (conversationCacheInvalidated)
         {
-            var conversationsResponse = await _http.GetFromJsonAsync<Dto.Conversation[]>($"Chat/GetCurrentUserPrivateConversations");
-            var conversations = conversationsResponse?.ToDictionary(c => c.ConversationId, c => c) ?? new Dictionary<long, Dto.Conversation>();
+            var conversationsResponse = await _chatClient.GetCurrentUserPrivateConversationsAsync();
+            var conversations = conversationsResponse?.ToDictionary(c => c.Id, c => c) ?? new Dictionary<long, Dto.Conversation>();
             conversationsCache = conversations;
             conversationCacheInvalidated = false;
         }
@@ -133,7 +133,7 @@ public class ChatService : IChatService
         await semaphore.WaitAsync();
         if (!messagesCache.ContainsKey(conversationId))
         {
-            var messagesResponse = await _http.GetFromJsonAsync<Dto.ChatMessage[]>($"Chat/GetCurrentUserLastMessages?conversationId={conversationId}");
+            var messagesResponse = await _chatClient.GetCurrentUserLastMessagesAsync(conversationId);
             var messages = messagesResponse?.ToList() ?? new List<Dto.ChatMessage>();
             messages.Sort((x, y) => DateTime.Compare(y.SendTimestamp, x.SendTimestamp));
             messagesCache.Add(conversationId, messages);

@@ -78,8 +78,8 @@ public class StorageService
                     {
                         string storageFileName = Path.GetRandomFileName();
                         fileUploadResult.StorageFileName = storageFileName;
-                        string path = Path.Combine("/var/lib/concerto/storage", storageFileName);
-                        Directory.CreateDirectory(Path.Combine($"{catalogId}"));
+                        string path = Path.Combine("/var/lib/concerto/storage", $"{catalogId}", storageFileName);
+                        Directory.CreateDirectory(Path.Combine("/var/lib/concerto/storage", $"{catalogId}"));
                         await using FileStream fs = new(path, FileMode.Create);
                         await file.CopyToAsync(fs);
                         fileUploadResult.Uploaded = true;
@@ -118,7 +118,7 @@ public class StorageService
         if (catalog.OwnerId == userId) return true;
         
         await _context.Entry(catalog).Collection(c => c.UsersSharedTo).LoadAsync();
-        return catalog.UsersSharedTo.Any(u => u.UserId == userId);
+        return catalog.UsersSharedTo.Any(u => u.Id == userId);
     }
 
     internal async Task<bool> HasCatalogWriteAccess(long? userId, long catalogId)
@@ -142,7 +142,7 @@ public class StorageService
     {
         return await _context.Catalogs
             .Include(c => c.UsersSharedTo)
-            .Where(c => c.UsersSharedTo.Any(u => u.UserId == userId))
+            .Where(c => c.UsersSharedTo.Any(u => u.Id == userId))
             .Select(c => c.ToDto(false, false))
             .ToListAsync();
     }
@@ -151,7 +151,7 @@ public class StorageService
     {
         return await _context.Catalogs
             .Include(c => c.SharedInSessions)
-            .Where(c => c.SharedInSessions.Any(s => s.SessionId == sessionId))
+            .Where(c => c.SharedInSessions.Any(s => s.Id == sessionId))
             .Select(c => c.ToDto(c.OwnerId == userId, false))
             .ToListAsync();
     }
@@ -159,7 +159,7 @@ public class StorageService
     internal async Task CreateCatalog(Dto.CreateCatalogRequest createCatalogRequest, long ownerId)
     {
         var sharedToSessions = await _context.Sessions
-            .Where(s => createCatalogRequest.SharedToSessionIds.Contains(s.SessionId))
+            .Where(s => createCatalogRequest.SharedToSessionIds.Contains(s.Id))
             .ToListAsync();
         await _context.Catalogs.AddAsync(new Catalog()
         {

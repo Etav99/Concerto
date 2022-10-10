@@ -12,13 +12,13 @@ public interface IContactService
 
 public class ContactService : IContactService
 {
-    private readonly HttpClient _http;
+    private readonly IUserClient _userClient;
 
     private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-
-    public ContactService(HttpClient http)
+    
+    public ContactService(IUserClient userClient)
     {
-        _http = http;
+        _userClient = userClient;
     }
 
 
@@ -37,7 +37,7 @@ public class ContactService : IContactService
         await semaphore.WaitAsync();
         if (cacheInvalidated)
         {
-            var contactsResponse = await _http.GetFromJsonAsync<Dto.User[]>("User/GetCurrentUserContacts");
+            var contactsResponse = await _userClient.GetCurrentUserContactsAsync();
             contactsCache = contactsResponse?.ToList() ?? new List<Dto.User>();
             cacheInvalidated = false;
         }
@@ -52,7 +52,7 @@ public class ContactService : IContactService
     public async Task<string> GetContactNameAsync(long contactId)
     {
         await LoadContactsAsync();
-        var contact = contactsCache?.FirstOrDefault(c => c.UserId == contactId);
+        var contact = contactsCache?.FirstOrDefault(c => c.Id == contactId);
         if (contact != null)
         {
             return $"{contact.FirstName} {contact.LastName}";

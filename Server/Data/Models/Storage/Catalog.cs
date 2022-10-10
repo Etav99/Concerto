@@ -2,10 +2,8 @@
 
 namespace Concerto.Server.Data.Models
 {
-    public class Catalog
+    public class Catalog : Entity
     {
-        [Key]
-        public long Id { get; set; }
         public string Name { get; set; } = null!;
         public long OwnerId { get; set; }
         public User Owner { get; set; } = null!;

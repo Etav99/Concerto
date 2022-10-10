@@ -1,7 +1,5 @@
-﻿using Concerto.Shared.Models.Dto;
-using Nito.AsyncEx;
+﻿using Nito.AsyncEx;
 using System.Net.Http.Json;
-using static System.Net.WebRequestMethods;
 
 namespace Concerto.Client.Services;
 
@@ -15,18 +13,19 @@ public interface IRoomService
 }
 public class RoomService : IRoomService
 {
-    private readonly HttpClient _http;
+    private readonly IRoomClient _roomClient;
+    private readonly ISessionClient _sessionClient;
 
     private List<Dto.Room> _roomsCache = new();
     private Dictionary<long, IEnumerable<Dto.Session>> _roomSessionsCache = new();
     private bool _cacheInvalidated = true;
     private readonly AsyncLock _mutex = new AsyncLock();
-
-    public RoomService(HttpClient http)
+    public RoomService(IRoomClient roomClient, ISessionClient sessionClient)
     {
-        _http = http;
+        _roomClient = roomClient;
+        _sessionClient = sessionClient;
     }
-    
+
     public IEnumerable<Dto.Room> Rooms => _roomsCache;
     public Dictionary<long, IEnumerable<Dto.Session>> RoomSessions => _roomSessionsCache;
 
@@ -41,7 +40,7 @@ public class RoomService : IRoomService
         using (await _mutex.LockAsync())
         {
             if (!_cacheInvalidated) return;
-            var response = await _http.GetFromJsonAsync<Dto.Room[]>("Room/GetCurrentUserRooms");
+            var response = await _roomClient.GetCurrentUserRoomsAsync();
             _roomsCache = response?.ToList() ?? new List<Dto.Room>();
             _cacheInvalidated = false;
         }
@@ -51,7 +50,7 @@ public class RoomService : IRoomService
         using (await _mutex.LockAsync())
         {
             if (_roomSessionsCache.ContainsKey(roomId)) return;
-            var response = await _http.GetFromJsonAsync<Dto.Session[]>($"Session/GetRoomSessions?roomId={roomId}");
+            var response = await _sessionClient.GetRoomSessionsAsync(roomId);
             _roomSessionsCache.Add(roomId, response?.ToList() ?? new List<Dto.Session>());
         }
     }

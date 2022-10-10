@@ -11,7 +11,7 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
 @inject NavigationManager NavigationManager
-@inject HttpClient Http;
+@inject ISessionClient SessionClient;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
@@ -26,7 +26,7 @@
 
 	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
 		<ChatBox SelectedConversation="SelectedSession?.Conversation" />
-		<CatalogList Type="CatalogList.ListType.Session" SessionId="SelectedSessionId" />
+		<CatalogList Type="CatalogList.ListType.Session" Session="SelectedSession" />
 	</MudPaper>
 </MudStack>
 
@@ -37,9 +37,8 @@
 	private Dto.Session? SelectedSession { get; set; }
 
 
-
 	protected override async Task OnInitializedAsync() {
-		SelectedSession = await Http.GetFromJsonAsync<Dto.Session?>($"Session/GetSession?sessionId={SelectedSessionId}");
+		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
 		if (SelectedSession == null)
 		{
 			NavigationManager.NavigateTo("rooms");

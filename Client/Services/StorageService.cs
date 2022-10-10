@@ -17,11 +17,11 @@ public interface IStorageService
 
 public class StorageService : IStorageService
 {
-    private readonly HttpClient _http;
+    private readonly IStorageClient _storageClient;
 
-    public StorageService(HttpClient http)
+    public StorageService(IStorageClient storageClient)
     {
-        _http = http;
+        _storageClient = storageClient;
     }
 
     private readonly AsyncLock _mutex = new AsyncLock();
@@ -48,7 +48,7 @@ public class StorageService : IStorageService
         using(await _mutex.LockAsync())
         {
             if (!_ownedCatalogsCacheInvalidated) return;
-            var response = await _http.GetFromJsonAsync<Dto.Catalog[]>("Storage/GetCurrentUserCatalogs");
+            var response = await _storageClient.GetCurrentUserCatalogsAsync();
             _ownedCatalogsCache = response?.ToList() ?? new List<Dto.Catalog>();
             _ownedCatalogsCacheInvalidated = false;
         }
@@ -59,8 +59,8 @@ public class StorageService : IStorageService
         using (await _mutex.LockAsync())
         {
             if (!_sharedCatalogsCacheInvalidated) return;
-            var response = await _http.GetFromJsonAsync<Dto.Catalog[]>("Storage/GetCurrentUserSharedCatalogs");
-            _ownedCatalogsCache = response?.ToList() ?? new List<Dto.Catalog>();
+            var response = await _storageClient.GetCatalogsSharedForCurrentUserAsync();
+            _sharedCatalogsCache = response?.ToList() ?? new List<Dto.Catalog>();
             _sharedCatalogsCacheInvalidated = false;
         }
     }
@@ -70,14 +70,14 @@ public class StorageService : IStorageService
         using (await _mutex.LockAsync())
         {
             if (_sessionCatalogs.ContainsKey(sessionId)) return;
-            var response = await _http.GetFromJsonAsync<Dto.Catalog[]>($"Storage/GetSessionCatalogs?sessionId={sessionId}");
+            var response = await _storageClient.GetSessionCatalogsAsync(sessionId);
             _sessionCatalogs.Add(sessionId, response?.ToList() ?? new List<Dto.Catalog>());
         }
     }
 
     public async Task LoadCatalogFilesAsync(Dto.Catalog catalog)
     {
-        var response = await _http.GetFromJsonAsync<Dto.UploadedFile[]>($"Storage/GetCatalogFiles?catalogId={catalog.Id}");
+        var response = await _storageClient.GetCatalogFilesAsync(catalog.Id);
         catalog.Files = response?.ToList() ?? new List<Dto.UploadedFile>();
     }
 

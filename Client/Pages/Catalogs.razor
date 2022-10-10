@@ -1,0 +1,12 @@
+﻿@page "/catalogs"
+
+@using Concerto.Client.Components
+
+<MudStack Row="true" Justify="Justify.SpaceEvenly" Class="mud-border-primary pa-4 ma-2">
+	<CatalogList Type="CatalogList.ListType.Owned"/>
+	<CatalogList Type="CatalogList.ListType.Shared"/>
+</MudStack>
+
+@code{
+
+}

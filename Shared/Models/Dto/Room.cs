@@ -1,8 +1,7 @@
 ﻿namespace Concerto.Shared.Models.Dto;
 
-public record Room
+public record Room : EntityDto
 {
-    public long RoomId { get; set; }
     public string Name { get; set; } = string.Empty; 
 
     public IEnumerable<Dto.User> Users { get; set; } 

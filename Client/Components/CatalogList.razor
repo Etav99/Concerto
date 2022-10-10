@@ -1,20 +1,25 @@
 ﻿@using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Services
-@inject HttpClient Http;
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject HttpClient Http
 @inject IDialogService DialogService
 @inject IStorageService StorageService
-@inject IJSRuntime JS;
+@inject IUserService UserService
+@inject IJSRuntime JS
+@inject IAccessTokenProvider AccessTokenProvider
 
 <MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
 	@if (SelectedCatalog == null)
 	{
 		<MudTable Items="Catalogs" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.Catalog, bool>(CatalogFilter)">
 			<ToolBarContent>
-				<MudText Typo="Typo.h6">Catalogs</MudText>
+				<MudText Typo="Typo.h6">@CatalogListHeader</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="_catalogSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-				<MudSpacer />
-				<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCatalog">Create</MudButton>
+				@if (EnableCreateButton) {
+					<MudSpacer />
+					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCatalog">Create</MudButton>
+				}
 			</ToolBarContent>
 			<HeaderContent>
 				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.Catalog, object>(x=>x.Name)">Catalog name</MudTableSortLabel></MudTh>
@@ -33,7 +38,7 @@
 			<ToolBarContent>
 				<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="() => SelectedCatalog = null" aria-label="Back"></MudIconButton>
 				<MudSpacer />
-				<MudText Typo="Typo.h6">SelectedCatalog.Name</MudText>
+				<MudText Typo="Typo.h6">@SelectedCatalog.Name</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="_fileSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				<MudSpacer />
@@ -60,7 +65,7 @@
 	[Parameter]
 	public ListType Type { get; set; }
 	[Parameter]
-	public long? SessionId { get; set; }
+	public Dto.Session? Session { get; set; }
 
 	private IEnumerable<Dto.Catalog> Catalogs {
 		get
@@ -71,13 +76,21 @@
 				case ListType.Shared:
 					return StorageService.SharedCatalogs;
 				case ListType.Session:
-					if (!SessionId.HasValue) throw new ArgumentNullException("SessionId is null");
-					return StorageService.SessionCatalogs(SessionId.Value);
+					if (Session is not null) return StorageService.SessionCatalogs(Session.Id);
+					return Enumerable.Empty<Dto.Catalog>();
 				default:
 					throw new ArgumentException("Invalid list type");
 			}
 		}
 	}
+
+	private bool EnableCreateButton => Type == ListType.Owned || (Type == ListType.Session && Session?.Id == UserService.UserId);
+	private bool EnableShareButton => Type == ListType.Owned;
+
+	private string CatalogListHeader => Type == ListType.Owned ? "Your catalogs"
+									    : Type == ListType.Shared ? "Shared catalogs"
+										: "Session catalogs";
+
 	private Dto.Catalog? SelectedCatalog { get; set; }
 
 	private bool _loading = true;
@@ -96,7 +109,6 @@
 	protected override async Task OnParametersSetAsync()
 	{
 		await LoadCatalogs();
-		StateHasChanged();
 	}
 
 	private async Task LoadCatalogs() {
@@ -107,8 +119,7 @@
 			case ListType.Shared:
 				await StorageService.LoadSharedCatalogsAsync(); break;
 			case ListType.Session:
-				if (!SessionId.HasValue) throw new ArgumentNullException("SessionId is null");
-				await StorageService.LoadSessionCatalogsAsync(SessionId.Value); break;
+				if (Session is not null) await StorageService.LoadSessionCatalogsAsync(Session.Id); break;
 			default:
 				throw new ArgumentException("Invalid list type");
 		}
@@ -148,9 +159,9 @@
 	{
 		_loading = true;
 		var parameters = new DialogParameters();
-		if (Type == ListType.Session && SessionId.HasValue)
+		if (Type == ListType.Session && Session is not null)
 		{
-			parameters.Add("InitialSharedSessionId", SessionId.Value);
+			parameters.Add("InitialSharedSessionId", Session.Id);
 		}
 		var result = await DialogService.Show<CreateCatalogDialog>("Create new catalog", parameters).Result;
 		if ((bool)(result.Data ?? false))
@@ -163,13 +174,15 @@
 
 	public async Task DownloadFile(Dto.UploadedFile file)
 	{
-		await JS.InvokeVoidAsync("downloadFile", file.Name, $"{Http.BaseAddress}Session/DownloadSessionFile?fileId={file.Id}");
+		var accessTokenResult = await AccessTokenProvider.RequestAccessToken();
+		accessTokenResult.TryGetToken(out var accessToken);
+
+		await JS.InvokeVoidAsync("downloadFile", file.Name, $"{Http.BaseAddress}Storage/DownloadFile?fileId={file.Id}&access_token={accessToken.Value.ToString()}");
 	}
 
 	public async Task OpenCatalog(Dto.Catalog catalog)
 	{
 		await StorageService.LoadCatalogFilesAsync(catalog);
 		SelectedCatalog = catalog;
-		ShouldRender();
 	}
 }

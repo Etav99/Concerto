@@ -63,7 +63,7 @@
         // Move to room manager
         var createSessionRequest = new Dto.CreateCatalogRequest {
                 Name = _catalogName,
-                SharedToSessionIds = _selectedSessions.Select(s => s.SessionId)
+                SharedToSessionIds = _selectedSessions.Select(s => s.Id)
         };
 
         var response = await Http.PostAsJsonAsync("Storage/CreateCatalog", createSessionRequest);
@@ -93,7 +93,7 @@
 
     private async Task OnRoomSelected(Dto.Room room)
     {
-        await RoomService.LoadRoomSessions(room.RoomId);
+        await RoomService.LoadRoomSessions(room.Id);
         _selectedRoom = room;
     }
 
@@ -109,11 +109,11 @@
     {
 
         if(_selectedRoom is null) return Enumerable.Empty<Dto.Session>();
-        await RoomService.LoadRoomSessions(_selectedRoom.RoomId);
+        await RoomService.LoadRoomSessions(_selectedRoom.Id);
         if (string.IsNullOrWhiteSpace(searchString)){
-			return RoomService.RoomSessions[_selectedRoom.RoomId].Where(s => !_selectedSessions.Any(s2 => s2.SessionId == s.SessionId));
+			return RoomService.RoomSessions[_selectedRoom.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
         }
-        return RoomService.RoomSessions[_selectedRoom.RoomId].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+        return RoomService.RoomSessions[_selectedRoom.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
     }
 
     void Cancel() => Dialog.Cancel();
