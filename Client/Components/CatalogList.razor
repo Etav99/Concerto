@@ -11,30 +11,33 @@
 <MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
 	@if (SelectedCatalog == null)
 	{
-		<MudTable Items="Catalogs" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.Catalog, bool>(CatalogFilter)">
+		<MudTable Items="Catalogs" Loading="_loading" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.CatalogListItem, bool>(CatalogFilter)">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">@CatalogListHeader</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="_catalogSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				@if (EnableCreateButton) {
 					<MudSpacer />
-					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCatalog">Create</MudButton>
+					<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog()" />
 				}
 			</ToolBarContent>
 			<HeaderContent>
-				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.Catalog, object>(x=>x.Name)">Catalog name</MudTableSortLabel></MudTh>
+				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.CatalogListItem, object>(x=>x.Name)">Catalog name</MudTableSortLabel></MudTh>
 			</HeaderContent>
 			<RowTemplate>
 				<MudTd DataLabel="Catalog name">@context.Name</MudTd>
 				<MudTd Style="text-align:right">
-					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OpenCatalog(context))">Open</MudButton>
+					@if(context.OwnerId == UserService.UserId) {
+						<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog(context.Id)" />
+					}
+					<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => OpenCatalog(context)" />
 				</MudTd>
 			</RowTemplate>
 		</MudTable>
 	}
 	else
 	{
-		<MudTable Items="@SelectedCatalog.Files" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.UploadedFile, bool>(FileFilter)">
+		<MudTable Items="@SelectedCatalog.Files" Loading="_loading" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.UploadedFile, bool>(FileFilter)">
 			<ToolBarContent>
 				<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="() => SelectedCatalog = null" aria-label="Back"></MudIconButton>
 				<MudSpacer />
@@ -42,9 +45,10 @@
 				<MudSpacer />
 				<MudTextField @bind-Value="_fileSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				<MudSpacer />
-				@if(SelectedCatalog.WriteAccess) {
-					
+				@if (SelectedCatalog.OwnerId == UserService.UserId)
+				{
 					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="UploadFiles">Upload</MudButton>
+					<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog(SelectedCatalog.Id)" />
 				}
 			</ToolBarContent>
 			<HeaderContent>
@@ -67,7 +71,7 @@
 	[Parameter]
 	public Dto.Session? Session { get; set; }
 
-	private IEnumerable<Dto.Catalog> Catalogs {
+	private IEnumerable<Dto.CatalogListItem> Catalogs {
 		get
 		{
 			switch(Type) {
@@ -77,7 +81,7 @@
 					return StorageService.SharedCatalogs;
 				case ListType.Session:
 					if (Session is not null) return StorageService.SessionCatalogs(Session.Id);
-					return Enumerable.Empty<Dto.Catalog>();
+					return Enumerable.Empty<Dto.CatalogListItem>();
 				default:
 					throw new ArgumentException("Invalid list type");
 			}
@@ -85,13 +89,13 @@
 	}
 
 	private bool EnableCreateButton => Type == ListType.Owned || (Type == ListType.Session && Session?.Id == UserService.UserId);
-	private bool EnableShareButton => Type == ListType.Owned;
+	private bool EnableSettingsButton => Type == ListType.Owned;
 
 	private string CatalogListHeader => Type == ListType.Owned ? "Your catalogs"
-									    : Type == ListType.Shared ? "Shared catalogs"
+										: Type == ListType.Shared ? "Shared catalogs"
 										: "Session catalogs";
 
-	private Dto.Catalog? SelectedCatalog { get; set; }
+	private Dto.CatalogContent? SelectedCatalog { get; set; }
 
 	private bool _loading = true;
 
@@ -112,6 +116,7 @@
 	}
 
 	private async Task LoadCatalogs() {
+		_loading = true;
 		switch (Type)
 		{
 			case ListType.Owned:
@@ -123,6 +128,7 @@
 			default:
 				throw new ArgumentException("Invalid list type");
 		}
+		_loading = false;
 	}
 
 	private bool FileFilter(Dto.UploadedFile file)
@@ -134,7 +140,7 @@
 		return false;
 	}
 
-	private bool CatalogFilter(Dto.Catalog catalog)
+	private bool CatalogFilter(Dto.CatalogListItem catalog)
 	{
 		if (string.IsNullOrWhiteSpace(_catalogSearchString))
 			return true;
@@ -150,20 +156,21 @@
 		if ((bool)(result.Data ?? false))
 		{
 			_loading = true;
-			await StorageService.LoadCatalogFilesAsync(SelectedCatalog);
+			SelectedCatalog = await StorageService.GetCatalogContent(SelectedCatalog.Id);
 			_loading = false;
 		}
 	}
 
-	public async Task CreateCatalog()
+	public async Task ShowCreateOrUpdateCatalogDialog(long? editedCatalogId = null)
 	{
-		_loading = true;
-		var parameters = new DialogParameters();
+		var parameters = new DialogParameters { ["EditedCatalogId"] = editedCatalogId };
 		if (Type == ListType.Session && Session is not null)
 		{
 			parameters.Add("InitialSharedSessionId", Session.Id);
 		}
-		var result = await DialogService.Show<CreateCatalogDialog>("Create new catalog", parameters).Result;
+		var name = editedCatalogId is null ? "Create catalog" : "Edit catalog";
+		var result = await DialogService.Show<CreateOrUpdateCatalogDialog>(name, parameters).Result;
+		_loading = true;
 		if ((bool)(result.Data ?? false))
 		{
 			StorageService.InvalidateCache();
@@ -180,9 +187,10 @@
 		await JS.InvokeVoidAsync("downloadFile", file.Name, $"{Http.BaseAddress}Storage/DownloadFile?fileId={file.Id}&access_token={accessToken.Value.ToString()}");
 	}
 
-	public async Task OpenCatalog(Dto.Catalog catalog)
+	public async Task OpenCatalog(Dto.CatalogListItem catalog)
 	{
-		await StorageService.LoadCatalogFilesAsync(catalog);
-		SelectedCatalog = catalog;
+		_loading = true;
+		SelectedCatalog = await StorageService.GetCatalogContent(catalog.Id);
+		_loading = false;
 	}
 }

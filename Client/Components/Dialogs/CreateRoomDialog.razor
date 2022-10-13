@@ -1,4 +1,5 @@
 ﻿@using Concerto.Client.Services
+@using Concerto.Client.Components.Pickers
 @inject IDialogService DialogService
 @inject IContactService ContactService
 @inject ISnackbar Snackbar
@@ -7,17 +8,7 @@
 <MudDialog>
     <DialogContent>
         <MudTextField @bind-Value="_roomName" T="string" Label="Name"></MudTextField>
-		<MudAutocomplete T="Dto.User" Label="Add member" @ref="_addMemberAutocomplete"
-						 ValueChanged="@AddMember" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
-						 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
-						 ToStringFunc="@(u => u == null ? null : $"{u.FullName} ({u.Username})")" />
-        Selected members:
-            <MudChipSet AllClosable="true" OnClose="Closed">
-                @foreach (var contact in _members)
-                {
-                    <MudChip Value="@contact" Text="@contact.FullName"></MudChip>
-                }
-            </MudChipSet>
+        <ContactPicker @bind-SelectedContacts="_selectedContacts" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -28,27 +19,8 @@
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
     private string? _roomName;
-    private ICollection<Dto.User> _members { get; set; } = new List<Dto.User>();
-    private MudAutocomplete<Dto.User>? _addMemberAutocomplete;
-
-    private async Task<IEnumerable<Dto.User>> SearchContacts(string searchString)
-    {
-        await ContactService.LoadContactsAsync();
-        if (string.IsNullOrWhiteSpace(searchString))
-            return ContactService.Contacts.Where(c => !_members.Contains(c));
-        return ContactService.Contacts.Where(c => (c.FullName.Contains(searchString) || c.Username.Contains(searchString)) && !_members.Contains(c));
-    }
-
-    private async Task AddMember(Dto.User user)
-    {
-        _members.Add(user);
-        _addMemberAutocomplete!.Reset();
-    }
-
-    public async Task Closed(MudChip chip)
-    {
-        _members.Remove(chip.Value as Dto.User);
-    } 
+	
+	private ISet<Dto.User> _selectedContacts = new HashSet<Dto.User>();	
 
     private async Task Submit()
     {
@@ -56,7 +28,7 @@
             Snackbar.Add("Room name cannot be empty", Severity.Error);
             return;
         }
-        if(!_members.Any()) {
+        if(!_selectedContacts.Any()) {
             Snackbar.Add("Members cannot be empty", Severity.Error);
             return;
         }
@@ -64,7 +36,7 @@
         // Move to room manager
 		var room = new Dto.CreateRoomRequest {
 			Name = _roomName,
-			Members = _members
+            Members = _selectedContacts
 		};
 		
         var response = await Http.PostAsJsonAsync("Room/CreateRoomForCurrentUser", room);

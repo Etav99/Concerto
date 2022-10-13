@@ -1,5 +1,5 @@
 ﻿namespace Concerto.Shared.Models.Dto;
-public record Session : EntityDto
+public record Session : EntityModel
 {    
     public string Name { get; init; }
     public DateTime ScheduledDateTime { get; set; }

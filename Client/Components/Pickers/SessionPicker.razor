@@ -1,0 +1,95 @@
+﻿@using Concerto.Client.Services
+@inject IContactService ContactService
+@inject IRoomService RoomService
+
+<MudPaper Elevation="0" Outlined="true" Class="pa-4">
+	<MudText>@Label</MudText>
+	<MudStack Spacing="4">
+		<MudStack Spacing="4">
+			<MudStack Row="true">
+				<MudAutocomplete T="Dto.Room" Label="Select room" @ref="_selectRoomAutocomplete"
+								 ValueChanged="@OnRoomSelected" SearchFunc="@SearchRooms" Variant="Variant.Outlined"
+								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
+								 ToStringFunc="@(r => r == null ? null : $"{r.Name}")" />
+
+				<MudAutocomplete T="Dto.Session" Label="Select session" @ref="_selectSessionAutocomplete"
+								 ValueChanged="@AddSession" SearchFunc="@SearchSessions" Variant="Variant.Outlined"
+								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
+								 ToStringFunc="@(s => s == null ? null : $"{s.Name}")" />
+			</MudStack>
+
+			<MudPaper Elevation="0">
+
+				<MudChipSet AllClosable="true" OnClose="Closed">
+					<MudText>
+						Catalog will be shared with sessions:
+					</MudText>
+					@foreach (var session in _selectedSessions)
+					{
+						<MudChip Value="@session" Text="@session.Name"></MudChip>
+					}
+				</MudChipSet>
+			</MudPaper>
+		</MudStack>
+	</MudStack>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public ISet<Dto.Session> SelectedSessions
+    {
+        get => _selectedSessions;
+        set => _selectedSessions = value.ToHashSet();
+    }
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    private MudAutocomplete<Dto.Room>? _selectRoomAutocomplete;
+    private Dto.Room? _selectedRoom;
+    private MudAutocomplete<Dto.Session>? _selectSessionAutocomplete;
+    private HashSet<Dto.Session> _selectedSessions = new HashSet<Dto.Session>();
+
+    [Parameter]
+    public EventCallback<ISet<Dto.Session>> SelectedSessionsChanged { get; set; }
+
+    public async Task Closed(MudChip chip)
+    {
+        var session = chip.Value as Dto.Session;
+        if (session is not null) _selectedSessions.Remove(session);
+        await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
+    }
+
+    private async Task AddSession(Dto.Session session)
+    {
+        _selectedSessions.Add(session);
+        _selectSessionAutocomplete?.Reset();
+        _selectRoomAutocomplete?.Reset();
+        await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
+    }
+
+    private async Task OnRoomSelected(Dto.Room room)
+    {
+        await RoomService.LoadRoomSessions(room.Id);
+        _selectedRoom = room;
+    }
+
+    private async Task<IEnumerable<Dto.Room>> SearchRooms(string searchString)
+    {
+        await RoomService.LoadRoomsAsync();
+        if (string.IsNullOrWhiteSpace(searchString))
+            return RoomService.Rooms;
+        return RoomService.Rooms.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private async Task<IEnumerable<Dto.Session>> SearchSessions(string searchString)
+    {
+        if (_selectedRoom is null) return Enumerable.Empty<Dto.Session>();
+        await RoomService.LoadRoomSessions(_selectedRoom.Id);
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return RoomService.RoomSessions[_selectedRoom.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
+        }
+        return RoomService.RoomSessions[_selectedRoom.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+    }
+}

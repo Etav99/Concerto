@@ -12,8 +12,7 @@
 
 @inject NavigationManager NavigationManager
 @inject ISessionClient SessionClient;
-@inject AuthenticationStateProvider AuthenticationStateProvider
-
+@inject IJSRuntime JsRuntime
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
 
 <MudStack>
@@ -23,6 +22,9 @@
 			<MudText Align="Align.Center">@($"Session - {SelectedSession.Name}")</MudText>
 		}
 	</MudPaper>
+
+	<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(async () => await JsRuntime.InvokeAsync<string>("startMeeting"))" />
+	<div id="meet"></div>
 
 	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
 		<ChatBox SelectedConversation="SelectedSession?.Conversation" />

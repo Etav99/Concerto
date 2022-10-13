@@ -315,11 +315,11 @@ namespace Concerto.Server.Migrations
                 columns: new[] { "Id", "Content", "ConversationId", "SendTimestamp", "SenderId" },
                 values: new object[,]
                 {
-                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 10, 17, 11, 28, 18, DateTimeKind.Utc).AddTicks(7480), 1L },
-                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 10, 17, 13, 28, 18, DateTimeKind.Utc).AddTicks(7483), 1L },
-                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 10, 17, 14, 28, 18, DateTimeKind.Utc).AddTicks(7484), 2L },
-                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7485), 2L },
-                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7486), 1L }
+                    { 1L, "Test message 1", 1L, new DateTime(2022, 10, 13, 18, 53, 22, 245, DateTimeKind.Utc).AddTicks(1038), 1L },
+                    { 2L, "Test message 2", 1L, new DateTime(2022, 10, 13, 18, 55, 22, 245, DateTimeKind.Utc).AddTicks(1041), 1L },
+                    { 3L, "Test reply 1", 1L, new DateTime(2022, 10, 13, 18, 56, 22, 245, DateTimeKind.Utc).AddTicks(1042), 2L },
+                    { 4L, "Test reply 2", 1L, new DateTime(2022, 10, 13, 18, 57, 22, 245, DateTimeKind.Utc).AddTicks(1043), 2L },
+                    { 5L, "Test message 3", 1L, new DateTime(2022, 10, 13, 18, 57, 22, 245, DateTimeKind.Utc).AddTicks(1043), 1L }
                 });
 
             migrationBuilder.InsertData(

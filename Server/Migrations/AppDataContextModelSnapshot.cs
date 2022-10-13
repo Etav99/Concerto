@@ -109,7 +109,7 @@ namespace Concerto.Server.Migrations
                             Id = 1L,
                             Content = "Test message 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 10, 17, 11, 28, 18, DateTimeKind.Utc).AddTicks(7480),
+                            SendTimestamp = new DateTime(2022, 10, 13, 18, 53, 22, 245, DateTimeKind.Utc).AddTicks(1038),
                             SenderId = 1L
                         },
                         new
@@ -117,7 +117,7 @@ namespace Concerto.Server.Migrations
                             Id = 2L,
                             Content = "Test message 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 10, 17, 13, 28, 18, DateTimeKind.Utc).AddTicks(7483),
+                            SendTimestamp = new DateTime(2022, 10, 13, 18, 55, 22, 245, DateTimeKind.Utc).AddTicks(1041),
                             SenderId = 1L
                         },
                         new
@@ -125,7 +125,7 @@ namespace Concerto.Server.Migrations
                             Id = 3L,
                             Content = "Test reply 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 10, 17, 14, 28, 18, DateTimeKind.Utc).AddTicks(7484),
+                            SendTimestamp = new DateTime(2022, 10, 13, 18, 56, 22, 245, DateTimeKind.Utc).AddTicks(1042),
                             SenderId = 2L
                         },
                         new
@@ -133,7 +133,7 @@ namespace Concerto.Server.Migrations
                             Id = 4L,
                             Content = "Test reply 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7485),
+                            SendTimestamp = new DateTime(2022, 10, 13, 18, 57, 22, 245, DateTimeKind.Utc).AddTicks(1043),
                             SenderId = 2L
                         },
                         new
@@ -141,7 +141,7 @@ namespace Concerto.Server.Migrations
                             Id = 5L,
                             Content = "Test message 3",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 10, 17, 15, 28, 18, DateTimeKind.Utc).AddTicks(7486),
+                            SendTimestamp = new DateTime(2022, 10, 13, 18, 57, 22, 245, DateTimeKind.Utc).AddTicks(1043),
                             SenderId = 1L
                         });
                 });

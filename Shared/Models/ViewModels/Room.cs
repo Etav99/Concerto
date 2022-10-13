@@ -1,6 +1,6 @@
 ﻿namespace Concerto.Shared.Models.Dto;
 
-public record Room : EntityDto
+public record Room : EntityModel
 {
     public string Name { get; set; } = string.Empty; 
 

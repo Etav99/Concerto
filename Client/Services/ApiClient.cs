@@ -4,6 +4,8 @@
 // </auto-generated>
 //----------------------
 
+using Concerto.Shared.Models.Dto;
+
 #pragma warning disable 108 // Disable "CS0108 '{derivedDto}.ToJson()' hides inherited member '{dtoBase}.ToJson()'. Use the new keyword if hiding was intended."
 #pragma warning disable 114 // Disable "CS0114 '{derivedDto}.RaisePropertyChanged(String)' hides inherited member 'dtoBase.RaisePropertyChanged(String)'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword."
 #pragma warning disable 472 // Disable "CS0472 The result of the expression is always 'false' since a value of type 'Int32' is never equal to 'null' of type 'Int32?'
@@ -15,37 +17,36 @@
 
 namespace Concerto.Client.Services
 {
-    using Concerto.Shared.Models.Dto;
     using System = global::System;
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface IChatClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Conversation>> GetCurrentUserPrivateConversationsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Conversation>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesBeforeAsync(long? conversationId, System.DateTimeOffset? startingMessageTimestamp);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesBeforeAsync(long? conversationId, System.DateTimeOffset? startingMessageTimestamp, System.Threading.CancellationToken cancellationToken);
 
     }
@@ -85,7 +86,7 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Conversation>> GetCurrentUserPrivateConversationsAsync()
         {
             return GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken.None);
@@ -93,7 +94,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Conversation>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -134,14 +135,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Conversation>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new ChatApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new ChatException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ChatApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new ChatException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -159,7 +160,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId)
         {
             return GetCurrentUserLastMessagesAsync(conversationId, System.Threading.CancellationToken.None);
@@ -167,7 +168,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -213,14 +214,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ChatMessage>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new ChatApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new ChatException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ChatApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new ChatException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -238,7 +239,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesBeforeAsync(long? conversationId, System.DateTimeOffset? startingMessageTimestamp)
         {
             return GetCurrentUserLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, System.Threading.CancellationToken.None);
@@ -246,7 +247,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="ChatApiException">A server side error occurred.</exception>
+        /// <exception cref="ChatException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesBeforeAsync(long? conversationId, System.DateTimeOffset? startingMessageTimestamp, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -296,14 +297,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ChatMessage>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new ChatApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new ChatException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ChatApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new ChatException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -353,7 +354,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new ChatApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new ChatException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -372,7 +373,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new ChatApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new ChatException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -427,30 +428,30 @@ namespace Concerto.Client.Services
     public partial interface IRoomClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body, System.Threading.CancellationToken cancellationToken);
 
     }
@@ -490,7 +491,7 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync()
         {
             return GetCurrentUserRoomsAsync(System.Threading.CancellationToken.None);
@@ -498,7 +499,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -539,14 +540,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Room>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new RoomApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new RoomException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -564,7 +565,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId)
         {
             return GetRoomAsync(roomId, System.Threading.CancellationToken.None);
@@ -572,7 +573,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -618,14 +619,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<Room>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new RoomApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new RoomException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -643,7 +644,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body)
         {
             return CreateRoomForCurrentUserAsync(body, System.Threading.CancellationToken.None);
@@ -651,7 +652,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomApiException">A server side error occurred.</exception>
+        /// <exception cref="RoomException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -697,7 +698,7 @@ namespace Concerto.Client.Services
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -747,7 +748,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new RoomApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new RoomException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -766,7 +767,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new RoomApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new RoomException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -821,30 +822,30 @@ namespace Concerto.Client.Services
     public partial interface ISessionClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Session> GetSessionAsync(long? sessionId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Session> GetSessionAsync(long? sessionId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId, System.Threading.CancellationToken cancellationToken);
 
     }
@@ -884,7 +885,7 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body)
         {
             return CreateSessionAsync(body, System.Threading.CancellationToken.None);
@@ -892,7 +893,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -938,7 +939,7 @@ namespace Concerto.Client.Services
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new SessionApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new SessionException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -956,7 +957,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<Session> GetSessionAsync(long? sessionId)
         {
             return GetSessionAsync(sessionId, System.Threading.CancellationToken.None);
@@ -964,7 +965,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<Session> GetSessionAsync(long? sessionId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -1010,14 +1011,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<Session>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new SessionApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new SessionException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new SessionApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new SessionException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1035,7 +1036,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId)
         {
             return GetRoomSessionsAsync(roomId, System.Threading.CancellationToken.None);
@@ -1043,7 +1044,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="SessionApiException">A server side error occurred.</exception>
+        /// <exception cref="SessionException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -1089,14 +1090,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Session>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new SessionApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new SessionException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new SessionApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new SessionException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1146,7 +1147,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new SessionApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new SessionException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -1165,7 +1166,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new SessionApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new SessionException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -1220,66 +1221,84 @@ namespace Concerto.Client.Services
     public partial interface IStorageClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCurrentUserCatalogsAsync();
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCurrentUserCatalogsAsync(System.Threading.CancellationToken cancellationToken);
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CreateCatalogRequest>> CreateCatalogAsync(CreateCatalogRequest body);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CreateCatalogRequest>> CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCatalogsSharedForCurrentUserAsync();
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCatalogsSharedForCurrentUserAsync(System.Threading.CancellationToken cancellationToken);
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetSessionCatalogsAsync(long? sessionId);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<UploadedFile>> GetCatalogFilesAsync(long? catalogId);
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<UploadedFile>> GetCatalogFilesAsync(long? catalogId, System.Threading.CancellationToken cancellationToken);
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DownloadFileAsync(long? fileId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Threading.CancellationToken cancellationToken);
 
     }
@@ -1319,19 +1338,19 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCurrentUserCatalogsAsync()
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync()
         {
-            return GetCurrentUserCatalogsAsync(System.Threading.CancellationToken.None);
+            return GetOwnedCatalogsAsync(System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCurrentUserCatalogsAsync(System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetCurrentUserCatalogs");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetOwnedCatalogs");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1365,17 +1384,17 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Catalog>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1393,16 +1412,248 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CreateCatalogRequest>> CreateCatalogAsync(CreateCatalogRequest body)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync()
+        {
+            return GetSharedCatalogsAsync(System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetSharedCatalogs");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId)
+        {
+            return GetCatalogContentAsync(catalogId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetCatalogContent?");
+            if (catalogId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CatalogContent>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId)
+        {
+            return GetCatalogSettingsAsync(catalogId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetCatalogSettings?");
+            if (catalogId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CatalogSettings>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body)
         {
             return CreateCatalogAsync(body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CreateCatalogRequest>> CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/CreateCatalog");
@@ -1418,7 +1669,6 @@ namespace Concerto.Client.Services
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1443,17 +1693,12 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CreateCatalogRequest>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
+                            return;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1471,19 +1716,19 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCatalogsSharedForCurrentUserAsync()
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body)
         {
-            return GetCatalogsSharedForCurrentUserAsync(System.Threading.CancellationToken.None);
+            return UpdateCatalogAsync(body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetCatalogsSharedForCurrentUserAsync(System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetCatalogsSharedForCurrentUser");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/UpdateCatalog");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1491,8 +1736,11 @@ namespace Concerto.Client.Services
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1517,17 +1765,12 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Catalog>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
+                            return;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1545,16 +1788,16 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetSessionCatalogsAsync(long? sessionId)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId)
         {
             return GetSessionCatalogsAsync(sessionId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Catalog>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetSessionCatalogs?");
@@ -1596,17 +1839,17 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Catalog>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1624,86 +1867,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<UploadedFile>> GetCatalogFilesAsync(long? catalogId)
-        {
-            return GetCatalogFilesAsync(catalogId, System.Threading.CancellationToken.None);
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<UploadedFile>> GetCatalogFilesAsync(long? catalogId, System.Threading.CancellationToken cancellationToken)
-        {
-            var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Storage/GetCatalogFiles?");
-            if (catalogId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            urlBuilder_.Length--;
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<UploadedFile>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files)
         {
             return UploadFilesAsync(catalogId, files, System.Threading.CancellationToken.None);
@@ -1711,7 +1875,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -1775,14 +1939,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<FileUploadResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new StorageApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1800,7 +1964,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId)
         {
             return DownloadFileAsync(fileId, System.Threading.CancellationToken.None);
@@ -1808,7 +1972,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="StorageApiException">A server side error occurred.</exception>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -1855,7 +2019,7 @@ namespace Concerto.Client.Services
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -1905,7 +2069,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new StorageApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new StorageException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -1924,7 +2088,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new StorageApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new StorageException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -1979,39 +2143,39 @@ namespace Concerto.Client.Services
     public partial interface IUserClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<User> GetUserAsync(long? userId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<User> GetUserAsync(long? userId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<User> GetCurrentUserAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<User> GetCurrentUserAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCurrentUserContactsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCurrentUserContactsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken);
 
     }
@@ -2051,7 +2215,7 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<User> GetUserAsync(long? userId)
         {
             return GetUserAsync(userId, System.Threading.CancellationToken.None);
@@ -2059,7 +2223,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<User> GetUserAsync(long? userId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -2105,14 +2269,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<User>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new UserApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new UserApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new UserException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -2130,7 +2294,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<User> GetCurrentUserAsync()
         {
             return GetCurrentUserAsync(System.Threading.CancellationToken.None);
@@ -2138,7 +2302,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<User> GetCurrentUserAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -2179,14 +2343,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<User>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new UserApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new UserApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new UserException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -2204,7 +2368,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCurrentUserContactsAsync()
         {
             return GetCurrentUserContactsAsync(System.Threading.CancellationToken.None);
@@ -2212,7 +2376,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCurrentUserContactsAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -2253,14 +2417,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new UserApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new UserApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new UserException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -2278,7 +2442,7 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString)
         {
             return SearchAsync(searchString, System.Threading.CancellationToken.None);
@@ -2286,7 +2450,7 @@ namespace Concerto.Client.Services
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="UserApiException">A server side error occurred.</exception>
+        /// <exception cref="UserException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
@@ -2332,14 +2496,14 @@ namespace Concerto.Client.Services
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new UserApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new UserApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new UserException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -2389,7 +2553,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new UserApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new UserException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -2408,7 +2572,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new UserApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new UserException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -2491,7 +2655,7 @@ namespace Concerto.Client.Services
 
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ChatApiException : System.Exception
+    public partial class ChatException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -2499,7 +2663,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public ChatApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public ChatException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -2514,11 +2678,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ChatApiException<TResult> : ChatApiException
+    public partial class ChatException<TResult> : ChatException
     {
         public TResult Result { get; private set; }
 
-        public ChatApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public ChatException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;
@@ -2526,7 +2690,7 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RoomApiException : System.Exception
+    public partial class RoomException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -2534,7 +2698,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public RoomApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public RoomException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -2549,11 +2713,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RoomApiException<TResult> : RoomApiException
+    public partial class RoomException<TResult> : RoomException
     {
         public TResult Result { get; private set; }
 
-        public RoomApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public RoomException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;
@@ -2561,7 +2725,7 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class SessionApiException : System.Exception
+    public partial class SessionException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -2569,7 +2733,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public SessionApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public SessionException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -2584,11 +2748,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class SessionApiException<TResult> : SessionApiException
+    public partial class SessionException<TResult> : SessionException
     {
         public TResult Result { get; private set; }
 
-        public SessionApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public SessionException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;
@@ -2596,7 +2760,7 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class StorageApiException : System.Exception
+    public partial class StorageException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -2604,7 +2768,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public StorageApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public StorageException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -2619,11 +2783,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class StorageApiException<TResult> : StorageApiException
+    public partial class StorageException<TResult> : StorageException
     {
         public TResult Result { get; private set; }
 
-        public StorageApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public StorageException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;
@@ -2631,7 +2795,7 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class UserApiException : System.Exception
+    public partial class UserException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -2639,7 +2803,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public UserApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public UserException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -2654,11 +2818,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class UserApiException<TResult> : UserApiException
+    public partial class UserException<TResult> : UserException
     {
         public TResult Result { get; private set; }
 
-        public UserApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public UserException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;

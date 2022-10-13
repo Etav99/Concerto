@@ -23,26 +23,16 @@ public class StorageController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.Catalog>>> GetCurrentUserCatalogs()
+    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetOwnedCatalogs()
     {
         long? userId = User.GetUserId();
         if (userId == null) return Unauthorized();
 
-        return Ok(await _storageService.GetUserCatalogs(userId.Value));
-    }
-    
-    [HttpPost]
-    public async Task<ActionResult<IEnumerable<Dto.CreateCatalogRequest>>> CreateCatalog([FromBody] Dto.CreateCatalogRequest createCatalogRequest)
-    {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        await _storageService.CreateCatalog(createCatalogRequest, userId.Value);
-        return Ok();
+        return Ok(await _storageService.GetOwnedCatalogs(userId.Value));
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.Catalog>>> GetCatalogsSharedForCurrentUser()
+    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSharedCatalogs()
     {
         long? userId = User.GetUserId();
         if (userId == null) return Unauthorized();
@@ -51,23 +41,58 @@ public class StorageController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.Catalog>>> GetSessionCatalogs([FromQuery] long sessionId)
+    public async Task<ActionResult<Dto.CatalogContent>> GetCatalogContent([FromQuery] long catalogId)
     {
         long? userId = User.GetUserId();
         if (userId == null) return Unauthorized();
-        if (!await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return Unauthorized();
-        var catalogs = await _storageService.GetSessionCatalogs(userId.Value, sessionId);
-        return Ok(catalogs);
+
+        if (!await _storageService.HasCatalogReadAccess(userId.Value, catalogId)) return Unauthorized();
+
+        return Ok(await _storageService.GetCatalogContent(catalogId));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<Dto.CatalogSettings>> GetCatalogSettings([FromQuery] long catalogId)
+    {
+        long? userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        if (!await _storageService.HasCatalogReadAccess(userId.Value, catalogId)) return Unauthorized();
+
+        return Ok(await _storageService.GetCatalogSettings(catalogId));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateCatalog([FromBody] Dto.CreateCatalogRequest createCatalogRequest)
+    {
+        long? userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        await _storageService.CreateCatalog(createCatalogRequest, userId.Value);
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> UpdateCatalog([FromBody] Dto.UpdateCatalogRequest updateCatalogRequest)
+    {
+        long? userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        if (!await _storageService.HasCatalogWriteAccess(User.GetUserId(), updateCatalogRequest.Id)) return Unauthorized();
+        await _storageService.UpdateCatalog(updateCatalogRequest);
+        return Ok();
     }
 
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.UploadedFile>>> GetCatalogFiles([FromQuery] long catalogId)
+    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSessionCatalogs([FromQuery] long sessionId)
     {
-        // Check if user has read access to catalog
-        if (!await _storageService.HasCatalogReadAccess(User.GetUserId(), catalogId)) return Unauthorized();
-        
-        return Ok(await _storageService.GetCatalogFiles(catalogId));
+        long? userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        if (!await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return Unauthorized();
+        var catalogs = await _storageService.GetSessionCatalogs(userId.Value, sessionId);
+        return Ok(catalogs);
     }
 
     [HttpPost]
@@ -85,7 +110,7 @@ public class StorageController : ControllerBase
     {
         // Check if user has read access to file
         if (!await _storageService.HasFileReadAccess(User.GetUserId(), fileId)) return Unauthorized();
-        
+
         var file = await _storageService.GetFile(fileId);
         if (file == null) return NotFound();
 
@@ -93,5 +118,5 @@ public class StorageController : ControllerBase
         string fileName = file.DisplayName;
         return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
-    
+
 }

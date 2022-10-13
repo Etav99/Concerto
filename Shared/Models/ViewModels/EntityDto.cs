@@ -1,5 +1,5 @@
 ﻿namespace Concerto.Shared.Models.Dto;
-public abstract record EntityDto
+public abstract record EntityModel
 {
     public long Id { get; init; }
 }

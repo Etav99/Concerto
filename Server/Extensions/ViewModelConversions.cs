@@ -1,7 +1,7 @@
 ﻿using Concerto.Server.Data.Models;
 
 namespace Concerto.Server.Extensions;
-public static class DtoConversions
+public static class ViewModelConversions
 {
     public static Dto.User ToDto(this User user)
     {
@@ -134,17 +134,5 @@ public static class DtoConversions
         return fileUploadResults.Select(u => u.ToDto());
     }
     
-    public static Dto.Catalog ToDto(this Catalog catalog, bool writeAccess = false, bool includeFiles = false)
-    {
-        return new Dto.Catalog
-        {
-            Id = catalog.Id,
-            Name = catalog.Name,
-            OwnerId = catalog.OwnerId,
-            WriteAccess = writeAccess,
-            Files = includeFiles ? catalog.Files.Select(f => f.ToDto())
-                                 : null
-        };
-    }
 
 }
