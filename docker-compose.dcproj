@@ -9,10 +9,13 @@
     <DockerServiceName>concerto.server</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="concerto.env" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="keycloak.env" />
+    <None Include="postgres.env" />
   </ItemGroup>
 </Project>
