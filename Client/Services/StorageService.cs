@@ -1,5 +1,4 @@
 ﻿using Nito.AsyncEx;
-using System.Net.Http.Json;
 
 namespace Concerto.Client.Services;
 public interface IStorageService
@@ -48,7 +47,7 @@ public class StorageService : IStorageService
 
     public async Task LoadOwnedCatalogsAsync()
     {
-        using(await _mutex.LockAsync())
+        using (await _mutex.LockAsync())
         {
             if (!_ownedCatalogsCacheInvalidated) return;
             var response = await _storageClient.GetOwnedCatalogsAsync();

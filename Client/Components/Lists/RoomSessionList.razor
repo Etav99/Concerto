@@ -1,35 +1,31 @@
 ﻿@using Concerto.Client.Components.Dialogs
+@inherits MudComponentBase;
 @inject IDialogService DialogService
 @inject HttpClient Http;
 
-<MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-	<MudTable Items="_sessions" Hover="true" Elevation="0" Loading="@_loading">
-		<ToolBarContent>
-			<MudText Typo="Typo.h6">Sessions</MudText>
+<MudTable Items="_sessions" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true" Height="calc(100% - 15px)" Loading="@_loading" Class="@Class" Style="@Style">
+	<ToolBarContent>
+		<MudText Typo="Typo.h6">Sessions</MudText>
+		<MudSpacer />
+		<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession">Create session</MudButton>
+		@if (!_loading && !_sessions.Any())
+		{
 			<MudSpacer />
-			<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession">Create session</MudButton>
-			@if (!_loading && !_sessions.Any())
-			{
-				<MudSpacer />
-				<MudAlert Severity="Severity.Info">This room has no sessions yet.</MudAlert>
-			}
-		</ToolBarContent>
-		<HeaderContent>
-			<MudTh>Name</MudTh>
-			<MudTh>Sheduled on</MudTh>
-		</HeaderContent>
-		<RowTemplate>
-			<MudTd>@context.Name</MudTd>
-			<MudTd>@context.ScheduledDateTime.ToString()</MudTd>
-			<MudTd Style="text-align:right">
-				<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectSession(@context))">Open</MudButton>
+			<MudAlert Severity="Severity.Info">This room has no sessions yet.</MudAlert>
+		}
+	</ToolBarContent>
+	<HeaderContent>
+		<MudTh>Name</MudTh>
+		<MudTh>Sheduled on</MudTh>
+	</HeaderContent>
+	<RowTemplate>
+		<MudTd>
+			<MudIconButton Class="mr-2" Icon="@Icons.Filled.Group" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectSession(@context))" />
+				@context.Name
 			</MudTd>
-		</RowTemplate>
-		<PagerContent>
-			<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-		</PagerContent>
-	</MudTable>
-</MudPaper>
+		<MudTd>@context.ScheduledDateTime.ToString()</MudTd>
+	</RowTemplate>
+</MudTable>
 
 @code
 {

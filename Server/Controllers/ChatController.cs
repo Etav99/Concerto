@@ -10,50 +10,50 @@ namespace Concerto.Server.Controllers;
 [Authorize]
 public class ChatController : ControllerBase
 {
-    private readonly ILogger<ChatController> _logger;
-    private readonly ChatService _chatService;
+	private readonly ILogger<ChatController> _logger;
+	private readonly ChatService _chatService;
 
-    public ChatController(ILogger<ChatController> logger, ChatService chatService)
-    {
-        _logger = logger;
-        _chatService = chatService;
-    }
+	public ChatController(ILogger<ChatController> logger, ChatService chatService)
+	{
+		_logger = logger;
+		_chatService = chatService;
+	}
 
-    [HttpGet]
-    public async Task<IEnumerable<Dto.Conversation>> GetCurrentUserPrivateConversations()
-    {
-        long? userId = User.GetUserId();
-        if (userId == null) return Enumerable.Empty<Dto.Conversation>();
-        return await _chatService.GetPrivateConversationsAsync(userId.Value);
+	[HttpGet]
+	public async Task<IEnumerable<Dto.Conversation>> GetCurrentUserPrivateConversations()
+	{
+		long? userId = User.GetUserId();
+		if (userId == null) return Enumerable.Empty<Dto.Conversation>();
+		return await _chatService.GetPrivateConversationsAsync(userId.Value);
 
-    }
+	}
 
-    [HttpGet]
-    public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessages([FromQuery] long conversationId)
-    {
+	[HttpGet]
+	public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessages([FromQuery] long conversationId)
+	{
 
-        const int numberOfMessages = 100;
+		const int numberOfMessages = 100;
 
-        long? userId = User.GetUserId();
-        // TODO
-        // Check if user is in conversation
+		long? userId = User.GetUserId();
+		// TODO
+		// Check if user is in conversation
 
-        if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
-        return await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages);
+		if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
+		return await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages);
 
-    }
+	}
 
-    [HttpGet]
-    public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessagesBefore([FromQuery] long conversationId, [FromQuery] DateTime startingMessageTimestamp)
-    {
-        // TODO move this to config
-        const int numberOfMessages = 100;
-        long? userId = User.GetUserId();
-        // TODO
-        // Check if user is in conversation
+	[HttpGet]
+	public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessagesBefore([FromQuery] long conversationId, [FromQuery] DateTime startingMessageTimestamp)
+	{
+		// TODO move this to config
+		const int numberOfMessages = 100;
+		long? userId = User.GetUserId();
+		// TODO
+		// Check if user is in conversation
 
-        if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
-        return await _chatService.GetLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, numberOfMessages);
-    }
+		if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
+		return await _chatService.GetLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, numberOfMessages);
+	}
 
 }

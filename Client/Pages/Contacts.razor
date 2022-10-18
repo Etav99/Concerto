@@ -16,66 +16,57 @@
 }
 else
 {
-	@if (contacts == null)
-	{
-		<MudPaper Class="d-flex align-content-center align-center" Width="100%" Height="100%" Elevation="0">
-			<MudProgressCircular Class="ma-auto" Size="Size.Large" Color="Color.Default" Indeterminate="true" />
-		</MudPaper>
-	}
-	else
-	{
-		<MudStack Row="true" Justify="Justify.SpaceEvenly" Class="mud-border-primary pa-4 ma-2">
-			<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-				<MudTable Items="contacts" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.User, bool>(UserFilter)">
-					<ToolBarContent>
-						<MudText Typo="Typo.h6">Contacts</MudText>
-						<MudSpacer />
-						<MudTextField @bind-Value="contactSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-					</ToolBarContent>
-					<HeaderContent>
-						<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
-						<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
-						<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
-					</HeaderContent>
-					<RowTemplate>
-						<MudTd DataLabel="Username">@context.Username</MudTd>
-						<MudTd DataLabel="First name">@context.FirstName</MudTd>
-						<MudTd DataLabel="Last name">@context.LastName</MudTd>
-					</RowTemplate>
-					<PagerContent>
-						<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-					</PagerContent>
-				</MudTable>
+	<MudTabs Elevation="4" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+		<MudTabPanel Text="Your contacts">
+			<MudTable Items="contacts" Hover="true" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.User, bool>(UserFilter)" Class="pa-4">
+				<ToolBarContent>
+					<MudText Typo="Typo.h6">Contacts</MudText>
+					<MudSpacer />
+					<MudTextField @bind-Value="contactSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				</ToolBarContent>
+				<HeaderContent>
+					<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Username">@context.Username</MudTd>
+					<MudTd DataLabel="First name">@context.FirstName</MudTd>
+					<MudTd DataLabel="Last name">@context.LastName</MudTd>
+				</RowTemplate>
+				<PagerContent>
+					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+				</PagerContent>
+			</MudTable>
+		</MudTabPanel>
 
-			</MudPaper>
-			<MudPaper Class="d-flex flex-wrap border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
-				<MudTable Items="searchResult" Height="65vh" Hover="true" SortLabel="Sort By" Elevation="0">
-					<ToolBarContent>
-						<MudText Typo="Typo.h6">Search for users</MudText>
-						<MudSpacer />
-						<MudTextField ValueChanged="@((string s) => Search(s))" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-					</ToolBarContent>
-					<HeaderContent>
-						<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
-						<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
-						<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
-					</HeaderContent>
-					<RowTemplate>
-						<MudTd DataLabel="Username">@context.Username</MudTd>
-						<MudTd DataLabel="First name">@context.FirstName</MudTd>
-						<MudTd DataLabel="Last name">@context.LastName</MudTd>
-						<MudTd>
-							<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => Invite(context))">Invite</MudButton>
-						</MudTd>
-					</RowTemplate>
-					<PagerContent>
-						<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-					</PagerContent>
-				</MudTable>
+		<MudTabPanel Text="Search contacts">
+			<MudTable Items="searchResult" Hover="true" SortLabel="Sort By" Elevation="0" Class="pa-4">
+				<ToolBarContent>
+					<MudText Typo="Typo.h6">Search for users</MudText>
+					<MudSpacer />
+					<MudTextField ValueChanged="@((string s) => Search(s))" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				</ToolBarContent>
+				<HeaderContent>
+					<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
+					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Username">@context.Username</MudTd>
+					<MudTd DataLabel="First name">@context.FirstName</MudTd>
+					<MudTd DataLabel="Last name">@context.LastName</MudTd>
+					<MudTd>
+						<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => Invite(context))">Invite</MudButton>
+					</MudTd>
+				</RowTemplate>
+				<PagerContent>
+					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+				</PagerContent>
+			</MudTable>
+		</MudTabPanel>
 
-			</MudPaper>
-		</MudStack>
-	}
+	</MudTabs>
 }
 
 @code

@@ -5,7 +5,7 @@
     <MudText>@Label</MudText>
 	<MudStack Spacing="4">
 		<MudStack Row="true">
-			<MudAutocomplete T="Dto.User" Label="Add member" @ref="_addContactAutocomplete"
+			<MudAutocomplete T="Dto.User" Label="Select user" @ref="_addContactAutocomplete"
 							 ValueChanged="@AddMember" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
 							 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
 							 ToStringFunc="@(u => u == null ? null : $"{u.FullName} ({u.Username})")" />
@@ -13,7 +13,7 @@
 		<MudPaper Elevation="0">
 			<MudChipSet AllClosable="true" OnClose="Closed">
 				<MudText>
-					Selected members:
+					Selected users:
 				</MudText>
 				@foreach (var contact in _selectedContacts)
 				{

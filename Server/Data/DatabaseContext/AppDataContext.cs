@@ -1,6 +1,5 @@
 ﻿using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 namespace Concerto.Server.Data.DatabaseContext;
 
@@ -22,7 +21,7 @@ public class AppDataContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Ignore<Entity>();
-  
+
         // Contact entity configuration
         modelBuilder.Entity<Contact>().HasKey(uc => new { uc.User1Id, uc.User2Id });
 
@@ -71,6 +70,11 @@ public class AppDataContext : DbContext
             .WithMany(r => r.RoomUsers)
             .HasForeignKey(ru => ru.RoomId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Session entity configuration
+        modelBuilder.Entity<Session>()
+            .Property(p => p.MeetingGuid)
+            .HasDefaultValueSql("gen_random_uuid()");
 
         // Catalog entity configuration
         modelBuilder.Entity<Catalog>()

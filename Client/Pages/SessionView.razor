@@ -9,33 +9,46 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net
 
 @inject NavigationManager NavigationManager
 @inject ISessionClient SessionClient;
 @inject IJSRuntime JsRuntime
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
 
-<MudStack>
-	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
-		@if (SelectedSession != null)
-		{
-			<MudText Align="Align.Center">@($"Session - {SelectedSession.Name}")</MudText>
-		}
+<MudPaper Class="d-flex flex-column" Height="100%" Elevation="4">
+
+	<MudPaper Class="pa-2 mud-theme-primary" Square="false" Elevation="0">
+		<MudStack Row="true" Justify="Justify.Center">
+			<MudIcon Icon="@Icons.Material.Filled.Group" />
+			<MudText Align="Align.Center">@($"{SelectedSession?.Name}")</MudText>
+		</MudStack>
 	</MudPaper>
 
-	<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(async () => await JsRuntime.InvokeAsync<string>("startMeeting"))" />
-	<div id="meet"></div>
+	<MudStack Row="true" Class="d-flex ma-4" Justify="Justify.Center" Style="height:calc(100% - 65px);">
 
-	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
-		<ChatBox SelectedConversation="SelectedSession?.Conversation" />
-		<CatalogList Type="CatalogList.ListType.Session" Session="SelectedSession" />
-	</MudPaper>
-</MudStack>
+		<MudPaper id="jitsi" Class="flex-grow-1 pa-2" MaxHeight="100%" Elevation="0" Outlined="true" />
 
 
-@code {
+			<MudStack Class="" Style="height:calc(100%);" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
+
+				<MudPaper Class="d-flex" Style="flex: 1 1 auto; height: 20%" Outlined="true">
+						<CatalogList Style="d-flex" Type="CatalogList.ListType.Session" Session="SelectedSession" />
+				</MudPaper>
+
+				<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
+					<ChatBox SelectedConversation="SelectedSession?.Conversation" />
+				</MudPaper>
+
+		</MudStack>
+
+	</MudStack>
+</MudPaper>
+
+	@code {
 	[Parameter]
 	public long SelectedSessionId { get; set; }
+
 	private Dto.Session? SelectedSession { get; set; }
 
 
@@ -44,6 +57,9 @@
 		if (SelectedSession == null)
 		{
 			NavigationManager.NavigateTo("rooms");
+			return;
 		}
+		var meetingName = WebUtility.UrlEncode($"{SelectedSession?.Name} ({SelectedSession?.MeetingGuid.ToString()})");
+		await JsRuntime.InvokeAsync<string>("startMeeting", "jitsi", $"Concerto/{meetingName})");
 	}
 }

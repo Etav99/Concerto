@@ -28,14 +28,14 @@
 }
 else
 {
-	<MudPaper Class="d-flex flex-wrap pa-4" Width="100%" Elevation="0">
-		
-		<ChatBox SelectedConversation="SelectedConversation" @ref="chatBox"/>
-
-		<ConversationList SelectedConversationId="SelectedConversationId" OnConversationSelected="ConversationSelected" />
-		
-	</MudPaper>
-
+	<MudStack Row="true" Justify="Justify.Center" Style="height:100%">
+		<MudPaper Width="350px">
+			<ConversationList SelectedConversationId="SelectedConversationId" OnConversationSelected="ConversationSelected" />
+		</MudPaper>
+		<MudPaper Width="70%">
+			<ChatBox SelectedConversation="SelectedConversation" @ref="chatBox" />
+		</MudPaper>
+	</MudStack>
 }
 
 @code

@@ -16,21 +16,25 @@
 
 <PageTitle>Room</PageTitle>
 
-<MudStack>
-	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Elevation="0">
-		@if (SelectedRoom != null)
-		{
-			<MudText Align="Align.Center">@($"Room - {SelectedRoom.Name}")</MudText>
-		}
-	</MudPaper>
+<MudPaper Class="d-flex flex-column" Height="100%" Elevation="4">
 
-	<MudPaper Class="d-flex flex-wrap mud-border-primary pa-2" Width="100%" Elevation="0">
+		<MudPaper Class="pa-2 mud-theme-primary" Square="false" Elevation="0">
+			<MudStack Row="true" Justify="Justify.Center">
+				<MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
+				<MudText Align="Align.Center">@($"{SelectedRoom?.Name}")</MudText>
+			</MudStack>
+		</MudPaper>
 
-		<ChatBox SelectedConversation="SelectedRoom?.Conversation" />
-		<RoomSessionList Room="SelectedRoom" OnSessionSelected="OnSessionSelected" />
-		
-	</MudPaper>
-</MudStack>
+		<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Stretch" Class="pa-4" Style="height:calc(100% - 50px)">
+			<MudPaper Class="" Elevation="0" Outlined="true">
+				<RoomSessionList Class="" Style="height:calc(100% - 50px)" Room="SelectedRoom" OnSessionSelected="OnSessionSelected" />
+			</MudPaper>
+			<MudPaper Class="flex-grow-1" Elevation="0" Outlined="true">
+				<ChatBox SelectedConversation="SelectedRoom?.Conversation" />
+			</MudPaper>
+		</MudStack>
+
+</MudPaper>
 
 
 @code {

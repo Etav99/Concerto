@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(options =>
    {
        options.RequireHttpsMetadata = false;
        // options.RequireHttpsMetadata = builder.Environment.IsProduction();
-       
+
        if (builder.Environment.IsDevelopment())
        {
            options.BackchannelHttpHandler = new HttpClientHandler()
@@ -133,6 +133,11 @@ app.MapFallbackToFile("index.html");
 await using var scope = app.Services.CreateAsyncScope();
 using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
+    while (!db.Database.CanConnect())
+    {
+        app.Logger.LogInformation("Waiting for database to start...");
+        await Task.Delay(1000);
+    }
     db.Database.Migrate();
 }
 

@@ -57,7 +57,7 @@ public class StorageController : ControllerBase
         long? userId = User.GetUserId();
         if (userId == null) return Unauthorized();
 
-        if (!await _storageService.HasCatalogReadAccess(userId.Value, catalogId)) return Unauthorized();
+        if (!await _storageService.HasCatalogWriteAccess(userId.Value, catalogId)) return Unauthorized();
 
         return Ok(await _storageService.GetCatalogSettings(catalogId));
     }

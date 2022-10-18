@@ -5,12 +5,11 @@
 
 <MudText Typo="Typo.h3" GutterBottom="true">Home</MudText>
 <MudText Class="mb-8">Welcome to Concerto</MudText>
-
 <AuthorizeView>
 	<Authorized>
 		<MudAlert Severity="Severity.Info">Hello, @context.User.Identity.Name!</MudAlert>
 	</Authorized>
 	<NotAuthorized>
-		<MudAlert Severity="Severity.Warning">Please log in.</MudAlert>
+		<MudAlert Severity="Severity.Warning">Pleases log in.</MudAlert>
 	</NotAuthorized>
 </AuthorizeView>

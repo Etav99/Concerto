@@ -15,8 +15,8 @@
 		else {
 			<MudStack Spacing="4">
 				<MudTextField @bind-Value="_catalogName" T="string" Label="Catalog name"></MudTextField>
-				<SessionPicker @bind-SelectedSessions="_selectedSessions" Label="Catalog name"/>
-				<ContactPicker @bind-SelectedContacts="_selectedContacts" Label="Catalog name" />
+				<SessionPicker @bind-SelectedSessions="_selectedSessions" Label="Share to sessions"/>
+				<ContactPicker @bind-SelectedContacts="_selectedContacts" Label="Share to users" />
 			</MudStack>
 		}
 	</DialogContent>
@@ -54,6 +54,7 @@
 			EditedCatalog = catalog;
 			_catalogName = catalog.Name;
 			_selectedSessions = catalog.SessionShares.ToHashSet();
+			_selectedContacts = catalog.UserShares.ToHashSet();
 		}
 		else if (InitialSharedSessionId.HasValue)
 		{

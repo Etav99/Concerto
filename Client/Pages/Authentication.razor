@@ -1,17 +1,25 @@
 ﻿@page "/authentication/{action}"
 @using Concerto.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
 @inject IChatService ChatService
+@inject IUserService UserService
 
 <RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="OnLogInSucceeded" />
 
 @code {
-
+	[CascadingParameter]
+	private Task<AuthenticationState>? authenticationStateTask { get; set; }
+	
 	[Parameter]
 	public string? Action { get; set; }
 
 	async Task OnLogInSucceeded() {
-		await ChatService.ConnectToChatAsync();
+		
+		if (authenticationStateTask == null) return;
+		UserService.SetAuthenticationState(await authenticationStateTask);
+		if (UserService.IsLoggedIn)
+			await ChatService.ConnectToChatAsync();
 	}
 }

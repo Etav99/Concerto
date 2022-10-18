@@ -1,7 +1,8 @@
 ﻿namespace Concerto.Shared.Models.Dto;
-public record Conversation : EntityModel
+public class Conversation
 {
-    public bool IsPrivate { get; init; }
-    public IEnumerable<Dto.User>? Users { get; init; }
-    public Dto.ChatMessage? LastMessage { get; set; }
+	public long Id { get; set; }
+	public bool IsPrivate { get; init; }
+	public IEnumerable<Dto.User>? Users { get; init; }
+	public Dto.ChatMessage? LastMessage { get; set; }
 }

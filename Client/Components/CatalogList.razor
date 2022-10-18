@@ -1,6 +1,7 @@
 ﻿@using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inherits MudComponentBase;
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject IStorageService StorageService
@@ -8,36 +9,40 @@
 @inject IJSRuntime JS
 @inject IAccessTokenProvider AccessTokenProvider
 
-<MudPaper Class="flex-grow-0 border-solid border-2 mud-border-primary pa-4 ma-2" Elevation="0">
 	@if (SelectedCatalog == null)
 	{
-		<MudTable Items="Catalogs" Loading="_loading" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.CatalogListItem, bool>(CatalogFilter)">
+		<MudTable Items="Catalogs" Loading="_loading" Filter="new Func<Dto.CatalogListItem, bool>(CatalogFilter)" SortLabel="Sort By"
+		  Class="@Class" Style="@Style" Height="calc(100% - 65px)" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">@CatalogListHeader</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="_catalogSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-				@if (EnableCreateButton) {
+				@if (EnableCreateButton)
+				{
 					<MudSpacer />
 					<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog()" />
 				}
 			</ToolBarContent>
 			<HeaderContent>
 				<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.CatalogListItem, object>(x=>x.Name)">Catalog name</MudTableSortLabel></MudTh>
+				<MudTh>Actions</MudTh>
 			</HeaderContent>
 			<RowTemplate>
 				<MudTd DataLabel="Catalog name">@context.Name</MudTd>
 				<MudTd Style="text-align:right">
-					@if(context.OwnerId == UserService.UserId) {
-						<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog(context.Id)" />
-					}
 					<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => OpenCatalog(context)" />
+					@if (context.OwnerId == UserService.UserId)
+					{
+					<MudIconButton Class="ml-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog(context.Id)" />
+					}
 				</MudTd>
 			</RowTemplate>
 		</MudTable>
 	}
 	else
 	{
-		<MudTable Items="@SelectedCatalog.Files" Loading="_loading" Hover="true" Height="65vh" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.UploadedFile, bool>(FileFilter)">
+		<MudTable Items="@SelectedCatalog.Files" Loading="_loading" SortLabel="Sort By" Filter="new Func<Dto.UploadedFile, bool>(FileFilter)"
+		  Class="pa-4 ma-2" Style="overflow: auto;" Hover="true" Elevation="0">
 			<ToolBarContent>
 				<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="() => SelectedCatalog = null" aria-label="Back"></MudIconButton>
 				<MudSpacer />
@@ -47,7 +52,7 @@
 				<MudSpacer />
 				@if (SelectedCatalog.OwnerId == UserService.UserId)
 				{
-					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="UploadFiles">Upload</MudButton>
+					<MudIconButton Class="mr-2" Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" Variant="Variant.Outlined" OnClick="UploadFiles" />
 					<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog(SelectedCatalog.Id)" />
 				}
 			</ToolBarContent>
@@ -57,12 +62,12 @@
 			<RowTemplate>
 				<MudTd DataLabel="File name">@context.Name</MudTd>
 				<MudTd Style="text-align:right">
-					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => DownloadFile(context))">Download</MudButton>
+					<MudIconButton Icon="@Icons.Material.Filled.FileDownload" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => DownloadFile(context))" />
 				</MudTd>
 			</RowTemplate>
 		</MudTable>
 	}
-</MudPaper>
+
 
 
 @code {

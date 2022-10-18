@@ -1,7 +1,6 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 

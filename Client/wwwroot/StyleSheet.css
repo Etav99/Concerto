@@ -1,0 +1,12 @@
+﻿
+vh100 {
+    height:100vh;
+}
+
+border-box {
+    box-sizing: border-box;
+}
+
+    border-box *, border-box *:before, border-box *:after {
+        box-sizing: inherit;
+    }

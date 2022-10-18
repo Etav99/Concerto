@@ -1,24 +1,9 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:28725",
-      "sslPort": 44342
-    }
-  },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
-    },
-    "Concerto.Server": {
-      "commandName": "Project",
-      "launchBrowser": true,
+      "launchUrl": "Concerto",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "false",
@@ -26,22 +11,43 @@
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",
+      "sslPort": 7001
+    },
+    "Concerto.Server": {
+      "commandName": "Project",
+      "launchBrowser": true,
       "launchUrl": "Concerto",
-      "dotnetRunMessages": true
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_DOCKER": "false",
+        "DB_STRING": "Host=localhost;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
+      },
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "https://localhost:7001;http://localhost:7000",
+      "dotnetRunMessages": true,
+      "hotReloadEnabled": true
     },
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/Concerto",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "true",
         "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
       },
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/Concerto",
       "useSSL": true,
       "httpPort": 7000,
       "sslPort": 7001,
       "applicationUrl": "https://localhost:7001;http://localhost:7000"
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:55572/",
+      "sslPort": 44398
     }
   }
 }

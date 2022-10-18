@@ -16,7 +16,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout Style="height:100vh;">
 	<MudAppBar Elevation="0">
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudText Typo="Typo.h4">Concerto</MudText>
@@ -45,10 +45,10 @@
 		</MudDrawerHeader>
 		<NavMenu />
 	</MudDrawer>
-	<MudMainContent>
-		<MudContainer MaxWidth="MaxWidth.False" Class="ma-auto pt-4">
-			@Body
-		</MudContainer>
+	<MudMainContent Style="height: 100%">
+		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") ? MaxWidth.ExtraLarge : MaxWidth.Large)" Class="pa-16" Style="height: 100%;">
+				@Body
+			</MudContainer>
 	</MudMainContent>
 </MudLayout>
 
