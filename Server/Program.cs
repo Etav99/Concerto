@@ -3,6 +3,7 @@ using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Extensions;
 using Concerto.Server.Hubs;
 using Concerto.Server.Services;
+using Concerto.Server.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.SignalR;
@@ -36,8 +37,8 @@ builder.Services.AddAuthentication(options =>
    {
        options.RequireHttpsMetadata = false;
        // options.RequireHttpsMetadata = builder.Environment.IsProduction();
-
-       if (builder.Environment.IsDevelopment())
+       
+       if (AppSettings.Jwt.AcceptAnyServerCertificateValidator)
        {
            options.BackchannelHttpHandler = new HttpClientHandler()
            {
@@ -46,17 +47,9 @@ builder.Services.AddAuthentication(options =>
            };
        }
 
-       if (builder.Environment.IsDocker())
-       {
-           options.MetadataAddress = "http://keycloak:8080/realms/concerto/.well-known/openid-configuration";
-           options.Authority = "http://keycloak:8080/realms/concerto";
-       }
-       else
-       {
-           options.MetadataAddress = "http://localhost:7200/realms/concerto/.well-known/openid-configuration";
-           options.Authority = "http://localhost:7200/realms/concerto";
-       }
-       options.Audience = "account";
+       options.MetadataAddress = AppSettings.Jwt.MetadataAddress;
+       options.Authority = AppSettings.Jwt.Authority;
+       options.Audience = AppSettings.Jwt.Audience;
 
        options.Events = new JwtBearerEvents
        {
@@ -81,7 +74,7 @@ builder.Services.AddAuthorization();
 
 // Configure database context
 builder.Services.AddDbContext<AppDataContext>(options =>
-    options.UseNpgsql(EnvironmentHelper.GetVariable("DB_STRING"))
+    options.UseNpgsql(AppSettings.Database.DbString)
 );
 builder.Services.AddScoped<AppDataContext>();
 
@@ -93,7 +86,6 @@ builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<StorageService>();
 
 var app = builder.Build();
-app.Logger.LogInformation($"IsDocker = {builder.Environment.IsDocker()}");
 app.UsePathBase("/Concerto");
 
 app.UseSwagger();
@@ -135,7 +127,7 @@ using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
     while (!db.Database.CanConnect())
     {
-        app.Logger.LogInformation("Waiting for database to start...");
+        app.Logger.LogInformation("Waiting for database connection...");
         await Task.Delay(1000);
     }
     db.Database.Migrate();

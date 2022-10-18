@@ -7,8 +7,8 @@ public static class EnvironmentHelper
 		string? variable = Environment.GetEnvironmentVariable(variableName);
 		if (variable == null)
 		{
-			throw new KeyNotFoundException($"Environment variable {variableName} not found");
-		}
+            return string.Empty;
+        }
 
 		return variable;
 	}
