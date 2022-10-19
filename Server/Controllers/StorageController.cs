@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Extensions;
+using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -25,60 +26,48 @@ public class StorageController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetOwnedCatalogs()
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        return Ok(await _storageService.GetOwnedCatalogs(userId.Value));
+        long userId = HttpContext.GetUserId();
+        return Ok(await _storageService.GetOwnedCatalogs(userId));
     }
-
+    
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSharedCatalogs()
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        return Ok(await _storageService.GetSharedCatalogs(userId.Value));
+        long userId = HttpContext.GetUserId();
+        return Ok(await _storageService.GetSharedCatalogs(userId));
     }
 
     [HttpGet]
     public async Task<ActionResult<Dto.CatalogContent>> GetCatalogContent([FromQuery] long catalogId)
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        if (!await _storageService.HasCatalogReadAccess(userId.Value, catalogId)) return Unauthorized();
-
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.HasCatalogReadAccess(userId, catalogId)) return Forbid();
         return Ok(await _storageService.GetCatalogContent(catalogId));
     }
 
     [HttpGet]
     public async Task<ActionResult<Dto.CatalogSettings>> GetCatalogSettings([FromQuery] long catalogId)
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        if (!await _storageService.HasCatalogWriteAccess(userId.Value, catalogId)) return Unauthorized();
-
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.HasCatalogWriteAccess(userId, catalogId)) return Forbid();
         return Ok(await _storageService.GetCatalogSettings(catalogId));
     }
 
+    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult> CreateCatalog([FromBody] Dto.CreateCatalogRequest createCatalogRequest)
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        await _storageService.CreateCatalog(createCatalogRequest, userId.Value);
+        long userId = HttpContext.GetUserId();
+        await _storageService.CreateCatalog(createCatalogRequest, userId);
         return Ok();
     }
 
+    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult> UpdateCatalog([FromBody] Dto.UpdateCatalogRequest updateCatalogRequest)
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        if (!await _storageService.HasCatalogWriteAccess(User.GetUserId(), updateCatalogRequest.Id)) return Unauthorized();
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.HasCatalogWriteAccess(userId, updateCatalogRequest.Id)) return Forbid();
         await _storageService.UpdateCatalog(updateCatalogRequest);
         return Ok();
     }
@@ -87,19 +76,19 @@ public class StorageController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSessionCatalogs([FromQuery] long sessionId)
     {
-        long? userId = User.GetUserId();
-        if (userId == null) return Unauthorized();
-
-        if (!await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return Unauthorized();
-        var catalogs = await _storageService.GetSessionCatalogs(userId.Value, sessionId);
+        long userId = HttpContext.GetUserId();
+        
+        if (!await _sessionService.IsUserSessionMember(userId, sessionId)) return Forbid();
+        var catalogs = await _storageService.GetSessionCatalogs(userId, sessionId);
         return Ok(catalogs);
     }
 
+    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult<IEnumerable<Dto.FileUploadResult>>> UploadFiles([FromForm] IEnumerable<IFormFile> files, [FromQuery] long catalogId)
     {
-        // Check if user has write access to catalog
-        if (!await _storageService.HasCatalogWriteAccess(User.GetUserId(), catalogId)) return Unauthorized();
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.HasCatalogWriteAccess(userId, catalogId)) return Forbid();
 
         var fileUploadResults = await _storageService.AddFilesToCatalog(files, catalogId);
         return Ok(fileUploadResults);
@@ -108,8 +97,8 @@ public class StorageController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> DownloadFile([FromQuery] long fileId)
     {
-        // Check if user has read access to file
-        if (!await _storageService.HasFileReadAccess(User.GetUserId(), fileId)) return Unauthorized();
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.HasFileReadAccess(userId, fileId)) return Forbid();
 
         var file = await _storageService.GetFile(fileId);
         if (file == null) return NotFound();

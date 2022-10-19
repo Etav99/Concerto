@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Extensions;
+using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -23,12 +24,12 @@ public class SessionController : ControllerBase
 		_sessionService = sessionService;
 	}
 
-	[HttpPost]
+    [Authorize(Roles = "teacher")]
+    [HttpPost]
 	public async Task<ActionResult> CreateSession([FromBody] Dto.CreateSessionRequest request)
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return Unauthorized();
-		if (!await _roomService.IsUserRoomMember(userId.Value, request.RoomId)) return Unauthorized();
+        long userId = HttpContext.GetUserId();
+		if (!await _roomService.IsUserRoomMember(userId, request.RoomId)) return Forbid();
 
 		if (await _sessionService.CreateSession(request))
 		{
@@ -38,25 +39,20 @@ public class SessionController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<Dto.Session?> GetSession(long sessionId)
+	public async Task<ActionResult<Dto.Session>> GetSession(long sessionId)
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return null;
-		if (!await _sessionService.IsUserSessionMember(userId.Value, sessionId)) return null;
-
+        long userId = HttpContext.GetUserId();
+		if (!await _sessionService.IsUserSessionMember(userId, sessionId)) return Forbid();
 		var session = await _sessionService.GetSession(sessionId);
-		return session;
-	}
-
+        return session is null ? NotFound() : Ok(session);
+    }
+    
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.Session?>>> GetRoomSessions(long roomId)
+	public async Task<ActionResult<IEnumerable<Dto.Session>>> GetRoomSessions(long roomId)
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return Unauthorized();
-
-		if (!await _roomService.IsUserRoomMember(userId.Value, roomId)) return Unauthorized();
-
-		return Ok(await _sessionService.GetRoomSessions(roomId));
+        long userId = HttpContext.GetUserId();
+        if (!await _roomService.IsUserRoomMember(userId, roomId)) return Forbid();
+        return Ok(await _sessionService.GetRoomSessions(roomId));
 	}
 
 }

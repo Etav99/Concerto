@@ -2,6 +2,7 @@
 using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Extensions;
 using Concerto.Server.Hubs;
+using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Server.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,7 +22,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<RoomService>();
+builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<StorageService>();
+builder.Services.AddScoped<IdentityManagerService>();
+
 
 //builder.Services.AddResponseCompression(opts =>
 //{
@@ -38,7 +48,7 @@ builder.Services.AddAuthentication(options =>
        options.RequireHttpsMetadata = false;
        // options.RequireHttpsMetadata = builder.Environment.IsProduction();
        
-       if (AppSettings.Jwt.AcceptAnyServerCertificateValidator)
+       if (AppSettings.Oidc.AcceptAnyServerCertificateValidator)
        {
            options.BackchannelHttpHandler = new HttpClientHandler()
            {
@@ -47,9 +57,9 @@ builder.Services.AddAuthentication(options =>
            };
        }
 
-       options.MetadataAddress = AppSettings.Jwt.MetadataAddress;
-       options.Authority = AppSettings.Jwt.Authority;
-       options.Audience = AppSettings.Jwt.Audience;
+       options.MetadataAddress = AppSettings.Oidc.MetadataAddress;
+       options.Authority = AppSettings.Oidc.Authority;
+       options.Audience = AppSettings.Oidc.Audience;
 
        options.Events = new JwtBearerEvents
        {
@@ -72,18 +82,20 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddOidcAuthentication(options =>
+{
+    options.ProviderOptions.Authority = builder.Configuration["authorityUrl"];
+    options.ProviderOptions.ClientId = "concerto-server";
+    options.ProviderOptions.ResponseType = "code";
+    options.ProviderOptions.PostLogoutRedirectUri = builder.Configuration["redirectUrl"];
+    options.ProviderOptions.DefaultScopes.Add("roles");
+});
+
 // Configure database context
 builder.Services.AddDbContext<AppDataContext>(options =>
     options.UseNpgsql(AppSettings.Database.DbString)
 );
 builder.Services.AddScoped<AppDataContext>();
-
-// Add Services
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ChatService>();
-builder.Services.AddScoped<RoomService>();
-builder.Services.AddScoped<SessionService>();
-builder.Services.AddScoped<StorageService>();
 
 var app = builder.Build();
 app.UsePathBase("/Concerto");
@@ -108,7 +120,7 @@ else
 
 // app.UseHttpsRedirection();
 app.UseAuthentication();
-
+app.UseUserIdMapperMiddleware();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
@@ -125,12 +137,21 @@ app.MapFallbackToFile("index.html");
 await using var scope = app.Services.CreateAsyncScope();
 using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
-    while (!db.Database.CanConnect())
+    bool success = false;
+    while(!success)
     {
-        app.Logger.LogInformation("Waiting for database connection...");
-        await Task.Delay(1000);
+        try
+        {
+            db.Database.Migrate();
+            success = true;
+        }
+        catch (Npgsql.NpgsqlException e)
+        {
+            logger.LogError("Can't connect to database, retrying in 5 seconds");
+            await Task.Delay(5000);
+        }
     }
-    db.Database.Migrate();
+
 }
 
 app.Run();

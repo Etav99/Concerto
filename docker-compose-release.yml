@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   concerto.server:
-    image: etav/concertoserver
+    image: etav/concerto_server
     build:
       context: .
       dockerfile: Server/Dockerfile

@@ -11,14 +11,14 @@
 @code {
 	[CascadingParameter]
 	private Task<AuthenticationState>? authenticationStateTask { get; set; }
-	
+
 	[Parameter]
 	public string? Action { get; set; }
 
 	async Task OnLogInSucceeded() {
-		
 		if (authenticationStateTask == null) return;
 		UserService.SetAuthenticationState(await authenticationStateTask);
+		await UserService.FetchUserId();
 		if (UserService.IsLoggedIn)
 			await ChatService.ConnectToChatAsync();
 	}

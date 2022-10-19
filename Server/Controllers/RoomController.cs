@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Extensions;
+using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -24,29 +25,29 @@ public class RoomController : ControllerBase
 	[HttpGet]
 	public async Task<IEnumerable<Dto.Room>> GetCurrentUserRooms()
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return Enumerable.Empty<Dto.Room>();
-		return await _roomService.GetUserRooms(userId.Value);
+        long userId = HttpContext.GetUserId();
+		return await _roomService.GetUserRooms(userId);
 	}
 
 	[HttpGet]
-	public async Task<Dto.Room?> GetRoom(long roomId)
+	public async Task<ActionResult<Dto.Room>> GetRoom(long roomId)
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return null;
-		if (!await _roomService.IsUserRoomMember(userId.Value, roomId)) return null;
+        long userId = HttpContext.GetUserId();
+        
+		if (!await _roomService.IsUserRoomMember(userId, roomId)) return Forbid();
 
 		var room = await _roomService.GetRoom(roomId);
-		return room;
-	}
+        if (room == null) return NotFound();
+        return Ok(room);
+    }
 
-	[HttpPost]
+    [Authorize(Roles = "teacher")]
+    [HttpPost]
 	public async Task<ActionResult> CreateRoomForCurrentUser([FromBody] Dto.CreateRoomRequest room)
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return Unauthorized();
-
-		if (await _roomService.CreateRoom(room, userId.Value))
+        long userId = HttpContext.GetUserId();
+       
+		if (await _roomService.CreateRoom(room, userId))
 		{
 			return Ok();
 		}

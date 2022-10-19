@@ -39,6 +39,10 @@
     {
         var authState = await authenticationStateTask;
         var user = authState.User;
+        bool test = user.IsInRole("user");
+        var id = user.Identity as ClaimsIdentity;
+        var x = id.RoleClaimType;
+
 
         if (user.Identity.IsAuthenticated)
         {

@@ -1,4 +1,5 @@
-﻿using Concerto.Server.Services;
+﻿using Concerto.Server.Middlewares;
+using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,38 +23,30 @@ public class ChatController : ControllerBase
 	[HttpGet]
 	public async Task<IEnumerable<Dto.Conversation>> GetCurrentUserPrivateConversations()
 	{
-		long? userId = User.GetUserId();
-		if (userId == null) return Enumerable.Empty<Dto.Conversation>();
-		return await _chatService.GetPrivateConversationsAsync(userId.Value);
+		long userId = HttpContext.GetUserId();        
+		return await _chatService.GetPrivateConversationsAsync(userId);
 
 	}
 
 	[HttpGet]
-	public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessages([FromQuery] long conversationId)
+	public async Task<ActionResult<IEnumerable<Dto.ChatMessage>>> GetCurrentUserLastMessages([FromQuery] long conversationId)
 	{
-
 		const int numberOfMessages = 100;
+        long userId = HttpContext.GetUserId();
 
-		long? userId = User.GetUserId();
-		// TODO
-		// Check if user is in conversation
-
-		if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
-		return await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages);
-
+        if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Unauthorized();
+        // if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
+        return Ok(await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages));
 	}
 
 	[HttpGet]
-	public async Task<IEnumerable<Dto.ChatMessage>> GetCurrentUserLastMessagesBefore([FromQuery] long conversationId, [FromQuery] DateTime startingMessageTimestamp)
+	public async Task<ActionResult<IEnumerable<Dto.ChatMessage>>> GetCurrentUserLastMessagesBefore([FromQuery] long conversationId, [FromQuery] DateTime startingMessageTimestamp)
 	{
 		// TODO move this to config
 		const int numberOfMessages = 100;
-		long? userId = User.GetUserId();
-		// TODO
-		// Check if user is in conversation
-
-		if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
-		return await _chatService.GetLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, numberOfMessages);
+        long userId = HttpContext.GetUserId();
+        if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Unauthorized();
+		return Ok(await _chatService.GetLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, numberOfMessages));
 	}
 
 }

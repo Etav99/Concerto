@@ -138,8 +138,8 @@ public class AppDataContext : DbContext
         modelBuilder
             .Entity<Room>()
             .HasData(
-                new Room { Id = 1, Name = "Room 1", ConversationId = 7 },
-                new Room { Id = 2, Name = "Room 2", ConversationId = 8 }
+                new Room { Id = 1, OwnerId = 1, Name = "Room 1", ConversationId = 7 },
+                new Room { Id = 2, OwnerId = 1, Name = "Room 2", ConversationId = 8 }
             );
 
         modelBuilder

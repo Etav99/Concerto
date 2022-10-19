@@ -12,14 +12,14 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20221017162516_Initial")]
+    [Migration("20221019200518_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -111,7 +111,7 @@ namespace Concerto.Server.Migrations
                             Id = 1L,
                             Content = "Test message 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 17, 16, 20, 16, 472, DateTimeKind.Utc).AddTicks(7634),
+                            SendTimestamp = new DateTime(2022, 10, 19, 20, 0, 18, 496, DateTimeKind.Utc).AddTicks(20),
                             SenderId = 1L
                         },
                         new
@@ -119,7 +119,7 @@ namespace Concerto.Server.Migrations
                             Id = 2L,
                             Content = "Test message 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 17, 16, 22, 16, 472, DateTimeKind.Utc).AddTicks(7638),
+                            SendTimestamp = new DateTime(2022, 10, 19, 20, 2, 18, 496, DateTimeKind.Utc).AddTicks(25),
                             SenderId = 1L
                         },
                         new
@@ -127,7 +127,7 @@ namespace Concerto.Server.Migrations
                             Id = 3L,
                             Content = "Test reply 1",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 17, 16, 23, 16, 472, DateTimeKind.Utc).AddTicks(7639),
+                            SendTimestamp = new DateTime(2022, 10, 19, 20, 3, 18, 496, DateTimeKind.Utc).AddTicks(26),
                             SenderId = 2L
                         },
                         new
@@ -135,7 +135,7 @@ namespace Concerto.Server.Migrations
                             Id = 4L,
                             Content = "Test reply 2",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 17, 16, 24, 16, 472, DateTimeKind.Utc).AddTicks(7640),
+                            SendTimestamp = new DateTime(2022, 10, 19, 20, 4, 18, 496, DateTimeKind.Utc).AddTicks(27),
                             SenderId = 2L
                         },
                         new
@@ -143,7 +143,7 @@ namespace Concerto.Server.Migrations
                             Id = 5L,
                             Content = "Test message 3",
                             ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 17, 16, 24, 16, 472, DateTimeKind.Utc).AddTicks(7640),
+                            SendTimestamp = new DateTime(2022, 10, 19, 20, 4, 18, 496, DateTimeKind.Utc).AddTicks(27),
                             SenderId = 1L
                         });
                 });
@@ -375,9 +375,16 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("ConversationId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<long>("OwnerId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -390,13 +397,17 @@ namespace Concerto.Server.Migrations
                         {
                             Id = 1L,
                             ConversationId = 7L,
-                            Name = "Room 1"
+                            Description = "",
+                            Name = "Room 1",
+                            OwnerId = 1L
                         },
                         new
                         {
                             Id = 2L,
                             ConversationId = 8L,
-                            Name = "Room 2"
+                            Description = "",
+                            Name = "Room 2",
+                            OwnerId = 1L
                         });
                 });
 
@@ -532,7 +543,7 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("SubjectId")
+                    b.Property<Guid>("SubjectId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Username")

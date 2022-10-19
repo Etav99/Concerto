@@ -1,17 +1,22 @@
 ﻿@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
 @inherits MudComponentBase;
 @inject IDialogService DialogService
+@inject IUserService UserService
 @inject HttpClient Http;
 
 <MudTable Items="_sessions" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true" Height="calc(100% - 15px)" Loading="@_loading" Class="@Class" Style="@Style">
 	<ToolBarContent>
-		<MudText Typo="Typo.h6">Sessions</MudText>
+		<MudText Class="mr-2" Typo="Typo.h6">Sessions</MudText>
 		<MudSpacer />
-		<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession">Create session</MudButton>
 		@if (!_loading && !_sessions.Any())
 		{
 			<MudSpacer />
 			<MudAlert Severity="Severity.Info">This room has no sessions yet.</MudAlert>
+		}
+		@if (Room?.OwnerId == UserService.UserId)
+		{
+			<MudIconButton Class="ml-2" Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession" />
 		}
 	</ToolBarContent>
 	<HeaderContent>

@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-@using Concerto.Client.Services
+@using Blazored.LocalStorage
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -11,6 +11,7 @@
 @inject IContactService ContactsManager
 @inject IUserService UserService
 @inject ISnackbar Snackbar
+@inject ISyncLocalStorageService LocalStorage
 
 <MudThemeProvider @bind-IsDarkMode="@_darkMode" />
 <MudDialogProvider />
@@ -21,7 +22,7 @@
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudText Typo="Typo.h4">Concerto</MudText>
 		<MudSpacer />
-		<MudSwitch @bind-Checked="@_darkMode" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Toggle theme</MudSwitch>
+		<MudSwitch T="bool" Checked="@_darkMode" CheckedChanged="@(async (b) => await toggleDarkMode(b))" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Toggle theme</MudSwitch>
 		<AuthorizeView>
 			<Authorized>
 				<MudText Class="mx-4">Welcome, @context.User.Identity.Name!</MudText>
@@ -74,11 +75,30 @@
 	{
 		Navigation.NavigateTo("authentication/login");
 	}
-	
+
+	private async Task toggleDarkMode(bool darkMode)
+	{
+		_darkMode = darkMode;
+		LocalStorage.SetItem("darkMode", _darkMode);
+	}
+
+	protected override void OnInitialized()
+	{
+		if (LocalStorage.ContainKey("darkMode"))
+		{
+			_darkMode = LocalStorage.GetItem<bool>("darkMode");
+		}
+		else
+		{
+			LocalStorage.SetItem("darkMode", _darkMode);
+		}
+	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		if (authenticationStateTask == null) return;
 		UserService.SetAuthenticationState(await authenticationStateTask);
+		await UserService.FetchUserId();
 		if (UserService.IsLoggedIn)
 			await ChatService.ConnectToChatAsync();
 	}

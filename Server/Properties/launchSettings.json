@@ -20,11 +20,14 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "false",
-        "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=M[?TU>*dZU;FI?JC#Z?q",
+        "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS",
         "JWT_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR": "true",
         "JWT_AUDIENCE": "account",
         "JWT_AUTHORITY": "http://localhost:7200/realms/concerto",
-        "JWT_METADATA_ADDRESS": "http://localhost:7200/realms/concerto/.well-known/openid-configuration"
+        "JWT_METADATA_ADDRESS": "http://localhost:7200/realms/concerto/.well-known/openid-configuration",
+        "SERVER_CLIENT_ID": "concerto-server",
+        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ",
+        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/admin/realms/concerto"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",

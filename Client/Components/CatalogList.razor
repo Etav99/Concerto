@@ -1,5 +1,6 @@
 ﻿@using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits MudComponentBase;
 @inject HttpClient Http
@@ -19,8 +20,10 @@
 				<MudTextField @bind-Value="_catalogSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				@if (EnableCreateButton)
 				{
-					<MudSpacer />
-					<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog()" />
+					<AuthorizeView Roles="teacher">
+						<MudSpacer />
+						<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateCatalogDialog()" />
+					</AuthorizeView>
 				}
 			</ToolBarContent>
 			<HeaderContent>

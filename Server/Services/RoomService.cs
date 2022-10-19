@@ -86,7 +86,7 @@ public class RoomService
 			User = u,
 			Room = room,
 		}).ToList();
-
+		room.OwnerId = userId;
 		room.Name = request.Name;
 		room.Conversation = roomConversation;
 		room.RoomUsers = roomUsers;

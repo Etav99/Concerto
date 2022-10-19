@@ -21,7 +21,7 @@ services:
       DB_STRING: "Host=postgres;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
 
   postgres:
-      image: postgres
+      image: postgres:15.0
       container_name: Postgres
       volumes:
         - postgres_data:/var/lib/postgresql/data

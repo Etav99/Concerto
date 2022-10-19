@@ -70,6 +70,7 @@ public static class ViewModelConversions
 		return new Dto.Room
 		{
 			Id = room.Id,
+			OwnerId = room.OwnerId,
 			Name = room.Name,
 			Users = room.RoomUsers.Select(ru => ru.User.ToDto()),
 			Conversation = room.Conversation.ToDto(),

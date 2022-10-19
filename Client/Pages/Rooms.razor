@@ -33,46 +33,45 @@ else
 	{
 		<MudAlert Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
 	}
-	else
-	{
-		<MudPaper Class="flex-grow-0 pa-4 ma-2" Elevation="4" MaxWidth="MaxWidth.Large">
-			<MudTable Items="RoomsList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
-				<ToolBarContent>
-					<MudText Typo="Typo.h6">Your rooms</MudText>
-					<MudSpacer />
-					<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-					<MudSpacer />
-					<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateRoom">Create room</MudButton>
-				</ToolBarContent>
-				<HeaderContent>
-					<MudTh>Room name</MudTh>
-					<MudTh>Members</MudTh>
-				</HeaderContent>
-				<RowTemplate>
-					<MudTd>
-						<MudText>@context.Name</MudText>
-					</MudTd>
-					<MudTd>
-						<MudList>
-							@foreach (var user in context.Users)
-							{
-								<MudListItem>
-									@($"{user.FirstName} {user.LastName}")
-								</MudListItem>
-							}
-						</MudList>
+	<MudPaper Class="flex-grow-0 pa-4 ma-2" Elevation="4" MaxWidth="MaxWidth.Large">
+		<MudTable Items="RoomsList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
+			<ToolBarContent>
+				<MudText Typo="Typo.h6">Your rooms</MudText>
+				<MudSpacer />
+				<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				<MudSpacer />
+				<AuthorizeView Roles="user">
+					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateRoom" />
+				</AuthorizeView>
+			</ToolBarContent>
+			<HeaderContent>
+				<MudTh>Room name</MudTh>
+				<MudTh>Members</MudTh>
+			</HeaderContent>
+			<RowTemplate>
+				<MudTd>
+					<MudText>@context.Name</MudText>
+				</MudTd>
+				<MudTd>
+					<MudList>
+						@foreach (var user in context.Users)
+						{
+							<MudListItem>
+								@($"{user.FirstName} {user.LastName}")
+							</MudListItem>
+						}
+					</MudList>
 
-					</MudTd>
-					<MudTd Style="text-align:right">
-						<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectRoom(@context))">Enter</MudButton>
-					</MudTd>
-				</RowTemplate>
-				<PagerContent>
-					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-				</PagerContent>
-			</MudTable>
-		</MudPaper>
-	}
+				</MudTd>
+				<MudTd Style="text-align:right">
+					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Login" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectRoom(@context))" />
+				</MudTd>
+			</RowTemplate>
+			<PagerContent>
+				<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+			</PagerContent>
+		</MudTable>
+	</MudPaper>
 }
 
 

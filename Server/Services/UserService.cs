@@ -1,14 +1,17 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
+using Concerto.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
 namespace Concerto.Server.Services;
 
 public class UserService
 {
 	private readonly ILogger<UserService> _logger;
-
+    
 	private readonly AppDataContext _context;
 	public UserService(ILogger<UserService> logger, AppDataContext context)
 	{
@@ -16,6 +19,12 @@ public class UserService
 		_context = context;
 	}
 
+    public async Task<long?> GetUserId(Guid subjectId)
+	{
+        var user = await _context.Users.Where(u => u.SubjectId == subjectId).FirstOrDefaultAsync();
+		return user?.Id;
+    }
+    
 	public async Task<Dto.User?> GetUser(long userId)
 	{
 		User? user = await _context.Users.FindAsync(userId);
@@ -25,8 +34,26 @@ public class UserService
 
 	public async Task<Dto.User?> GetUser(Guid subjectId)
 	{
-		return await _context.Users.Where(u => u.SubjectId == subjectId).Select(u => u.ToDto()).FirstOrDefaultAsync();
-	}
+        User? user = await _context.Users.Where(u => u.SubjectId == subjectId).FirstOrDefaultAsync();
+        if (user == null) return null;
+        return user.ToDto();
+    }
+
+	public async Task<bool> AddUserIfNotExists(ClaimsPrincipal userClaimsPrincipal)
+	{
+		User? user = await _context.Users
+			.Where(u => u.SubjectId == userClaimsPrincipal.GetSubjectId())
+			.FirstOrDefaultAsync();
+        
+        if (user == null)
+        {
+            user = new User(userClaimsPrincipal);
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+		return false;
+    }
 
 	public async Task<IEnumerable<Dto.User>> GetUserContacts(long userId)
 	{

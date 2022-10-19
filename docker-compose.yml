@@ -22,7 +22,7 @@ services:
       - concerto_files:/var/lib/concerto/storage
 
   postgres:
-      image: postgres
+      image: postgres:15.0
       container_name: Postgres
       volumes:
         - postgres_data:/var/lib/postgresql/data
@@ -44,7 +44,7 @@ services:
         - pgadmin_data:/var/lib/pgadmin
 
   keycloak:
-      image: quay.io/keycloak/keycloak:18.0.2
+      image: quay.io/keycloak/keycloak:19.0.3
       container_name: Keycloak
       env_file:
         - keycloak.env

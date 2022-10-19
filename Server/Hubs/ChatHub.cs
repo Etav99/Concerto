@@ -12,34 +12,43 @@ public class ChatHub : Hub
 
 	private readonly ILogger<ChatHub> _logger;
 	private readonly ChatService _chatService;
+	private readonly UserService _userService;
 
 
-	public ChatHub(ILogger<ChatHub> logger, ChatService chatService)
+	public ChatHub(ILogger<ChatHub> logger, ChatService chatService, UserService userService)
 	{
 		_logger = logger;
 		_chatService = chatService;
+		_userService = userService;
 	}
 
-	public override Task OnConnectedAsync()
+	public override async Task OnConnectedAsync()
 	{
-		string? userId = Context.GetUserIdString();
+		Guid? userSubId = Context.User?.GetSubjectId();
 
-		if (!string.IsNullOrEmpty(userId))
+		if (userSubId is not null)
 		{
-			_logger.LogDebug($"User with ID {userId} conncted to ChatHub");
-			Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            var userId = (await _userService.GetUserId(userSubId.Value)).ToString();
+            _logger.LogDebug($"User with ID {userId} conncted to ChatHub");
+			await Groups.AddToGroupAsync(Context.ConnectionId, userId!);
 		}
 		else
 		{
 			throw new Exception("ChatHub connection attempt with empty UserId");
 		}
-		return base.OnConnectedAsync();
+		
+		await base.OnConnectedAsync();
 	}
 
 	public async Task SendMessage(long conversationId, string content)
 	{
-		long? senderId = Context.GetUserId();
-		if (!senderId.HasValue)
+        Guid? senderSubId = Context.User?.GetSubjectId();
+        if (senderSubId is null)
+            return;
+
+        long? senderId = await _userService.GetUserId(senderSubId.Value);
+        
+        if (!senderId.HasValue)
 			return;
 
 		if (!await _chatService.IsUserInCoversationAsync(senderId.Value, conversationId))
