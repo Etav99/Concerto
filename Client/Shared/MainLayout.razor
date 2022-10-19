@@ -13,7 +13,7 @@
 @inject ISnackbar Snackbar
 @inject ISyncLocalStorageService LocalStorage
 
-<MudThemeProvider @bind-IsDarkMode="@_darkMode" />
+<MudThemeProvider @bind-IsDarkMode="@DarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -22,7 +22,7 @@
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudText Typo="Typo.h4">Concerto</MudText>
 		<MudSpacer />
-		<MudSwitch T="bool" Checked="@_darkMode" CheckedChanged="@(async (b) => await toggleDarkMode(b))" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Toggle theme</MudSwitch>
+		<MudSwitch T="bool" Checked="@DarkMode" CheckedChanged="@(async (b) => await toggleDarkMode(b))" ThumbIcon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Toggle theme</MudSwitch>
 		<AuthorizeView>
 			<Authorized>
 				<MudText Class="mx-4">Welcome, @context.User.Identity.Name!</MudText>
@@ -31,12 +31,11 @@
 				</MudStack>
 			</Authorized>
 			<NotAuthorized>
-				<MudText Class="mx-4">You're not logged in!</MudText>
+				<MudAlert Class="mx-4" Variant="Variant.Filled" Severity="Severity.Info">Please log in.</MudAlert>
 				<MudStack Row="true">
 					<MudButton Href="authentication/login" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Login">Log in</MudButton>
 					<MudButton Href="authentication/register" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AppRegistration">Register</MudButton>
 				</MudStack>
-
 			</NotAuthorized>
 		</AuthorizeView>
 	</MudAppBar>
@@ -48,8 +47,10 @@
 	</MudDrawer>
 	<MudMainContent Style="height: 100%">
 		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") ? MaxWidth.ExtraLarge : MaxWidth.Large)" Class="pa-16" Style="height: 100%;">
+			<CascadingValue TValue="bool" Value="DarkMode">
 				@Body
-			</MudContainer>
+			</CascadingValue>
+		</MudContainer>
 	</MudMainContent>
 </MudLayout>
 
@@ -57,7 +58,7 @@
 	[CascadingParameter]
 	private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
-	bool _darkMode = false;
+	bool DarkMode { get; set; } = false;
 	bool _drawerOpen = true;
 
 	void DrawerToggle()
@@ -78,19 +79,19 @@
 
 	private async Task toggleDarkMode(bool darkMode)
 	{
-		_darkMode = darkMode;
-		LocalStorage.SetItem("darkMode", _darkMode);
+		DarkMode = darkMode;
+		LocalStorage.SetItem("darkMode", DarkMode);
 	}
 
 	protected override void OnInitialized()
 	{
 		if (LocalStorage.ContainKey("darkMode"))
 		{
-			_darkMode = LocalStorage.GetItem<bool>("darkMode");
+			DarkMode = LocalStorage.GetItem<bool>("darkMode");
 		}
 		else
 		{
-			LocalStorage.SetItem("darkMode", _darkMode);
+			LocalStorage.SetItem("darkMode", DarkMode);
 		}
 	}
 
