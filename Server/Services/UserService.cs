@@ -45,14 +45,40 @@ public class UserService
 		User? user = await _context.Users
 			.Where(u => u.SubjectId == userClaimsPrincipal.GetSubjectId())
 			.FirstOrDefaultAsync();
-        
-        if (user == null)
-        {
-            user = new User(userClaimsPrincipal);
-            await _context.Users.AddAsync(user);
+
+		if (user == null)
+		{
+			user = new User(userClaimsPrincipal);
+			await _context.Users.AddAsync(user);
+			await _context.SaveChangesAsync();
+
+			// Add all users to contacts
+			var allUsers = await _context.Users.ToListAsync();
+            List<Contact> contacts = allUsers.Select(u => new Contact { User1Id = user.Id, User2Id = u.Id }).ToList();
+
+
+			// Create conversations with all users
+			List<Conversation> conversations = new();
+            foreach (var u in allUsers)
+            {
+                if (u.Id != user.Id)
+                {
+                    var conversation = new Conversation { IsPrivate = true };
+                    var conversationUsers = new List<ConversationUser>
+                    {
+                        new() { Conversation = conversation, User = user },
+                        new() { Conversation = conversation, User = u }
+                    };
+                    conversation.ConversationUsers = conversationUsers;
+					conversations.Add(conversation);
+                }
+            }
+
+            await _context.Contacts.AddRangeAsync(contacts);
+            await _context.Conversations.AddRangeAsync(conversations);
             await _context.SaveChangesAsync();
             return true;
-        }
+		}
 		return false;
     }
 

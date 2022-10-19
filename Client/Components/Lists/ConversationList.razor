@@ -28,7 +28,7 @@
 	{
 		get
 		{
-			return ChatService.Conversations.Values.ToList();
+			return ChatService.Conversations.Values.OrderByDescending(x => x.LastMessage?.SendTimestamp).ToList();
 		}
 	}
 
