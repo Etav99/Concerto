@@ -5,6 +5,7 @@ using Concerto.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace Concerto.Server.Services;
 
@@ -71,15 +72,15 @@ public class UserService
 	public async Task<IEnumerable<Dto.User>> SearchWithoutUser(long userId, string searchString)
 	{
 		return await _context.Users
-			.Where(u => u.Id != userId && (u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString)))
-			.Select(u => u.ToDto())
+			.Where(u => u.Id != userId && (EF.Functions.ILike(u.Username, $"%{searchString}%") || EF.Functions.ILike(u.FirstName + " " + u.LastName, $"%{searchString}%")))
+            .Select(u => u.ToDto())
 			.ToListAsync();
 	}
 
 	public async Task<IEnumerable<Dto.User>> Search(string searchString)
 	{
 		return await _context.Users
-			.Where(u => u.Username.Contains(searchString) || (u.FirstName + " " + u.LastName).Contains(searchString))
+			.Where(u => EF.Functions.ILike(u.Username, $"%{searchString}%") || EF.Functions.ILike(u.FirstName + " " + u.LastName, $"%{searchString}%"))
 			.Select(u => u.ToDto())
 			.ToListAsync();
 	}

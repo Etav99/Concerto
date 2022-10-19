@@ -28,11 +28,6 @@
 }
 else
 {
-
-	@if (RoomsList == null || !RoomsList.Any())
-	{
-		<MudAlert Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
-	}
 	<MudPaper Class="flex-grow-0 pa-4 ma-2" Elevation="4" MaxWidth="MaxWidth.Large">
 		<MudTable Items="RoomsList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
 			<ToolBarContent>
@@ -40,7 +35,13 @@ else
 				<MudSpacer />
 				<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				<MudSpacer />
-				<AuthorizeView Roles="user">
+				@if (RoomsList == null || !RoomsList.Any())
+				{
+					
+					<MudAlert Variant="Variant.Filled" Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
+					<MudSpacer />
+				}
+				<AuthorizeView Roles="teacher">
 					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateRoom" />
 				</AuthorizeView>
 			</ToolBarContent>

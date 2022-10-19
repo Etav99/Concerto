@@ -18,6 +18,9 @@ services:
       - 7001:443
     env_file:
       - concerto.env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=https://+:443;http://+:80
     volumes:
       - concerto_files:/var/lib/concerto/storage
 

@@ -57,7 +57,7 @@ else
 					<MudTd DataLabel="First name">@context.FirstName</MudTd>
 					<MudTd DataLabel="Last name">@context.LastName</MudTd>
 					<MudTd>
-						<MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => Invite(context))">Invite</MudButton>
+						<MudIconButton Icon="@Icons.Filled.PersonAdd" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => Invite(context))" />
 					</MudTd>
 				</RowTemplate>
 				<PagerContent>
