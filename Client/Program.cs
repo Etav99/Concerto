@@ -7,20 +7,16 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
+using static System.Net.WebRequestMethods;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-
-var http = new HttpClient()
-{
-	BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
-};
-using var response = await http.GetAsync("appsettings.json");
-using var stream = await response.Content.ReadAsStreamAsync();
-builder.Configuration.AddJsonStream(stream);
-
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+
+
+IAppSettingsClient appSettingsClient = new AppSettingsClient(new HttpClient() { BaseAddress = baseAddress });
+var clientAppSettings = await appSettingsClient.GetClientAppSettingsAsync();
 
 builder.Services.AddHttpClient("WebAPI",
 		client => client.BaseAddress = baseAddress)
@@ -59,12 +55,12 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddOidcAuthentication(options =>
 {
-	options.ProviderOptions.Authority = builder.Configuration["authorityUrl"];
+	options.ProviderOptions.Authority = clientAppSettings.AuthorityUrl;
 	options.ProviderOptions.ClientId = "concerto-client";
 	options.ProviderOptions.ResponseType = "code";
-	options.ProviderOptions.PostLogoutRedirectUri = builder.Configuration["postLogoutUrl"];
+	options.ProviderOptions.PostLogoutRedirectUri = clientAppSettings.PostLogoutUrl;
 	options.ProviderOptions.DefaultScopes.Add("roles");
-	options.AuthenticationPaths.RemoteRegisterPath = $"{builder.Configuration["authorityUrl"]}/login-actions/registration";
+	options.AuthenticationPaths.RemoteRegisterPath = $"{clientAppSettings.AuthorityUrl}/login-actions/registration";
 	options.UserOptions.RoleClaim = "role";
 })
 .AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
@@ -73,9 +69,5 @@ var host = builder.Build();
 
 var logger = host.Services.GetRequiredService<ILoggerFactory>()
 	.CreateLogger<Program>();
-
-logger.LogInformation($"{builder.Configuration["authorityUrl"]}/login-actions/registration");
-
-logger.LogInformation($"Remote = {Environment.GetEnvironmentVariable("ASPNETCORE_REMOTE")?.Equals("true") ?? false}");
 
 await host.RunAsync();
