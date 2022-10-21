@@ -54,8 +54,7 @@ public class UserService
 
 			// Add all users to contacts
 			var allUsers = await _context.Users.ToListAsync();
-            List<Contact> contacts = allUsers.Select(u => new Contact { User1Id = user.Id, User2Id = u.Id }).ToList();
-
+            List<Contact> contacts = allUsers.Where(u => u.Id != user.Id).Select(u => new Contact { User1Id = user.Id, User2Id = u.Id }).ToList();
 
 			// Create conversations with all users
 			List<Conversation> conversations = new();

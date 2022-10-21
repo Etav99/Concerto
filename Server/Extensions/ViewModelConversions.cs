@@ -65,31 +65,6 @@ public static class ViewModelConversions
 	}
 
 
-	public static Dto.Room ToDto(this Room room)
-	{
-		return new Dto.Room
-		{
-			Id = room.Id,
-			OwnerId = room.OwnerId,
-			Name = room.Name,
-			Users = room.RoomUsers.Select(ru => ru.User.ToDto()),
-			Conversation = room.Conversation.ToDto(),
-			Sessions = room.Sessions?.Select(s => s.ToDto()) ?? Enumerable.Empty<Dto.Session>(),
-		};
-	}
-
-	public static Dto.Session ToDto(this Session session)
-	{
-		return new Dto.Session
-		{
-			Id = session.Id,
-			Name = session.Name,
-			ScheduledDateTime = session.ScheduledDate,
-			Conversation = session.Conversation?.ToDto(),
-			MeetingGuid = session.MeetingGuid,
-		};
-	}
-
 	public static Conversation ToGroupConversation(this IEnumerable<User> users)
 	{
 		var conversation = new Conversation();

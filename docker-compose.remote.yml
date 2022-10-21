@@ -5,6 +5,7 @@ volumes:
       driver: local
   pgadmin_data:
   keycloak_data:
+  concerto_files:
 
 services:
   concerto.server:
@@ -15,22 +16,18 @@ services:
     ports:
       - 7000:80
       - 7001:443
-    environment:
-      ASPNETCORE_DOCKER: true
-      ASPNETCORE_REMOTE: true
-      DB_STRING: "Host=postgres;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
+    env_file:
+      - concerto_remote.env
+    volumes:
+      - concerto_files:/var/lib/concerto/storage
 
   postgres:
       image: postgres:15.0
       container_name: Postgres
       volumes:
         - postgres_data:/var/lib/postgresql/data
-      environment:
-        POSTGRES_DB: keycloak
-        POSTGRES_USER: admin
-        POSTGRES_PASSWORD: admin
-      ports:
-        - 5432:5432
+      env_file:
+        - postgres.env
 
   pgadmin:
       container_name: pgadmin
@@ -38,23 +35,17 @@ services:
       restart: always
       environment:
         PGADMIN_DEFAULT_EMAIL: admin@admin.com
-        PGADMIN_DEFAULT_PASSWORD: admin
+        PGADMIN_DEFAULT_PASSWORD: JGrR3K2QjNRgTGDl5zYV7heBj4
       ports:
         - "7100:80"
+      volumes:
+        - pgadmin_data:/var/lib/pgadmin
 
   keycloak:
-      image: quay.io/keycloak/keycloak:18.0.2
-      command: -c standalone.xml
+      image: quay.io/keycloak/keycloak:19.0.3
       container_name: Keycloak
-      environment:
-        KC_DB: postgres
-        KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-        KC_DB_USERNAME: admin
-        KC_DB_PASSWORD: admin
-        KEYCLOAK_ADMIN: admin
-        KEYCLOAK_ADMIN_PASSWORD: admin
-        # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
-        # JDBC_PARAMS: "ssl=true"
+      env_file:
+        - keycloak.env
       ports:
         - 7200:8080
         - 7201:8443

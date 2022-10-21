@@ -82,15 +82,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddOidcAuthentication(options =>
-{
-    options.ProviderOptions.Authority = builder.Configuration["authorityUrl"];
-    options.ProviderOptions.ClientId = "concerto-server";
-    options.ProviderOptions.ResponseType = "code";
-    options.ProviderOptions.PostLogoutRedirectUri = builder.Configuration["redirectUrl"];
-    options.ProviderOptions.DefaultScopes.Add("roles");
-});
-
 // Configure database context
 builder.Services.AddDbContext<AppDataContext>(options =>
     options.UseNpgsql(AppSettings.Database.DbString)

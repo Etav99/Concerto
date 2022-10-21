@@ -96,7 +96,7 @@
 		}
 	}
 
-	private bool EnableCreateButton => Type == ListType.Owned || (Type == ListType.Session && Session?.Id == UserService.UserId);
+	private bool EnableCreateButton => Type == ListType.Owned || (Type == ListType.Session && Session != null && Session.RoomOwnerId == UserService.UserId);
 	private bool EnableSettingsButton => Type == ListType.Owned;
 
 	private string CatalogListHeader => Type == ListType.Owned ? "Your catalogs"

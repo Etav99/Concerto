@@ -2,7 +2,9 @@
 public record Session : EntityModel
 {
 	public string Name { get; init; }
-	public DateTime ScheduledDateTime { get; set; }
+    public long RoomId { get; init; }
+    public long RoomOwnerId { get; init; }
+    public DateTime ScheduledDateTime { get; set; }
 	public Conversation Conversation { get; set; }
 	public IEnumerable<Dto.UploadedFile>? Files { get; set; }
 	public Guid MeetingGuid { get; init; }

@@ -24,7 +24,11 @@ public class SessionService
 		if (session == null)
 			return null;
 
-		await _context.Entry(session)
+        await _context.Entry(session)
+            .Reference(s => s.Room)
+            .LoadAsync();
+
+        await _context.Entry(session)
 			.Reference(s => s.Conversation)
 			.Query()
 			.Include(c => c.ConversationUsers)

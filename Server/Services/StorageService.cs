@@ -116,8 +116,22 @@ public class StorageService
         if (catalog == null) return false;
         if (catalog.OwnerId == userId) return true;
 
-        await _context.Entry(catalog).Collection(c => c.UsersSharedTo).LoadAsync();
-        return catalog.UsersSharedTo.Any(u => u.Id == userId);
+        var hasDirectAccess = await _context.Entry(catalog)
+            .Collection(c => c.UsersSharedTo)
+            .Query()
+            .AnyAsync(u => u.Id == userId);
+
+        if (hasDirectAccess)
+            return true;
+
+        var hasSessionAccess = await _context.Entry(catalog)
+            .Collection(c => c.SharedInSessions)
+            .Query()
+            .Include(s => s.Room).ThenInclude(r => r.RoomUsers)
+            .SelectMany(s => s.Room.RoomUsers)
+            .AnyAsync(ru => ru.UserId == userId);
+
+        return hasSessionAccess;
     }
 
     internal async Task<bool> HasCatalogWriteAccess(long? userId, long catalogId)
@@ -159,7 +173,7 @@ public class StorageService
     {
         var catalog = await _context.Catalogs.FindAsync(id);
         if (catalog == null) return null;
-        await _context.Entry(catalog).Collection(c => c.SharedInSessions).LoadAsync();
+        await _context.Entry(catalog).Collection(c => c.SharedInSessions).Query().Include(sis => sis.Room).LoadAsync();
         await _context.Entry(catalog).Collection(c => c.UsersSharedTo).LoadAsync();
         return catalog.ToCatalogSettings();
     }

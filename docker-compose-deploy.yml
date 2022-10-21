@@ -14,8 +14,8 @@ services:
       context: .
       dockerfile: Server/Dockerfile
     ports:
-      - 7000:80  # Port widoczny dla swiata zewnętrznego
-      - 7001:443 # Port widoczny dla swiata zewnętrznego
+      - 7000:80  # Port 7000 widoczny dla swiata zewnętrznego
+      - 7001:443 # Port 7001 widoczny dla swiata zewnętrznego
     env_file:
       - concerto.env
     environment:
@@ -31,17 +31,15 @@ services:
         - postgres_data:/var/lib/postgresql/data
       env_file:
         - postgres.env
-      ports:
-        - 5432:5432
 
   keycloak:
-      image: quay.io/keycloak/keycloak:18.0.2
+      image: quay.io/keycloak/keycloak:19.0.3
       container_name: Keycloak
       env_file:
         - keycloak.env
       ports:
-        - 7200:8080
-        - 7201:8443
+        - 7200:8080 # Port 7200 widoczny dla swiata zewnętrznego
+        - 7201:8443 # Port 7201 widoczny dla swiata zewnętrznego
       depends_on:
         - postgres
       volumes:
