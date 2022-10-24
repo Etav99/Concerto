@@ -8,14 +8,14 @@ volumes:
   concerto_files:
 
 services:
-  concerto.server:
+  concerto_server:
     image: ${DOCKER_REGISTRY-}concertoserver
     build:
       context: .
       dockerfile: Server/Dockerfile
-    ports:
-      - 7000:80
-      - 7001:443
+    expose:
+      - 80
+      - 443
     env_file:
       - concerto.env
     volumes:
@@ -38,8 +38,8 @@ services:
       environment:
         PGADMIN_DEFAULT_EMAIL: admin@admin.com
         PGADMIN_DEFAULT_PASSWORD: admin
-      ports:
-        - "7100:80"
+      expose:
+        - 80
       volumes:
         - pgadmin_data:/var/lib/pgadmin
 
@@ -50,9 +50,16 @@ services:
         - keycloak.env
       ports:
         - 7200:8080
-        - 7201:8443
       depends_on:
         - postgres
       volumes:
         - keycloak_data:/var/lib/keycloak/data
       command: start-dev
+      
+  concerto_reverseproxy:
+      container_name: Reverse_Proxy
+      ports:
+        - 7300:80
+      build:
+        context: ./nginx
+        dockerfile: ./Dockerfile

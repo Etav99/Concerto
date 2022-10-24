@@ -16,5 +16,10 @@ function startMeeting (parentId, roomName) {
 		lang: 'en'
 	};
 	const api = new JitsiMeetExternalAPI(domain, options);
+	api.executeCommand('overwriteConfig',
+		{
+			fileRecordingsEnabled: true
+		}
+	);
 	api.addListener("videoConferenceLeft", () => { api.dispose(); startMeeting(parentId, roomName) })
 }

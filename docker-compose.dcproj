@@ -16,6 +16,8 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="keycloak.env" />
+    <None Include="nginx\Dockerfile" />
+    <None Include="nginx\nginx.conf" />
     <None Include="postgres.env" />
   </ItemGroup>
 </Project>

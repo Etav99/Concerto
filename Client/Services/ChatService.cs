@@ -82,7 +82,7 @@ public class ChatService : IChatService
 		_snackbar = snackbar;
 
 		ChatHubConnection = new HubConnectionBuilder()
-				.WithUrl(_navigationManager.ToAbsoluteUri("/chat"), options =>
+				.WithUrl(_navigationManager.ToAbsoluteUri("chat"), options =>
 				{
 					options.AccessTokenProvider = async () =>
 					{

@@ -1,8 +1,14 @@
 version: '3.4'
 
 services:
-  concerto.server:
+  concerto_server:
     image: etav/concerto_server
     build:
       context: .
       dockerfile: Server/Dockerfile
+      
+  concerto_reverseproxy:
+    image: etav/concerto_reverseproxy
+    build:
+      context: ./nginx
+      dockerfile: ./Dockerfile
