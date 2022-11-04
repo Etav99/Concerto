@@ -19,7 +19,7 @@ services:
       OIDC_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR: "true"
       OIDC_ADMIN_REST_API_BASE: http://keycloak:8080/Concerto/Keycloak/realms/concerto
       OIDC_AUTHORITY: http://keycloak:8080/Concerto/Keycloak/realms/concerto
-      OIDC_CLIENT_AUTHORITY: http://localhost:7300/Concerto/Keycloak/realms/concerto
+      OIDC_CLIENT_AUTHORITY: http://localhost:6014/Concerto/Keycloak/realms/concerto
       OIDC_METADATA_ADDRESS: http://keycloak:8080/Concerto/Keycloak/realms/concerto/.well-known/openid-configuration
       SERVER_CLIENT_ID: concerto-server
       SERVER_CLIENT_SECRET: qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ
@@ -42,8 +42,10 @@ services:
         KC_HTTP_ENABLED: "true"
         KC_HOSTNAME_PATH: /Concerto/Keycloak
         KC_HTTP_RELATIVE_PATH: /Concerto/Keycloak
-        KC_HOSTNAME_PORT: "7300"
-        KC_HOSTNAME_ADMIN_URL: "http://localhost:7300/Concerto/Keycloak"
+        KC_HOSTNAME_PORT: "6014"
+        KC_HOSTNAME: "localhost"
+        KC_HOSTNAME_STRICT_HTTPS: "false"
+        KC_HOSTNAME_ADMIN_URL: "http://localhost:6014/Concerto/Keycloak"
         
         KEYCLOAK_ADMIN: admin
         KEYCLOAK_ADMIN_PASSWORD: h96lazwA9lnFUhza6M8r0jOW2d
@@ -54,9 +56,9 @@ services:
         KC_DB_USERNAME: postgres
       volumes:
         - keycloak_data:/var/lib/keycloak/data
-      command: start-dev
+      command: start
       
   concerto_reverseproxy:
-    image: etav/concerto_reverseproxy
+    image: etav/concerto_reverseproxy:1.0
     ports:
-      - 7300:80
+      - 6014:80

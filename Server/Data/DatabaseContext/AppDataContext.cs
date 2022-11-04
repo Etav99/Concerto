@@ -90,7 +90,7 @@ public class AppDataContext : DbContext
             .UsingEntity(j => j.ToTable("CatalogUser"));
 
 
-        // Data seed
+/*        // Data seed
         modelBuilder.Entity<User>()
             .HasData(
                 new User { Id = 1, FirstName = "Jan", LastName = "Administracyjny", Username = "admin", SubjectId = Guid.Parse("95f418ac-e38f-41ec-a2ad-828bdd3895d0") },
@@ -177,7 +177,7 @@ public class AppDataContext : DbContext
                 new ChatMessage { Id = 3, SenderId = 2, ConversationId = 1, Content = "Test reply 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-2) },
                 new ChatMessage { Id = 4, SenderId = 2, ConversationId = 1, Content = "Test reply 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) },
                 new ChatMessage { Id = 5, SenderId = 1, ConversationId = 1, Content = "Test message 3", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) }
-            );
+            );*/
 
         base.OnModelCreating(modelBuilder);
     }

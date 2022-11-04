@@ -23,12 +23,12 @@
         "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS",
         "JWT_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR": "true",
         "OIDC_AUDIENCE": "account",
-        "OIDC_AUTHORITY": "http://localhost:7200/concerto-keycloak/realms/concerto",
-        "OIDC_METADATA_ADDRESS": "http://localhost:7200/concerto-keycloak/realms/concerto/.well-known/openid-configuration",
+        "OIDC_AUTHORITY": "http://localhost:7200/Concerto/Keycloak/realms/concerto",
+        "OIDC_METADATA_ADDRESS": "http://localhost:7200/Concerto/Keycloak/realms/concerto/.well-known/openid-configuration",
         "SERVER_CLIENT_ID": "concerto-server",
         "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ",
-        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/concerto-keycloak/admin/realms/concerto",
-        "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/concerto-keycloak/realms/concerto"
+        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/Concerto/Keycloak/admin/realms/concerto",
+        "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/Concerto/Keycloak/realms/concerto"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",

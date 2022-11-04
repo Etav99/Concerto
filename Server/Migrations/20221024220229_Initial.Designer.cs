@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20221019200518_Initial")]
+    [Migration("20221024220229_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -104,48 +104,6 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Content = "Test message 1",
-                            ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 19, 20, 0, 18, 496, DateTimeKind.Utc).AddTicks(20),
-                            SenderId = 1L
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            Content = "Test message 2",
-                            ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 19, 20, 2, 18, 496, DateTimeKind.Utc).AddTicks(25),
-                            SenderId = 1L
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Content = "Test reply 1",
-                            ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 19, 20, 3, 18, 496, DateTimeKind.Utc).AddTicks(26),
-                            SenderId = 2L
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            Content = "Test reply 2",
-                            ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 19, 20, 4, 18, 496, DateTimeKind.Utc).AddTicks(27),
-                            SenderId = 2L
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            Content = "Test message 3",
-                            ConversationId = 1L,
-                            SendTimestamp = new DateTime(2022, 10, 19, 20, 4, 18, 496, DateTimeKind.Utc).AddTicks(27),
-                            SenderId = 1L
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Contact", b =>
@@ -164,44 +122,6 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("User2Id");
 
                     b.ToTable("Contacts");
-
-                    b.HasData(
-                        new
-                        {
-                            User1Id = 1L,
-                            User2Id = 2L,
-                            Status = 1
-                        },
-                        new
-                        {
-                            User1Id = 1L,
-                            User2Id = 3L,
-                            Status = 1
-                        },
-                        new
-                        {
-                            User1Id = 1L,
-                            User2Id = 4L,
-                            Status = 1
-                        },
-                        new
-                        {
-                            User1Id = 2L,
-                            User2Id = 3L,
-                            Status = 1
-                        },
-                        new
-                        {
-                            User1Id = 2L,
-                            User2Id = 4L,
-                            Status = 1
-                        },
-                        new
-                        {
-                            User1Id = 3L,
-                            User2Id = 4L,
-                            Status = 1
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Conversation", b =>
@@ -218,48 +138,6 @@ namespace Concerto.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Conversations");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 6L,
-                            IsPrivate = true
-                        },
-                        new
-                        {
-                            Id = 7L,
-                            IsPrivate = false
-                        },
-                        new
-                        {
-                            Id = 8L,
-                            IsPrivate = false
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.ConversationUser", b =>
@@ -275,93 +153,6 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ConversationUser");
-
-                    b.HasData(
-                        new
-                        {
-                            ConversationId = 1L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            ConversationId = 1L,
-                            UserId = 2L
-                        },
-                        new
-                        {
-                            ConversationId = 2L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            ConversationId = 2L,
-                            UserId = 3L
-                        },
-                        new
-                        {
-                            ConversationId = 3L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            ConversationId = 3L,
-                            UserId = 4L
-                        },
-                        new
-                        {
-                            ConversationId = 4L,
-                            UserId = 2L
-                        },
-                        new
-                        {
-                            ConversationId = 4L,
-                            UserId = 3L
-                        },
-                        new
-                        {
-                            ConversationId = 5L,
-                            UserId = 2L
-                        },
-                        new
-                        {
-                            ConversationId = 5L,
-                            UserId = 4L
-                        },
-                        new
-                        {
-                            ConversationId = 6L,
-                            UserId = 3L
-                        },
-                        new
-                        {
-                            ConversationId = 6L,
-                            UserId = 4L
-                        },
-                        new
-                        {
-                            ConversationId = 7L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            ConversationId = 7L,
-                            UserId = 2L
-                        },
-                        new
-                        {
-                            ConversationId = 7L,
-                            UserId = 3L
-                        },
-                        new
-                        {
-                            ConversationId = 8L,
-                            UserId = 1L
-                        },
-                        new
-                        {
-                            ConversationId = 8L,
-                            UserId = 4L
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Room", b =>
@@ -391,24 +182,6 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("ConversationId");
 
                     b.ToTable("Rooms");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            ConversationId = 7L,
-                            Description = "",
-                            Name = "Room 1",
-                            OwnerId = 1L
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            ConversationId = 8L,
-                            Description = "",
-                            Name = "Room 2",
-                            OwnerId = 1L
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.RoomUser", b =>
@@ -427,38 +200,6 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RoomUsers");
-
-                    b.HasData(
-                        new
-                        {
-                            RoomId = 1L,
-                            UserId = 1L,
-                            Role = 0
-                        },
-                        new
-                        {
-                            RoomId = 1L,
-                            UserId = 2L,
-                            Role = 0
-                        },
-                        new
-                        {
-                            RoomId = 1L,
-                            UserId = 3L,
-                            Role = 0
-                        },
-                        new
-                        {
-                            RoomId = 2L,
-                            UserId = 1L,
-                            Role = 0
-                        },
-                        new
-                        {
-                            RoomId = 2L,
-                            UserId = 4L,
-                            Role = 0
-                        });
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
@@ -556,40 +297,6 @@ namespace Concerto.Server.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            FirstName = "Jan",
-                            LastName = "Administracyjny",
-                            SubjectId = new Guid("95f418ac-e38f-41ec-a2ad-828bdd3895d0"),
-                            Username = "admin"
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            FirstName = "Piotr",
-                            LastName = "Testowy",
-                            SubjectId = new Guid("954af482-22dd-483f-ac99-975144f85a04"),
-                            Username = "user2"
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            FirstName = "Jacek",
-                            LastName = "Testowy",
-                            SubjectId = new Guid("c786cbc3-9924-410f-bcdb-75a2469107be"),
-                            Username = "user3"
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            FirstName = "John",
-                            LastName = "Smith",
-                            SubjectId = new Guid("f2c0a648-82bb-44a9-908e-8006577cb276"),
-                            Username = "user4"
-                        });
                 });
 
             modelBuilder.Entity("CatalogSession", b =>

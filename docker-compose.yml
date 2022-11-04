@@ -16,8 +16,17 @@ services:
     expose:
       - 80
       - 443
-    env_file:
-      - concerto.env
+    environment:
+      ASPNETCORE_DOCKER: "true"
+      DB_STRING: Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS
+      OIDC_AUDIENCE: account
+      OIDC_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR: "true"
+      OIDC_ADMIN_REST_API_BASE: http://keycloak:8080/Concerto/Keycloak/realms/concerto
+      OIDC_AUTHORITY: http://keycloak:8080/Concerto/Keycloak/realms/concerto
+      OIDC_CLIENT_AUTHORITY: http://localhost:7200/Concerto/Keycloak/realms/concerto
+      OIDC_METADATA_ADDRESS: http://keycloak:8080/Concerto/Keycloak/realms/concerto/.well-known/openid-configuration
+      SERVER_CLIENT_ID: concerto-server
+      SERVER_CLIENT_SECRET: qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ
     volumes:
       - concerto_files:/var/lib/concerto/storage
 
@@ -26,8 +35,10 @@ services:
       container_name: Postgres
       volumes:
         - postgres_data:/var/lib/postgresql/data
-      env_file:
-        - postgres.env
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+        POSTGRES_USER: postgres
       ports:
         - 5432:5432
 
@@ -45,21 +56,30 @@ services:
 
   keycloak:
       image: quay.io/keycloak/keycloak:19.0.3
-      container_name: Keycloak
-      env_file:
-        - keycloak.env
+      container_name: keycloak
+      environment:
+        KC_PROXY: "edge"
+        KC_HTTP_ENABLED: "true"
+        KC_HOSTNAME_PATH: /Concerto/Keycloak
+        KC_HTTP_RELATIVE_PATH: /Concerto/Keycloak
+
+
+        KC_HOSTNAME_URL: "http://localhost:7200/Concerto/Keycloak"
+        KC_HOSTNAME_STRICT_HTTPS: "false"
+        KC_HOSTNAME_ADMIN_URL: "http://localhost:7200/Concerto/Keycloak"
+        
+        KEYCLOAK_ADMIN: admin
+        KEYCLOAK_ADMIN_PASSWORD: h96lazwA9lnFUhza6M8r0jOW2d
+        
+        KC_DB: postgres
+        KC_DB_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+        KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+        KC_DB_USERNAME: postgres
       ports:
         - 7200:8080
       depends_on:
         - postgres
       volumes:
         - keycloak_data:/var/lib/keycloak/data
-      command: start-dev
+      command: start
       
-  concerto_reverseproxy:
-      container_name: Reverse_Proxy
-      ports:
-        - 7300:80
-      build:
-        context: ./nginx
-        dockerfile: ./Dockerfile
