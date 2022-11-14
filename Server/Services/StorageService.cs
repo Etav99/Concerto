@@ -1,7 +1,10 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
+using Concerto.Server.Settings;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.SymbolStore;
+using System.Linq.Expressions;
 using System.Net;
 
 namespace Concerto.Server.Services;
@@ -17,22 +20,85 @@ public class StorageService
         _context = context;
     }
 
-    public async Task<UploadedFile?> GetFile(long fileId)
+    // Create
+    internal async Task CreateFolder(Dto.CreateFolderRequest createFolderRequest, long ownerId)
     {
-        return await _context.UploadedFiles.FindAsync(fileId);
+        await _context.Folders.AddAsync(new Folder()
+        {
+            Name = createFolderRequest.Name,
+            OwnerId = ownerId,
+            CoursePermission = createFolderRequest.CoursePermission.ToEntity(),
+            UserPermissions = createFolderRequest.UserPermissions.Select(up => up.ToEntity()).ToList(),
+        });
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Dto.UploadedFile>> GetCatalogFiles(long catalogId)
+    // Read
+    internal async Task<Dto.FolderContent?> GetFolderContent(long folderId, long userId)
     {
-        return await _context.UploadedFiles
-            .Where(f => f.CatalogId == catalogId)
-            .Select(f => f.ToDto())
-            .ToListAsync();
+        var folder = await _context.Folders.FindAsync(folderId);
+        if (folder == null) return null;
+
+		await _context.Entry(folder).Collection(c => c.SubFolders).LoadAsync();
+		await _context.Entry(folder).Collection(c => c.Files).LoadAsync();
+
+
+        var subFolders = new List<Dto.FolderItem>();
+        foreach (var subFolder in folder.SubFolders)
+        {
+            subFolders.Add(new Dto.FolderItem
+            {
+				Id = subFolder.Id,
+				Name = subFolder.Name,
+				CanWrite = await CanWriteInFolder(userId, subFolder.Id),
+				CanEdit = await CanEditFolder(userId, subFolder.Id),
+				CanDelete = await CanDeleteFolder(userId, subFolder.Id),
+			});
+		}
+
+		var files = new List<Dto.FileItem>();
+		foreach (var file in folder.Files)
+		{
+			var canManageFile = await CanManageFile(userId, file.Id);
+			files.Add(new Dto.FileItem()
+			{
+				Id = file.Id,
+				Name = file.DisplayName,
+				CanEdit = canManageFile,
+				CanDelete = canManageFile,
+			});
+		}
+
+        var folderContent = new Dto.FolderContent()
+        {
+            Id = folder.Id,
+            Self = new Dto.FolderItem
+            {
+                Id = folder.Id,
+                CanWrite = await CanWriteInFolder(userId, folder.Id),
+                CanEdit = await CanEditFolder(userId, folder.Id),
+                CanDelete = await CanDeleteFolder(userId, folder.Id),
+            },
+            SubFolders = subFolders,
+            Files = files
+        };
+
+		return folderContent;
+	}
+
+	internal async Task<Dto.FolderSettings?> GetFolderSettings(long id)
+    {
+        var folder = await _context.Folders.FindAsync(id);
+        if (folder == null) return null;
+        
+        await _context.Entry(folder).Collection(c => c.UserPermissions).Query().Include(sis => sis.User).LoadAsync();
+        return folder.ToFolderSettings();
     }
 
-    public async Task<IEnumerable<Dto.FileUploadResult>> AddFilesToCatalog(IEnumerable<IFormFile> files, long catalogId)
+
+    public async Task<IEnumerable<Dto.FileUploadResult>> AddFilesToFolder(IEnumerable<IFormFile> files, long folderId)
     {
-        var fileUploadResults = await SaveUploadedFiles(files, catalogId);
+        var fileUploadResults = await SaveUploadedFiles(files, folderId);
 
         foreach (var fileUploadResult in fileUploadResults)
         {
@@ -42,7 +108,7 @@ public class StorageService
                 {
                     DisplayName = fileUploadResult.DisplayFileName,
                     StorageName = fileUploadResult.StorageFileName,
-                    CatalogId = catalogId
+                    FolderId = folderId
                 };
                 _context.Add(uploadedFile);
             }
@@ -52,7 +118,7 @@ public class StorageService
         return fileUploadResults.ToDto();
     }
 
-    public async Task<IEnumerable<FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long catalogId)
+    public async Task<IEnumerable<FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
     {
         var maxAllowedFiles = 5;
         long maxFileSize = 1024 * 1024 * 15;
@@ -75,10 +141,10 @@ public class StorageService
                 {
                     try
                     {
-                        string storageFileName = Path.GetRandomFileName();
+                        string storageFileName = string.Format(@$"{sanitizedDisplayFileName}.{Guid.NewGuid()}");
                         fileUploadResult.StorageFileName = storageFileName;
-                        string path = Path.Combine("/var/lib/concerto/storage", $"{catalogId}", storageFileName);
-                        Directory.CreateDirectory(Path.Combine("/var/lib/concerto/storage", $"{catalogId}"));
+                        string path = Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}", storageFileName);
+                        Directory.CreateDirectory(Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}"));
                         await using FileStream fs = new(path, FileMode.Create);
                         await file.CopyToAsync(fs);
                         fileUploadResult.Uploaded = true;
@@ -101,130 +167,177 @@ public class StorageService
         return fileUploadResults;
     }
 
-    internal async Task<bool> HasFileReadAccess(long? userId, long fileId)
+    internal async Task<bool> HasFileReadAccess(long userId, long fileId)
     {
-        if (userId == null) return false;
         var file = await _context.UploadedFiles.FindAsync(fileId);
         if (file == null) return false;
-        return await HasCatalogReadAccess(userId, file.CatalogId);
+        return await CanReadInFolder(userId, file.FolderId);
+    }
+    
+    private async Task<FolderPermissionType?> UserPermissionInFolder(long userId, Folder? folder)
+    {
+        if (folder == null) return null;
+        // Null if user not in folder's course
+        var courseUserRole = (await _context.CourseUsers.FindAsync(userId, folder.CourseId))?.Role;
+        if (courseUserRole == null) return null;
+
+        // Maxiumum permission if user is owner, folder's course admin or supervisor
+        if (folder.OwnerId == userId || courseUserRole == CourseUserRole.Supervisor || courseUserRole == CourseUserRole.Admin) return FolderPermissionType.Max;
+
+        // User specific permission if exists (higher precedence than course permission)
+        var userFolderPermissionType = (await _context.UserFolderPermissions.FindAsync(UserFolderPermission.ToKey(userId, folder.Id)))?.Permission.Type;
+        if (userFolderPermissionType != null) return userFolderPermissionType;
+
+        return folder.CoursePermission.Type;
     }
 
-    internal async Task<bool> HasCatalogReadAccess(long? userId, long catalogId)
+    internal async Task<bool> CanReadInFolder(long userId, long folderId)
     {
-        if (userId == null) return false;
-        var catalog = await _context.Catalogs.FindAsync(catalogId);
-        if (catalog == null) return false;
-        if (catalog.OwnerId == userId) return true;
-
-        var hasDirectAccess = await _context.Entry(catalog)
-            .Collection(c => c.UsersSharedTo)
-            .Query()
-            .AnyAsync(u => u.Id == userId);
-
-        if (hasDirectAccess)
-            return true;
-
-        var hasSessionAccess = await _context.Entry(catalog)
-            .Collection(c => c.SharedInSessions)
-            .Query()
-            .Include(s => s.Room).ThenInclude(r => r.RoomUsers)
-            .SelectMany(s => s.Room.RoomUsers)
-            .AnyAsync(ru => ru.UserId == userId);
-
-        return hasSessionAccess;
+        var folder = await _context.Folders.FindAsync(folderId);
+        var permissionType = await UserPermissionInFolder(userId, folder);
+        if (permissionType != null) return true;
+        return false;
     }
 
-    internal async Task<bool> HasCatalogWriteAccess(long? userId, long catalogId)
+    internal async Task<bool> CanWriteInFolder(long userId, long folderId)
     {
-        if (userId == null) return false;
-        var catalog = await _context.Catalogs.FindAsync(catalogId);
-        if (catalog == null) return false;
-        if (catalog.OwnerId != userId) return false;
-        return true;
+        var folder = await _context.Folders.FindAsync(folderId);
+        var permissionType = await UserPermissionInFolder(userId, folder);
+        if (permissionType == FolderPermissionType.ReadWrite || permissionType == FolderPermissionType.ReadWriteOwned) return true;
+        return false;
     }
-
-    internal async Task<IEnumerable<Dto.CatalogListItem>> GetOwnedCatalogs(long userId)
+    internal async Task<bool> CanEditFolder(long userId, long folderId)
     {
-        return await _context.Catalogs
-            .Where(c => c.OwnerId == userId)
-            .Select(c => c.ToCatalogListItem())
-            .ToListAsync();
-    }
+        var folder = await _context.Folders.FindAsync(folderId);
+        if (folder is null) return false;
+        if (folder.IsCourseRoot) return false;
 
-    internal async Task<IEnumerable<Dto.CatalogListItem>> GetSharedCatalogs(long userId)
-    {
-        return await _context.Catalogs
-            .Include(c => c.UsersSharedTo)
-            .Where(c => c.UsersSharedTo.Any(u => u.Id == userId))
-            .Select(c => c.ToCatalogListItem())
-            .ToListAsync();
-    }
-
-    internal async Task<IEnumerable<Dto.CatalogListItem>> GetSessionCatalogs(long userId, long sessionId)
-    {
-        return await _context.Catalogs
-            .Include(c => c.SharedInSessions)
-            .Where(c => c.SharedInSessions.Any(s => s.Id == sessionId))
-            .Select(c => c.ToCatalogListItem())
-            .ToListAsync();
-    }
-
-    internal async Task<Dto.CatalogSettings?> GetCatalogSettings(long id)
-    {
-        var catalog = await _context.Catalogs.FindAsync(id);
-        if (catalog == null) return null;
-        await _context.Entry(catalog).Collection(c => c.SharedInSessions).Query().Include(sis => sis.Room).LoadAsync();
-        await _context.Entry(catalog).Collection(c => c.UsersSharedTo).LoadAsync();
-        return catalog.ToCatalogSettings();
-    }
-
-    internal async Task<Dto.CatalogContent?> GetCatalogContent(long id)
-    {
-        var catalog = await _context.Catalogs.FindAsync(id);
-        if (catalog == null) return null;
-        await _context.Entry(catalog).Collection(c => c.Files).LoadAsync();
-        return catalog.ToCatalogContent();
-    }
-
-    internal async Task CreateCatalog(Dto.CreateCatalogRequest createCatalogRequest, long ownerId)
-    {
-        var sharedToSessions = await _context.Sessions
-            .Where(s => createCatalogRequest.SharedToSessionIds.Contains(s.Id))
-            .ToListAsync();
-
-        var usersSharedTo = await _context.Users
-            .Where(u => createCatalogRequest.SharedToUserIds.Contains(u.Id))
-            .ToListAsync();
-
-        await _context.Catalogs.AddAsync(new Catalog()
+        // True if ReadWrite in folder's parent and folder
+        var parentFolder = await _context.Folders.FindAsync(folderId);
+        if (await UserPermissionInFolder(userId, parentFolder) == FolderPermissionType.ReadWrite)
         {
-            Name = createCatalogRequest.Name,
-            OwnerId = ownerId,
-            SharedInSessions = sharedToSessions,
-            UsersSharedTo = usersSharedTo
-        });
-        await _context.SaveChangesAsync();
+            if (await UserPermissionInFolder(userId, folder) == FolderPermissionType.ReadWrite) return true;
+        }
+
+        return false;
     }
-    internal async Task UpdateCatalog(Dto.UpdateCatalogRequest updateCatalogRequest)
+
+    internal async Task<bool> CanDeleteFolder(long userId, long folderId)
     {
-        var catalog = await _context.Catalogs.FindAsync(updateCatalogRequest.Id);
-        if (catalog == null) return;
+        var folder = await _context.Folders.FindAsync(folderId);
+        if (folder is null) return false;
+        if (folder.IsCourseRoot) return false;
 
-        var sharedToSessions = await _context.Sessions
-            .Where(s => updateCatalogRequest.SharedToSessionIds.Contains(s.Id))
-            .ToListAsync();
+        // True if folder owner
+        if (folder.OwnerId == userId) return true;
 
-        var usersSharedTo = await _context.Users
-            .Where(u => updateCatalogRequest.SharedToUserIds.Contains(u.Id))
-            .ToListAsync();
+        // True if ReadWrite in folder's parent and folder
+        var parentFolder = await _context.Folders.FindAsync(folderId);
+        if (await UserPermissionInFolder(userId, parentFolder) == FolderPermissionType.ReadWrite)
+        {
+            if (await UserPermissionInFolder(userId, folder) == FolderPermissionType.ReadWrite) return true;
+        }
+            
+        return false;
+    }
+	
+	private async Task<bool> CanManageFile(long userId, long fileId)
+	{
+		var file = _context.UploadedFiles.Find(fileId);
+        if (file == null) return false;
+		var folder = await _context.Folders.FindAsync(file.FolderId);
+        var permission = await UserPermissionInFolder(userId, folder);
+		if(permission == FolderPermissionType.ReadWriteOwned)
+        {
+			if (file.OwnerId == userId) return true;
+		}
+		if (permission == FolderPermissionType.ReadWrite) return true;
+        return false;
+	}
 
-        await _context.Entry(catalog).Collection(c => c.SharedInSessions).LoadAsync();
-        await _context.Entry(catalog).Collection(c => c.UsersSharedTo).LoadAsync();
+	public async Task<UploadedFile?> GetFile(long fileId)
+	{
+		return await _context.UploadedFiles.FindAsync(fileId);
+	}
 
-        catalog.Name = updateCatalogRequest.Name;
-        catalog.SharedInSessions = sharedToSessions;
-        catalog.UsersSharedTo = usersSharedTo;
+	internal async Task UpdateFolder(Dto.UpdateFolderRequest updateFolderRequest)
+    {
+        var folder = await _context.Folders.FindAsync(updateFolderRequest.Id);
+        if (folder == null) return;
+
+        folder.Name = updateFolderRequest.Name;
+
+        var newCoursePermissions = updateFolderRequest.CoursePermission.ToEntity();
+        var newUserPermissions = updateFolderRequest.UserPermissions.Select(up => up.ToEntity()).ToList();
+
+        folder.CoursePermission = newCoursePermissions;
+        await _context.Entry(folder).Collection(f => f.UserPermissions).LoadAsync();
+        folder.UserPermissions = newUserPermissions;
+
+        newCoursePermissions = new FolderPermission
+        {
+            Type = newCoursePermissions.Type,
+            Inherited = true
+        };
+        
+        await UpdateSubFoldersPermissionsRecursively(folder, newCoursePermissions, newUserPermissions);
 
         await _context.SaveChangesAsync();
     }
+    
+    private async Task UpdateSubFoldersPermissionsRecursively(Folder folder, FolderPermission? newCoursePermission, ICollection<UserFolderPermission> newUserPermissions)
+    {
+        await _context.Entry(folder).Collection(f => f.SubFolders).LoadAsync();
+        var subFolders = folder.SubFolders;
+        foreach (var subFolder in subFolders)
+        {
+            var newCoursePermissionCopy = newCoursePermission;
+            var newUserPermissionsCopy = new List<UserFolderPermission>(newUserPermissions);
+
+            if (newCoursePermissionCopy is not null)
+            {
+                if (subFolder.CoursePermission.Inherited)
+                {
+                    subFolder.CoursePermission.Type = newCoursePermissionCopy.Type;
+                }
+                else
+                {
+                    newCoursePermissionCopy = null;
+                }
+            }
+
+            // Replace existing inherited permission for users
+            await _context.Entry(folder).Collection(f => f.UserPermissions).LoadAsync();
+
+            foreach (var userPermission in subFolder.UserPermissions)
+            {
+                if (userPermission.Permission.Inherited)
+                {
+                    var newUserPermission = newUserPermissionsCopy.FirstOrDefault(up => up.UserId == userPermission.UserId);
+                    if (newUserPermission is not null)
+                    {
+                        userPermission.Permission = newUserPermission.Permission;
+                        newUserPermissionsCopy.Remove(newUserPermission);
+                    }
+                }
+            }
+            // Add new permissions for users
+            foreach (var newUserPermission in newUserPermissionsCopy)
+            {
+                subFolder.UserPermissions.Add(newUserPermission);
+            }
+
+            await UpdateSubFoldersPermissionsRecursively(subFolder, newCoursePermissionCopy, newUserPermissionsCopy);
+        }
+    }
+
+    internal async Task DeleteFolder(long folderId)
+    {
+        var folder = await _context.Folders.FindAsync(folderId);
+        if (folder == null) return;
+
+        _context.Folders.Remove(folder);
+        await _context.SaveChangesAsync();
+    }
+
 }

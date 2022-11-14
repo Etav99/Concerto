@@ -1,0 +1,25 @@
+﻿@using Concerto.Shared.Models.Dto;
+
+<MudSelect T="FolderPermissionType" ValueChanged="OnChange" Label="Permission" AnchorOrigin="Origin.BottomCenter">
+    <MudSelectItem Value="@(FolderPermissionType.Read)">Reader</MudSelectItem>
+    <MudSelectItem Value="@(FolderPermissionType.ReadWriteOwned)">Contributor</MudSelectItem>
+    <MudSelectItem Value="@(FolderPermissionType.ReadWrite)">Editor</MudSelectItem>
+</MudSelect>
+
+
+@code {
+    [Parameter]
+    public EventCallback<FolderPermissionType> ValueChanged { get; set; }
+
+    [Parameter]
+    public FolderPermissionType FolderPermissionType { get; set; }
+
+    [Parameter]
+    public EventCallback<FolderPermissionType> FolderPermissionTypeChanged { get; set; }
+
+    private async Task OnChange(FolderPermissionType type)
+    {
+        await FolderPermissionTypeChanged.InvokeAsync(type);
+        await ValueChanged.InvokeAsync(type);
+    }
+}

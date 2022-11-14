@@ -27,7 +27,7 @@ builder.Services
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services
-	.AddHttpClient<IRoomClient, RoomClient>(client => client.BaseAddress = baseAddress)
+	.AddHttpClient<ICourseClient, CourseClient>(client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services
@@ -49,7 +49,7 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 

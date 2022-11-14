@@ -18,7 +18,7 @@
 @code {
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
-    [Parameter] public long RoomId { get; set; }
+    [Parameter] public long CourseId { get; set; }
 
     private string? _sessionName;
     private DateTime? _date = DateTime.Today.AddDays(1);
@@ -27,7 +27,7 @@
     private async Task Submit()
     {
         if(String.IsNullOrEmpty(_sessionName)){
-            Snackbar.Add("Room name cannot be empty", Severity.Error);
+            Snackbar.Add("Course name cannot be empty", Severity.Error);
             return;
         }
         if (!_time.HasValue)
@@ -42,11 +42,11 @@
             return;
         }
 
-        // Move to room manager
+        // Move to course manager
         var createSessionRequest = new Dto.CreateSessionRequest {
                 Name = _sessionName,
                 ScheduledDateTime = _date.Value + _time.Value,
-                RoomId = RoomId
+                CourseId = CourseId
         };
 		
         var response = await Http.PostAsJsonAsync("Session/CreateSession", createSessionRequest);

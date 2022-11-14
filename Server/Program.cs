@@ -27,7 +27,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ChatService>();
-builder.Services.AddScoped<RoomService>();
+builder.Services.AddScoped<CourseService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<IdentityManagerService>();

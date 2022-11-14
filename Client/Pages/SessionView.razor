@@ -33,7 +33,7 @@
 			<MudStack Class="" Style="height:calc(100%);" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
 
 				<MudPaper Class="d-flex" Style="flex: 1 1 auto; height: 20%" Outlined="true">
-						<CatalogList Style="d-flex" Type="CatalogList.ListType.Session" Session="SelectedSession" />
+						<FolderList Style="d-flex" Type="FolderList.ListType.Session" Session="SelectedSession" />
 				</MudPaper>
 
 				<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
@@ -56,7 +56,7 @@
 		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
 		if (SelectedSession == null)
 		{
-			NavigationManager.NavigateTo("rooms");
+			NavigationManager.NavigateTo("courses");
 			return;
 		}
 		var meetingName = WebUtility.UrlEncode($"{SelectedSession?.Name} ({SelectedSession?.MeetingGuid.ToString()})");

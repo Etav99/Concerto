@@ -23,74 +23,62 @@ public class StorageController : ControllerBase
         _sessionService = sessionService;
     }
 
+
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetOwnedCatalogs()
+    public async Task<ActionResult<Dto.FolderContent>> GetFolderContent([FromQuery] long folderId)
     {
         long userId = HttpContext.GetUserId();
-        return Ok(await _storageService.GetOwnedCatalogs(userId));
+        if (!await _storageService.CanReadInFolder(userId, folderId)) return Forbid();
+        return Ok(await _storageService.GetFolderContent(folderId, userId));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<Dto.FolderSettings>> GetFolderSettings([FromQuery] long folderId)
+    {
+        long userId = HttpContext.GetUserId();
+        if (!await _storageService.CanWriteInFolder(userId, folderId)) return Forbid();
+        return Ok(await _storageService.GetFolderSettings(folderId));
     }
     
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSharedCatalogs()
+    [HttpDelete]
+    public async Task<ActionResult> DeleteFolder([FromQuery] long folderId)
     {
         long userId = HttpContext.GetUserId();
-        return Ok(await _storageService.GetSharedCatalogs(userId));
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<Dto.CatalogContent>> GetCatalogContent([FromQuery] long catalogId)
-    {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.HasCatalogReadAccess(userId, catalogId)) return Forbid();
-        return Ok(await _storageService.GetCatalogContent(catalogId));
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<Dto.CatalogSettings>> GetCatalogSettings([FromQuery] long catalogId)
-    {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.HasCatalogWriteAccess(userId, catalogId)) return Forbid();
-        return Ok(await _storageService.GetCatalogSettings(catalogId));
+        // Check if user can delete folder
+        if(!await _storageService.CanDeleteFolder(userId, folderId)) return Forbid();
+        // Delete folder
+        await _storageService.DeleteFolder(folderId);
+        return NoContent();
     }
 
     [Authorize(Roles = "teacher")]
     [HttpPost]
-    public async Task<ActionResult> CreateCatalog([FromBody] Dto.CreateCatalogRequest createCatalogRequest)
+    public async Task<ActionResult> CreateFolder([FromBody] Dto.CreateFolderRequest createFolderRequest)
     {
         long userId = HttpContext.GetUserId();
-        await _storageService.CreateCatalog(createCatalogRequest, userId);
+        if (!await _storageService.CanWriteInFolder(userId, createFolderRequest.ParentId)) return Forbid();
+        await _storageService.CreateFolder(createFolderRequest, userId);
         return Ok();
     }
 
     [Authorize(Roles = "teacher")]
     [HttpPost]
-    public async Task<ActionResult> UpdateCatalog([FromBody] Dto.UpdateCatalogRequest updateCatalogRequest)
+    public async Task<ActionResult> UpdateFolder([FromBody] Dto.UpdateFolderRequest updateFolderRequest)
     {
         long userId = HttpContext.GetUserId();
-        if (!await _storageService.HasCatalogWriteAccess(userId, updateCatalogRequest.Id)) return Forbid();
-        await _storageService.UpdateCatalog(updateCatalogRequest);
+        if (!await _storageService.CanDeleteFolder(userId, updateFolderRequest.Id)) return Forbid();
+        await _storageService.UpdateFolder(updateFolderRequest);
         return Ok();
-    }
-
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Dto.CatalogListItem>>> GetSessionCatalogs([FromQuery] long sessionId)
-    {
-        long userId = HttpContext.GetUserId();
-        
-        if (!await _sessionService.IsUserSessionMember(userId, sessionId)) return Forbid();
-        var catalogs = await _storageService.GetSessionCatalogs(userId, sessionId);
-        return Ok(catalogs);
     }
 
     [Authorize(Roles = "teacher")]
     [HttpPost]
-    public async Task<ActionResult<IEnumerable<Dto.FileUploadResult>>> UploadFiles([FromForm] IEnumerable<IFormFile> files, [FromQuery] long catalogId)
+    public async Task<ActionResult<IEnumerable<Dto.FileUploadResult>>> UploadFiles([FromForm] IEnumerable<IFormFile> files, [FromQuery] long folderId)
     {
         long userId = HttpContext.GetUserId();
-        if (!await _storageService.HasCatalogWriteAccess(userId, catalogId)) return Forbid();
+        if (!await _storageService.CanWriteInFolder(userId, folderId)) return Forbid();
 
-        var fileUploadResults = await _storageService.AddFilesToCatalog(files, catalogId);
+        var fileUploadResults = await _storageService.AddFilesToFolder(files, folderId);
         return Ok(fileUploadResults);
     }
 

@@ -1,7 +1,6 @@
 ﻿using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Nito.AsyncEx;
 using System.Security.Claims;
 
 namespace Concerto.Server.Middlewares;

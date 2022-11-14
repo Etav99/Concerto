@@ -1,14 +1,14 @@
 ﻿@using Concerto.Client.Services
 @inject IContactService ContactService
-@inject IRoomService RoomService
+@inject ICourseService CourseService
 
 <MudPaper Elevation="0" Outlined="true" Class="pa-4">
 	<MudText>@Label</MudText>
 	<MudStack Spacing="4">
 		<MudStack Spacing="4">
 			<MudStack Row="true">
-				<MudAutocomplete T="Dto.Room" Label="Select room" @ref="_selectRoomAutocomplete"
-								 ValueChanged="@OnRoomSelected" SearchFunc="@SearchRooms" Variant="Variant.Outlined"
+				<MudAutocomplete T="Dto.Course" Label="Select course" @ref="_selectCourseAutocomplete"
+								 ValueChanged="@OnCourseSelected" SearchFunc="@SearchCourses" Variant="Variant.Outlined"
 								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
 								 ToStringFunc="@(r => r == null ? null : $"{r.Name}")" />
 
@@ -22,7 +22,7 @@
 
 				<MudChipSet AllClosable="true" OnClose="Closed">
 					<MudText>
-						Catalog will be shared with sessions:
+						Folder will be shared with sessions:
 					</MudText>
 					@foreach (var session in _selectedSessions)
 					{
@@ -45,8 +45,8 @@
     [Parameter]
     public string Label { get; set; } = string.Empty;
 
-    private MudAutocomplete<Dto.Room>? _selectRoomAutocomplete;
-    private Dto.Room? _selectedRoom;
+    private MudAutocomplete<Dto.Course>? _selectCourseAutocomplete;
+    private Dto.Course? _selectedCourse;
     private MudAutocomplete<Dto.Session>? _selectSessionAutocomplete;
     private HashSet<Dto.Session> _selectedSessions = new HashSet<Dto.Session>();
 
@@ -64,32 +64,32 @@
     {
         _selectedSessions.Add(session);
         _selectSessionAutocomplete?.Reset();
-        _selectRoomAutocomplete?.Reset();
+        _selectCourseAutocomplete?.Reset();
         await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
     }
 
-    private async Task OnRoomSelected(Dto.Room room)
+    private async Task OnCourseSelected(Dto.Course course)
     {
-        await RoomService.LoadRoomSessions(room.Id);
-        _selectedRoom = room;
+        await CourseService.LoadCourseSessions(course.Id);
+        _selectedCourse = course;
     }
 
-    private async Task<IEnumerable<Dto.Room>> SearchRooms(string searchString)
+    private async Task<IEnumerable<Dto.Course>> SearchCourses(string searchString)
     {
-        await RoomService.LoadRoomsAsync();
+        await CourseService.LoadCoursesAsync();
         if (string.IsNullOrWhiteSpace(searchString))
-            return RoomService.Rooms;
-        return RoomService.Rooms.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
+            return CourseService.Courses;
+        return CourseService.Courses.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task<IEnumerable<Dto.Session>> SearchSessions(string searchString)
     {
-        if (_selectedRoom is null) return Enumerable.Empty<Dto.Session>();
-        await RoomService.LoadRoomSessions(_selectedRoom.Id);
+        if (_selectedCourse is null) return Enumerable.Empty<Dto.Session>();
+        await CourseService.LoadCourseSessions(_selectedCourse.Id);
         if (string.IsNullOrWhiteSpace(searchString))
         {
-            return RoomService.RoomSessions[_selectedRoom.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
+            return CourseService.CourseSessions[_selectedCourse.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
         }
-        return RoomService.RoomSessions[_selectedRoom.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+        return CourseService.CourseSessions[_selectedCourse.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
     }
 }

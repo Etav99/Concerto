@@ -17,7 +17,8 @@ services:
       - 80
       - 443
     environment:
-      ASPNETCORE_DOCKER: "true"
+      CONCERTO_STORAGE_PATH: /var/lib/concerto/storage
+ 
       DB_STRING: Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS
       OIDC_AUDIENCE: account
       OIDC_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR: "true"
@@ -49,8 +50,8 @@ services:
       environment:
         PGADMIN_DEFAULT_EMAIL: admin@admin.com
         PGADMIN_DEFAULT_PASSWORD: admin
-      expose:
-        - 80
+      ports:
+        - 7100:80
       volumes:
         - pgadmin_data:/var/lib/pgadmin
 

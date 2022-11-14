@@ -12,9 +12,9 @@
 		@if (!_loading && !_sessions.Any())
 		{
 			<MudSpacer />
-			<MudAlert Severity="Severity.Info">This room has no sessions yet.</MudAlert>
+			<MudAlert Severity="Severity.Info">This course has no sessions yet.</MudAlert>
 		}
-		@if (Room?.OwnerId == UserService.UserId)
+		@if (Course?.OwnerId == UserService.UserId)
 		{
 			<MudIconButton Class="ml-2" Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession" />
 		}
@@ -35,7 +35,7 @@
 @code
 {
 	[Parameter]
-	public Dto.Room? Room { get; set; }
+	public Dto.Course? Course { get; set; }
 	[Parameter]
 	public EventCallback<Dto.Session> OnSessionSelected { get; set; }
 
@@ -49,22 +49,22 @@
 
 	protected override void OnParametersSet()
 	{
-		_sessions = Room?.Sessions ?? Enumerable.Empty<Dto.Session>();
-		_loading = Room?.Sessions == null;
+		_sessions = Course?.Sessions ?? Enumerable.Empty<Dto.Session>();
+		_loading = Course?.Sessions == null;
 		StateHasChanged();
 	}
 
 	private async Task CreateSession(MouseEventArgs mouseEventArgs)
 	{
-		var parameters = new DialogParameters { ["RoomId"] = Room!.Id };
+		var parameters = new DialogParameters { ["CourseId"] = Course!.Id };
 		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
 		if ((bool)(result.Data ?? false))
 		{
 			_loading = true;
-			var room = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={Room.Id}");
-			Room.Sessions = room?.Sessions ?? Enumerable.Empty<Dto.Session>();
-			_sessions = Room?.Sessions ?? Enumerable.Empty<Dto.Session>();
-			_loading = Room?.Sessions == null;
+			var course = await Http.GetFromJsonAsync<Dto.Course?>($"Course/GetCourse?courseId={Course.Id}");
+			Course.Sessions = course?.Sessions ?? Enumerable.Empty<Dto.Session>();
+			_sessions = Course?.Sessions ?? Enumerable.Empty<Dto.Session>();
+			_loading = Course?.Sessions == null;
 		}
 	}
 

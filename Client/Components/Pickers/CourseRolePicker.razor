@@ -1,0 +1,25 @@
+﻿@using Concerto.Shared.Models.Dto;
+
+<MudSelect T="CourseUserRole" @bind-Value="BoundValue" Label="Permission" AnchorOrigin="Origin.BottomCenter">
+    <MudSelectItem Value="@(CourseUserRole.Admin)">Administrator</MudSelectItem>
+    <MudSelectItem Value="@(CourseUserRole.Supervisor)">Supervisor</MudSelectItem>
+    <MudSelectItem Value="@(CourseUserRole.Member)">Member</MudSelectItem>
+</MudSelect>
+
+
+@code {
+    [Parameter]
+    public CourseUserRole Value { get; set; }
+	[Parameter]
+	public EventCallback<CourseUserRole> ValueChanged { get; set; }
+	
+    private CourseUserRole BoundValue
+    {
+		get => Value;
+		set
+		{
+			if (value.Equals(Value)) return;
+			ValueChanged.InvokeAsync(value);
+		}
+	}
+}

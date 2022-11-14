@@ -637,44 +637,53 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial interface IRoomClient
+    public partial interface ICourseClient
     {
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync();
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Course>> GetCurrentUserCoursesAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync(System.Threading.CancellationToken cancellationToken);
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Course>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body);
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Course> GetCourseAsync(long? courseId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body, System.Threading.CancellationToken cancellationToken);
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Course> GetCourseAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteCourseAsync(long? courseId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteCourseAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RoomClient : IRoomClient
+    public partial class CourseClient : ICourseClient
     {
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<Newtonsoft.Json.JsonSerializerSettings> _settings;
 
-        public RoomClient(System.Net.Http.HttpClient httpClient)
+        public CourseClient(System.Net.Http.HttpClient httpClient)
         {
             _httpClient = httpClient;
             _settings = new System.Lazy<Newtonsoft.Json.JsonSerializerSettings>(CreateSerializerSettings);
@@ -696,19 +705,19 @@ namespace Concerto.Client.Services
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync()
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Course>> GetCurrentUserCoursesAsync()
         {
-            return GetCurrentUserRoomsAsync(System.Threading.CancellationToken.None);
+            return GetCurrentUserCoursesAsync(System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Room>> GetCurrentUserRoomsAsync(System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Course>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Room/GetCurrentUserRooms");
+            urlBuilder_.Append("Course/GetCurrentUserCourses");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -742,17 +751,17 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Room>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Course>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new RoomException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new CourseException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -770,22 +779,22 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId)
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<Course> GetCourseAsync(long? courseId)
         {
-            return GetRoomAsync(roomId, System.Threading.CancellationToken.None);
+            return GetCourseAsync(courseId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Room> GetRoomAsync(long? roomId, System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<Course> GetCourseAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Room/GetRoom?");
-            if (roomId != null)
+            urlBuilder_.Append("Course/GetCourse?");
+            if (courseId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("roomId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(roomId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("courseId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -821,17 +830,17 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Room>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<Course>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
-                                throw new RoomException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                                throw new CourseException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
                         }
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -849,19 +858,19 @@ namespace Concerto.Client.Services
         }
 
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body)
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body)
         {
-            return CreateRoomForCurrentUserAsync(body, System.Threading.CancellationToken.None);
+            return CreateCourseForCurrentUserAsync(body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
-        /// <exception cref="RoomException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateRoomForCurrentUserAsync(CreateRoomRequest body, System.Threading.CancellationToken cancellationToken)
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Room/CreateRoomForCurrentUser");
+            urlBuilder_.Append("Course/CreateCourseForCurrentUser");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -903,7 +912,80 @@ namespace Concerto.Client.Services
                         else
                         {
                             var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new RoomException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task DeleteCourseAsync(long? courseId)
+        {
+            return DeleteCourseAsync(courseId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task DeleteCourseAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Course/DeleteCourse?");
+            if (courseId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("courseId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -953,7 +1035,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-                    throw new RoomException(message, (int)response.StatusCode, responseText, headers, exception);
+                    throw new CourseException(message, (int)response.StatusCode, responseText, headers, exception);
                 }
             }
             else
@@ -972,7 +1054,7 @@ namespace Concerto.Client.Services
                 catch (Newtonsoft.Json.JsonException exception)
                 {
                     var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-                    throw new RoomException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                    throw new CourseException(message, (int)response.StatusCode, string.Empty, headers, exception);
                 }
             }
         }
@@ -1046,12 +1128,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetCourseSessionsAsync(long? courseId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -1235,21 +1317,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetCourseSessionsAsync(long? courseId)
         {
-            return GetRoomSessionsAsync(roomId, System.Threading.CancellationToken.None);
+            return GetCourseSessionsAsync(courseId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetRoomSessionsAsync(long? roomId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Session>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Session/GetRoomSessions?");
-            if (roomId != null)
+            urlBuilder_.Append("Session/GetCourseSessions?");
+            if (courseId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("roomId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(roomId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("courseId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -1420,75 +1502,66 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync();
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FolderItem>> GetOwnedFoldersAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FolderItem>> GetOwnedFoldersAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync();
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync(System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId);
+        System.Threading.Tasks.Task<FolderContent> GetFolderContentAsync(long? folderId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<FolderContent> GetFolderContentAsync(long? folderId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body);
+        System.Threading.Tasks.Task<FolderSettings> GetFolderSettingsAsync(long? folderId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<FolderSettings> GetFolderSettingsAsync(long? folderId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId);
+        System.Threading.Tasks.Task DeleteFolderAsync(long? folderId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DeleteFolderAsync(long? folderId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files);
+        System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateFolderAsync(UpdateFolderRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateFolderAsync(UpdateFolderRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -1530,18 +1603,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FolderItem>> GetOwnedFoldersAsync()
         {
-            return GetOwnedCatalogsAsync(System.Threading.CancellationToken.None);
+            return GetOwnedFoldersAsync(System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetOwnedCatalogsAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FolderItem>> GetOwnedFoldersAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetOwnedCatalogs");
+            urlBuilder_.Append("Storage/GetOwnedFolders");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1575,7 +1648,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<FolderItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1604,95 +1677,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync()
+        public virtual System.Threading.Tasks.Task<FolderContent> GetFolderContentAsync(long? folderId)
         {
-            return GetSharedCatalogsAsync(System.Threading.CancellationToken.None);
+            return GetFolderContentAsync(folderId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSharedCatalogsAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<FolderContent> GetFolderContentAsync(long? folderId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetSharedCatalogs");
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
+            urlBuilder_.Append("Storage/GetFolderContent?");
+            if (folderId != null)
             {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId)
-        {
-            return GetCatalogContentAsync(catalogId, System.Threading.CancellationToken.None);
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<CatalogContent> GetCatalogContentAsync(long? catalogId, System.Threading.CancellationToken cancellationToken)
-        {
-            var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetCatalogContent?");
-            if (catalogId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("folderId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(folderId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -1728,7 +1727,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<CatalogContent>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<FolderContent>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1757,21 +1756,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId)
+        public virtual System.Threading.Tasks.Task<FolderSettings> GetFolderSettingsAsync(long? folderId)
         {
-            return GetCatalogSettingsAsync(catalogId, System.Threading.CancellationToken.None);
+            return GetFolderSettingsAsync(folderId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<CatalogSettings> GetCatalogSettingsAsync(long? catalogId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<FolderSettings> GetFolderSettingsAsync(long? folderId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetCatalogSettings?");
-            if (catalogId != null)
+            urlBuilder_.Append("Storage/GetFolderSettings?");
+            if (folderId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("folderId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(folderId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -1807,7 +1806,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<CatalogSettings>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<FolderSettings>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1836,18 +1835,91 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body)
+        public virtual System.Threading.Tasks.Task DeleteFolderAsync(long? folderId)
         {
-            return CreateCatalogAsync(body, System.Threading.CancellationToken.None);
+            return DeleteFolderAsync(folderId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateCatalogAsync(CreateCatalogRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteFolderAsync(long? folderId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/CreateCatalog");
+            urlBuilder_.Append("Storage/DeleteFolder?");
+            if (folderId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("folderId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(folderId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body)
+        {
+            return CreateFolderAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Storage/CreateFolder");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1908,18 +1980,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body)
+        public virtual System.Threading.Tasks.Task UpdateFolderAsync(UpdateFolderRequest body)
         {
-            return UpdateCatalogAsync(body, System.Threading.CancellationToken.None);
+            return UpdateFolderAsync(body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateCatalogAsync(UpdateCatalogRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateFolderAsync(UpdateFolderRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/UpdateCatalog");
+            urlBuilder_.Append("Storage/UpdateFolder");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1980,100 +2052,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files)
         {
-            return GetSessionCatalogsAsync(sessionId, System.Threading.CancellationToken.None);
+            return UploadFilesAsync(folderId, files, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CatalogListItem>> GetSessionCatalogsAsync(long? sessionId, System.Threading.CancellationToken cancellationToken)
-        {
-            var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetSessionCatalogs?");
-            if (sessionId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            urlBuilder_.Length--;
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CatalogListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
-
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files)
-        {
-            return UploadFilesAsync(catalogId, files, System.Threading.CancellationToken.None);
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? catalogId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/UploadFiles?");
-            if (catalogId != null)
+            if (folderId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("catalogId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(catalogId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("folderId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(folderId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -3076,7 +3069,7 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RoomException : System.Exception
+    public partial class CourseException : System.Exception
     {
         public int StatusCode { get; private set; }
 
@@ -3084,7 +3077,7 @@ namespace Concerto.Client.Services
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public RoomException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public CourseException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -3099,11 +3092,11 @@ namespace Concerto.Client.Services
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.17.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RoomException<TResult> : RoomException
+    public partial class CourseException<TResult> : CourseException
     {
         public TResult Result { get; private set; }
 
-        public RoomException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public CourseException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;

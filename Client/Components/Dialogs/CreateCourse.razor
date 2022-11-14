@@ -1,14 +1,16 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Client.Components.Pickers
+@using Concerto.Shared.Models.Dto;
 @inject IDialogService DialogService
 @inject IContactService ContactService
+@inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="_roomName" T="string" Label="Name"></MudTextField>
-        <ContactPicker @bind-SelectedContacts="_selectedContacts" />
+        <MudTextField @bind-Value="_courseName" T="string" Label="Name"></MudTextField>
+        <CourseMemberPicker @bind-CourseUsers="_members" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -18,36 +20,35 @@
 @code {
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
-    private string? _roomName;
+    private string? _courseName;
 	
-	private ISet<Dto.User> _selectedContacts = new HashSet<Dto.User>();	
+    private ISet<CourseUser> _members = new HashSet<CourseUser>();
 
     private async Task Submit()
     {
-        if(String.IsNullOrEmpty(_roomName)){
-            Snackbar.Add("Room name cannot be empty", Severity.Error);
+        if(String.IsNullOrEmpty(_courseName)){
+            Snackbar.Add("Course name cannot be empty", Severity.Error);
             return;
         }
-        if(!_selectedContacts.Any()) {
+        if(!_members.Any()) {
             Snackbar.Add("Members cannot be empty", Severity.Error);
             return;
         }
 		
-        // Move to room manager
-		var room = new Dto.CreateRoomRequest {
-			Name = _roomName,
-            Members = _selectedContacts
+        // Move to course manager
+		var request = new Dto.CreateCourseRequest {
+			Name = _courseName,
+            Members = _members
 		};
 		
-        var response = await Http.PostAsJsonAsync("Room/CreateRoomForCurrentUser", room);
-		if (response.IsSuccessStatusCode)
+        if (await CourseService.CreateCourse(request))
 		{
-			Snackbar.Add("Room created", Severity.Success);
+			Snackbar.Add("Course created", Severity.Success);
 			Dialog.Close(DialogResult.Ok(true));
 		}
 		else
 		{
-			Snackbar.Add("Failed to create room", Severity.Error);
+			Snackbar.Add("Failed to create course", Severity.Error);
 		}
 	}
 

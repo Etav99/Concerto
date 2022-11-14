@@ -1,0 +1,56 @@
+version: '3.4'
+
+services:
+  concerto_server:
+    image: etav/concerto_server:1.0
+    environment:
+      ASPNETCORE_DOCKER: "true"
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:80
+      DB_STRING: Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS
+      OIDC_AUDIENCE: account
+      OIDC_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR: "true"
+      OIDC_ADMIN_REST_API_BASE: http://keycloak:8080/Concerto/Keycloak/realms/concerto
+      OIDC_AUTHORITY: http://keycloak:8080/Concerto/Keycloak/realms/concerto
+      OIDC_CLIENT_AUTHORITY: https://kask.eti.pg.gda.pl/Concerto/Keycloak/realms/concerto
+      OIDC_METADATA_ADDRESS: http://keycloak:8080/Concerto/Keycloak/realms/concerto/.well-known/openid-configuration
+      SERVER_CLIENT_ID: concerto-server
+      SERVER_CLIENT_SECRET: qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ
+    volumes:
+      - /opt/volumes/concerto/storage:/var/lib/concerto/storage
+
+  postgres:
+    image: postgres:15.0
+    volumes:
+      - /opt/volumes/concerto/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+      POSTGRES_USER: postgres
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:19.0.3
+    environment:
+      KC_PROXY: "edge"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_PATH: /Concerto/Keycloak
+      KC_HTTP_RELATIVE_PATH: /Concerto/Keycloak
+      KC_HOSTNAME_URL: "https://kask.eti.pg.gda.pl/Concerto/Keycloak"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME_ADMIN_URL: "https://kask.eti.pg.gda.pl/Concerto/Keycloak"
+      
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: h96lazwA9lnFUhza6M8r0jOW2d
+      
+      KC_DB: postgres
+      KC_DB_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+    volumes:
+      - /opt/volumes/concerto/keycloak:/var/lib/keycloak/data
+    command: start
+      
+  concerto_reverseproxy:
+    image: etav/concerto_reverseproxy:1.0
+    ports:
+      - 6014:80

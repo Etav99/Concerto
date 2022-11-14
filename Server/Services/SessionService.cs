@@ -25,7 +25,7 @@ public class SessionService
 			return null;
 
         await _context.Entry(session)
-            .Reference(s => s.Room)
+            .Reference(s => s.Course)
             .LoadAsync();
 
         await _context.Entry(session)
@@ -38,47 +38,47 @@ public class SessionService
 		return session.ToDto();
 	}
 
-	public async Task<bool> IsUserSessionMember(long userId, long sessionId)
+	public async Task<bool> CanAccessSession(long userId, long sessionId)
 	{
-		var session = await _context.Sessions
-			.FindAsync(sessionId);
-
+		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null)
 			return false;
 
-		return await _context.Entry(session)
-			.Reference(s => s.Room)
+        var courseUser = await _context.CourseUsers.FindAsync(new { session.CourseId, userId });
+
+        return await _context.Entry(session)
+			.Reference(s => s.Course)
 			.Query()
-			.Include(r => r.RoomUsers)
-			.AnyAsync(r => r.RoomUsers.Any(ru => ru.UserId == userId));
+			.Include(r => r.CourseUsers)
+			.AnyAsync(r => r.CourseUsers.Any(ru => ru.UserId == userId));
 	}
 
 	public async Task<bool> CreateSession(Dto.CreateSessionRequest request)
 	{
-		var room = await _context.Rooms
-			.Include(r => r.RoomUsers)
+		var course = await _context.Courses
+			.Include(r => r.CourseUsers)
 			.ThenInclude(ru => ru.User)
-			.FirstOrDefaultAsync(r => r.Id == request.RoomId);
+			.FirstOrDefaultAsync(r => r.Id == request.CourseId);
 
-		if (room == null)
+		if (course == null)
 			return false;
 
 		var session = new Session();
-		var sessionConversation = room.RoomUsers.Select(ru => ru.User).ToGroupConversation();
+		var sessionConversation = course.CourseUsers.Select(ru => ru.User).ToGroupConversation();
 		session.Name = request.Name;
 		session.ScheduledDate = request.ScheduledDateTime.ToUniversalTime();
 		session.Conversation = sessionConversation;
-		session.Room = room;
+		session.Course = course;
 
 		await _context.Sessions.AddAsync(session);
 		await _context.SaveChangesAsync();
 		return true;
 	}
 
-	internal async Task<IEnumerable<Dto.Session>> GetRoomSessions(long roomId)
+	internal async Task<IEnumerable<Dto.Session>> GetCourseSessions(long courseId)
 	{
 		return await _context.Sessions
-			.Where(s => s.Room.Id == roomId)
+			.Where(s => s.Course.Id == courseId)
 			.Select(s => s.ToDto())
 			.ToListAsync();
 	}

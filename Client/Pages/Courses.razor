@@ -1,5 +1,5 @@
 ﻿@attribute [Authorize]
-@page "/rooms"
+@page "/courses"
 
 @using Concerto.Client.Components
 @using Concerto.Client.Components.Dialogs
@@ -18,7 +18,7 @@
 @inject HttpClient Http;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Rooms</PageTitle>
+<PageTitle>Courses</PageTitle>
 
 @if (loading)
 {
@@ -29,24 +29,24 @@
 else
 {
 	<MudPaper Class="flex-grow-0 pa-4 ma-2" Elevation="4" MaxWidth="MaxWidth.Large">
-		<MudTable Items="RoomsList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Room, bool>(RoomFilter)">
+		<MudTable Items="CoursesList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Course, bool>(CourseFilter)">
 			<ToolBarContent>
-				<MudText Typo="Typo.h6">Your rooms</MudText>
+				<MudText Typo="Typo.h6">Your courses</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				<MudSpacer />
-				@if (RoomsList == null || !RoomsList.Any())
+				@if (CoursesList == null || !CoursesList.Any())
 				{
 					
-					<MudAlert Variant="Variant.Filled" Severity="Severity.Info">You're currently not a member of any room.</MudAlert>
+					<MudAlert Variant="Variant.Filled" Severity="Severity.Info">You're currently not a member of any course.</MudAlert>
 					<MudSpacer />
 				}
 				<AuthorizeView Roles="teacher">
-					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateRoom" />
+					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCourse" />
 				</AuthorizeView>
 			</ToolBarContent>
 			<HeaderContent>
-				<MudTh>Room name</MudTh>
+				<MudTh>Course name</MudTh>
 				<MudTh>Members</MudTh>
 			</HeaderContent>
 			<RowTemplate>
@@ -65,7 +65,7 @@ else
 
 				</MudTd>
 				<MudTd Style="text-align:right">
-					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Login" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectRoom(@context))" />
+					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Login" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectCourse(@context))" />
 				</MudTd>
 			</RowTemplate>
 			<PagerContent>
@@ -81,7 +81,7 @@ else
 	private string searchString = string.Empty;
 	bool loading = true;
 
-	private List<Dto.Room> RoomsList { get; set; } = new List<Dto.Room>();
+	private List<Dto.Course> CoursesList { get; set; } = new List<Dto.Course>();
 	private long? UserId { get; set; }
 	private AuthenticationState AuthenticationState { get; set; }
 
@@ -89,33 +89,33 @@ else
 	{
 		loading = true;
 
-		var roomsResponse = await Http.GetFromJsonAsync<Dto.Room[]>($"Room/GetCurrentUserRooms");
-		RoomsList = roomsResponse?.ToList() ?? new List<Dto.Room>();
+		var coursesResponse = await Http.GetFromJsonAsync<Dto.Course[]>($"Course/GetCurrentUserCourses");
+		CoursesList = coursesResponse?.ToList() ?? new List<Dto.Course>();
 		
 		loading = false;
 	}
 
-	private void SelectRoom(Dto.Room room)
+	private void SelectCourse(Dto.Course course)
 	{
-		NavigationManager.NavigateTo($"rooms/{room.Id}");
+		NavigationManager.NavigateTo($"courses/{course.Id}");
 	}
 	
-	private async Task CreateRoom(MouseEventArgs mouseEventArgs){
-		var result = await DialogService.Show<CreateRoomDialog>("Create new room").Result;
+	private async Task CreateCourse(MouseEventArgs mouseEventArgs){
+		var result = await DialogService.Show<CreateCourseDialog>("Create new course").Result;
 		if((bool)(result.Data ?? false))
 		{
-			var roomsResponse = await Http.GetFromJsonAsync<Dto.Room[]>($"Room/GetCurrentUserRooms");
-			RoomsList = roomsResponse?.ToList() ?? new List<Dto.Room>();
+			var coursesResponse = await Http.GetFromJsonAsync<Dto.Course[]>($"Course/GetCurrentUserCourses");
+			CoursesList = coursesResponse?.ToList() ?? new List<Dto.Course>();
 		}
 	}
 
-	private bool RoomFilter(Dto.Room room)
+	private bool CourseFilter(Dto.Course course)
 	{
 		if (string.IsNullOrWhiteSpace(searchString))
 			return true;
-		if (room.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+		if (course.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
-		if (room.Users.Any(u => $"{u.Username} {u.FirstName} {u.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+		if (course.Users.Any(u => $"{u.Username} {u.FirstName} {u.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)))
 			return true;
 
 		return false;

@@ -1,6 +1,5 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Settings;
-using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;

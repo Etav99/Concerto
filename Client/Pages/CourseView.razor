@@ -1,5 +1,5 @@
 ﻿@attribute [Authorize]
-@page "/rooms/{SelectedRoomId:long}"
+@page "/courses/{SelectedCourseId:long}"
 @using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Components
 @using Concerto.Client.Components.Lists
@@ -14,23 +14,23 @@
 @inject HttpClient Http;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Room</PageTitle>
+<PageTitle>Course</PageTitle>
 
 <MudPaper Class="d-flex flex-column" Height="100%" Elevation="4">
 
 		<MudPaper Class="pa-2 mud-theme-primary" Square="false" Elevation="0">
 			<MudStack Row="true" Justify="Justify.Center">
-				<MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
-				<MudText Align="Align.Center">@($"{SelectedRoom?.Name}")</MudText>
+				<MudIcon Icon="@Icons.Material.Filled.MeetingCourse" />
+				<MudText Align="Align.Center">@($"{SelectedCourse?.Name}")</MudText>
 			</MudStack>
 		</MudPaper>
 
 		<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Stretch" Class="pa-4" Style="height:calc(100% - 50px)">
 			<MudPaper Class="" Elevation="0" Outlined="true">
-				<RoomSessionList Class="" Style="height:calc(100% - 50px)" Room="SelectedRoom" OnSessionSelected="OnSessionSelected" />
+				<CourseSessionList Class="" Style="height:calc(100% - 50px)" Course="SelectedCourse" OnSessionSelected="OnSessionSelected" />
 			</MudPaper>
 			<MudPaper Class="flex-grow-1" Elevation="0" Outlined="true">
-				<ChatBox SelectedConversation="SelectedRoom?.Conversation" />
+				<ChatBox SelectedConversation="SelectedCourse?.Conversation" />
 			</MudPaper>
 		</MudStack>
 
@@ -39,15 +39,15 @@
 
 @code {
 	[Parameter]
-	public long SelectedRoomId { get; set; } = 0;
-	private Dto.Room? SelectedRoom { get; set; }
+	public long SelectedCourseId { get; set; } = 0;
+	private Dto.Course? SelectedCourse { get; set; }
 	
 	protected override async Task OnInitializedAsync()
 	{
-		SelectedRoom = await Http.GetFromJsonAsync<Dto.Room?>($"Room/GetRoom?roomId={SelectedRoomId}");
-		if (SelectedRoom == null)
+		SelectedCourse = await Http.GetFromJsonAsync<Dto.Course?>($"Course/GetCourse?courseId={SelectedCourseId}");
+		if (SelectedCourse == null)
 		{
-			NavigationManager.NavigateTo("rooms");
+			NavigationManager.NavigateTo("courses");
 		}
 	}
 

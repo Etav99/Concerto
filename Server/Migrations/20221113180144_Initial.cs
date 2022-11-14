@@ -40,48 +40,6 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Rooms",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Rooms", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Rooms_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalogs",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    OwnerId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalogs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalogs_Users_OwnerId",
-                        column: x => x.OwnerId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ChatMessages",
                 columns: table => new
                 {
@@ -125,13 +83,13 @@ namespace Concerto.Server.Migrations
                         column: x => x.User1Id,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Contacts_Users_User2Id",
                         column: x => x.User2Id,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,38 +107,104 @@ namespace Concerto.Server.Migrations
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ConversationUser_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "RoomUsers",
+                name: "Courses",
                 columns: table => new
                 {
-                    RoomId = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    ConversationId = table.Column<long>(type: "bigint", nullable: false),
+                    RootFolderId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Courses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Courses_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CourseUsers",
+                columns: table => new
+                {
+                    CourseId = table.Column<long>(type: "bigint", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RoomUsers", x => new { x.RoomId, x.UserId });
+                    table.PrimaryKey("PK_CourseUsers", x => new { x.CourseId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_RoomUsers_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
+                        name: "FK_CourseUsers_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RoomUsers_Users_UserId",
+                        name: "FK_CourseUsers_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Folders",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    CourseId = table.Column<long>(type: "bigint", nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: true),
+                    CoursePermission_Type = table.Column<int>(type: "integer", nullable: false),
+                    CoursePermission_Inherited = table.Column<bool>(type: "boolean", nullable: false),
+                    FolderId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Folders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Folders_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Folders_Folders_FolderId",
+                        column: x => x.FolderId,
+                        principalTable: "Folders",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Folders_Folders_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Folders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Folders_Users_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -191,7 +215,7 @@ namespace Concerto.Server.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    RoomId = table.Column<long>(type: "bigint", nullable: false),
+                    CourseId = table.Column<long>(type: "bigint", nullable: false),
                     ConversationId = table.Column<long>(type: "bigint", nullable: false),
                     MeetingGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()")
                 },
@@ -205,57 +229,9 @@ namespace Concerto.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Sessions_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CatalogUser",
-                columns: table => new
-                {
-                    CatalogsSharedToId = table.Column<long>(type: "bigint", nullable: false),
-                    UsersSharedToId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CatalogUser", x => new { x.CatalogsSharedToId, x.UsersSharedToId });
-                    table.ForeignKey(
-                        name: "FK_CatalogUser_Catalogs_CatalogsSharedToId",
-                        column: x => x.CatalogsSharedToId,
-                        principalTable: "Catalogs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CatalogUser_Users_UsersSharedToId",
-                        column: x => x.UsersSharedToId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CatalogSession",
-                columns: table => new
-                {
-                    SharedCatalogsId = table.Column<long>(type: "bigint", nullable: false),
-                    SharedInSessionsId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CatalogSession", x => new { x.SharedCatalogsId, x.SharedInSessionsId });
-                    table.ForeignKey(
-                        name: "FK_CatalogSession_Catalogs_SharedCatalogsId",
-                        column: x => x.SharedCatalogsId,
-                        principalTable: "Catalogs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CatalogSession_Sessions_SharedInSessionsId",
-                        column: x => x.SharedInSessionsId,
-                        principalTable: "Sessions",
+                        name: "FK_Sessions_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -266,41 +242,47 @@ namespace Concerto.Server.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CatalogId = table.Column<long>(type: "bigint", nullable: false),
+                    FolderId = table.Column<long>(type: "bigint", nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: false),
-                    StorageName = table.Column<string>(type: "text", nullable: false),
-                    SessionId = table.Column<long>(type: "bigint", nullable: true)
+                    StorageName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UploadedFiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UploadedFiles_Catalogs_CatalogId",
-                        column: x => x.CatalogId,
-                        principalTable: "Catalogs",
+                        name: "FK_UploadedFiles_Folders_FolderId",
+                        column: x => x.FolderId,
+                        principalTable: "Folders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFolderPermissions",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    FolderId = table.Column<long>(type: "bigint", nullable: false),
+                    Permission_Type = table.Column<int>(type: "integer", nullable: false),
+                    Permission_Inherited = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFolderPermissions", x => new { x.UserId, x.FolderId });
+                    table.ForeignKey(
+                        name: "FK_UserFolderPermissions_Folders_FolderId",
+                        column: x => x.FolderId,
+                        principalTable: "Folders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UploadedFiles_Sessions_SessionId",
-                        column: x => x.SessionId,
-                        principalTable: "Sessions",
-                        principalColumn: "Id");
+                        name: "FK_UserFolderPermissions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Catalogs_OwnerId",
-                table: "Catalogs",
-                column: "OwnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CatalogSession_SharedInSessionsId",
-                table: "CatalogSession",
-                column: "SharedInSessionsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CatalogUser_UsersSharedToId",
-                table: "CatalogUser",
-                column: "UsersSharedToId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_ConversationId",
@@ -323,14 +305,40 @@ namespace Concerto.Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Rooms_ConversationId",
-                table: "Rooms",
+                name: "IX_Courses_ConversationId",
+                table: "Courses",
                 column: "ConversationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoomUsers_UserId",
-                table: "RoomUsers",
+                name: "IX_Courses_RootFolderId",
+                table: "Courses",
+                column: "RootFolderId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CourseUsers_UserId",
+                table: "CourseUsers",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Folders_CourseId",
+                table: "Folders",
+                column: "CourseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Folders_FolderId",
+                table: "Folders",
+                column: "FolderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Folders_OwnerId",
+                table: "Folders",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Folders_ParentId",
+                table: "Folders",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_ConversationId",
@@ -338,34 +346,48 @@ namespace Concerto.Server.Migrations
                 column: "ConversationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sessions_RoomId",
+                name: "IX_Sessions_CourseId",
                 table: "Sessions",
-                column: "RoomId");
+                column: "CourseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UploadedFiles_CatalogId",
+                name: "IX_UploadedFiles_FolderId",
                 table: "UploadedFiles",
-                column: "CatalogId");
+                column: "FolderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UploadedFiles_SessionId",
-                table: "UploadedFiles",
-                column: "SessionId");
+                name: "IX_UserFolderPermissions_FolderId",
+                table: "UserFolderPermissions",
+                column: "FolderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_SubjectId",
                 table: "Users",
                 column: "SubjectId",
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Courses_Folders_RootFolderId",
+                table: "Courses",
+                column: "RootFolderId",
+                principalTable: "Folders",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "CatalogSession");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Courses_Conversations_ConversationId",
+                table: "Courses");
 
-            migrationBuilder.DropTable(
-                name: "CatalogUser");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Folders_Users_OwnerId",
+                table: "Folders");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Courses_Folders_RootFolderId",
+                table: "Courses");
 
             migrationBuilder.DropTable(
                 name: "ChatMessages");
@@ -377,25 +399,28 @@ namespace Concerto.Server.Migrations
                 name: "ConversationUser");
 
             migrationBuilder.DropTable(
-                name: "RoomUsers");
-
-            migrationBuilder.DropTable(
-                name: "UploadedFiles");
-
-            migrationBuilder.DropTable(
-                name: "Catalogs");
+                name: "CourseUsers");
 
             migrationBuilder.DropTable(
                 name: "Sessions");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "UploadedFiles");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
+                name: "UserFolderPermissions");
 
             migrationBuilder.DropTable(
                 name: "Conversations");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Folders");
+
+            migrationBuilder.DropTable(
+                name: "Courses");
         }
     }
 }

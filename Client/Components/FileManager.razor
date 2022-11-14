@@ -1,0 +1,130 @@
+﻿@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto;
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inherits MudComponentBase;
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject IStorageService StorageService
+@inject IUserService UserService
+@inject IJSRuntime JS
+@inject IAccessTokenProvider AccessTokenProvider
+
+@if (FolderContent != null)
+	{
+		<MudTable Items="FolderContentItems" Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
+		  Class="@Class" Style="@Style" Height="calc(100% - 65px)" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
+			<ToolBarContent>
+				<MudText Typo="Typo.h6">@FolderContent.Self.Name</MudText>
+				<MudSpacer />
+				<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+				@if (FolderContent.Self.CanWrite)
+				{
+					<MudSpacer />
+					<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateFolderDialog()" />
+					<MudIconButton Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await UploadFiles()"/>
+				}
+			</ToolBarContent>
+			
+			<HeaderContent>
+				<MudTh>
+					<MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<FolderContentItem, object>(x=>x.Name)">Name</MudTableSortLabel>
+				</MudTh>
+				<MudTh>Actions</MudTh>
+			</HeaderContent>
+			
+			<RowTemplate>
+				<MudTd DataLabel="Name">@context.Name</MudTd>
+				<MudTd Style="text-align:right">
+				@if(context is FolderItem)
+				{
+					<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => OpenFolder((FolderItem)context)"/>
+					<MudIconButton Icon="@Icons.Material.Filled.FolderDelete" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => DeleteFolder((FolderItem)context)"/>
+					<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => ShowCreateOrUpdateFolderDialog((context.Id))"/>
+				}
+				</MudTd>
+			</RowTemplate>
+		</MudTable>
+	}
+
+
+	
+@code {
+	[Parameter]
+	public long InitialFolderId { get; set; }
+
+	private FolderContent? FolderContent { get; set; }
+	private List<FolderContentItem>? FolderContentItems { get; set; }
+
+	private bool _loading = true;
+	private string? _searchString;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await Refresh();
+	}
+
+	private async Task Refresh()
+	{
+		_loading = true;
+		long folderId = FolderContent?.Self.Id ?? InitialFolderId;
+		FolderContent = await StorageService.GetFolderContent(folderId);
+		var files = FolderContent.Files.Cast<FolderContentItem>();
+		var subFolders = FolderContent.SubFolders.Cast<FolderContentItem>();
+		FolderContentItems = files.Concat(subFolders).ToList();
+		_loading = false;
+	}
+
+	private bool FolderContentItemFilter(FolderContentItem item)
+	{
+		if (string.IsNullOrWhiteSpace(_searchString))
+			return true;
+		if (item.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return false;
+	}
+
+	public async Task UploadFiles()
+	{
+		var parameters = new DialogParameters { ["FolderId"] = FolderContent!.Self.Id };
+		var result = await DialogService.Show<UploadFilesDialog>("Upload files to folder", parameters).Result;
+		if ((bool)(result.Data ?? false))
+		{
+			await Refresh();
+		}
+	}
+
+	public async Task DeleteFolder(Dto.FolderItem folder)
+	{
+		await StorageService.DeleteFolder(folder.Id);
+	}
+
+	public async Task ShowCreateOrUpdateFolderDialog(long? editedFolderId = null)
+	{
+		var parameters = new DialogParameters { ["EditedFolderId"] = editedFolderId };
+		var name = editedFolderId is null ? "Create folder" : "Edit folder";
+		var result = await DialogService.Show<CreateOrUpdateFolderDialog>(name, parameters).Result;
+		_loading = true;
+		if ((bool)(result.Data ?? false))
+		{
+			FolderContent = await StorageService.GetFolderContent(FolderContent!.Self.Id);
+		}
+		_loading = false;
+	}
+
+	public async Task DownloadFile(Dto.UploadedFile file)
+	{
+		var accessTokenResult = await AccessTokenProvider.RequestAccessToken();
+		accessTokenResult.TryGetToken(out var accessToken);
+
+		await JS.InvokeVoidAsync("downloadFile", file.Name, $"{Http.BaseAddress}Storage/DownloadFile?fileId={file.Id}&access_token={accessToken.Value.ToString()}");
+	}
+
+	public async Task OpenFolder(Dto.FolderItem folder)
+	{
+		_loading = true;
+		FolderContent = await StorageService.GetFolderContent(folder.Id);
+		_loading = false;
+	}
+}

@@ -13,14 +13,14 @@ namespace Concerto.Server.Controllers;
 public class SessionController : ControllerBase
 {
 	private readonly ILogger<SessionController> _logger;
-	private readonly RoomService _roomService;
+	private readonly CourseService _courseService;
 	private readonly SessionService _sessionService;
 
 
-	public SessionController(ILogger<SessionController> logger, RoomService roomService, SessionService sessionService)
+	public SessionController(ILogger<SessionController> logger, CourseService courseService, SessionService sessionService)
 	{
 		_logger = logger;
-		_roomService = roomService;
+		_courseService = courseService;
 		_sessionService = sessionService;
 	}
 
@@ -29,7 +29,7 @@ public class SessionController : ControllerBase
 	public async Task<ActionResult> CreateSession([FromBody] Dto.CreateSessionRequest request)
 	{
         long userId = HttpContext.GetUserId();
-		if (!await _roomService.IsUserRoomMember(userId, request.RoomId)) return Forbid();
+		if (!await _courseService.IsUserCourseMember(userId, request.CourseId)) return Forbid();
 
 		if (await _sessionService.CreateSession(request))
 		{
@@ -42,17 +42,17 @@ public class SessionController : ControllerBase
 	public async Task<ActionResult<Dto.Session>> GetSession(long sessionId)
 	{
         long userId = HttpContext.GetUserId();
-		if (!await _sessionService.IsUserSessionMember(userId, sessionId)) return Forbid();
+		if (!await _sessionService.CanAccessSession(userId, sessionId)) return Forbid();
 		var session = await _sessionService.GetSession(sessionId);
         return session is null ? NotFound() : Ok(session);
     }
     
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.Session>>> GetRoomSessions(long roomId)
+	public async Task<ActionResult<IEnumerable<Dto.Session>>> GetCourseSessions(long courseId)
 	{
         long userId = HttpContext.GetUserId();
-        if (!await _roomService.IsUserRoomMember(userId, roomId)) return Forbid();
-        return Ok(await _sessionService.GetRoomSessions(roomId));
+        if (!await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
+        return Ok(await _sessionService.GetCourseSessions(courseId));
 	}
 
 }

@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Pages\Rooms.razor">
+	  <Content Update="Pages\Courses.razor">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	  </Content>
 	</ItemGroup>
