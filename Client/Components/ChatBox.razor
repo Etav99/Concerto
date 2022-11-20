@@ -26,19 +26,16 @@
 				</MudStack>
 		</MudPaper>
 
-		<MudStack Reverse="true" Class="" Justify="Justify.FlexStart" Style="overflow:auto;" id="messagesContainer">
-					@foreach (var message in Conversation!.Messages)
-					{
-						<MudPaper Class="@(IsSender(message.SenderId) ? "ml-4 mr-8 pa-2 mud-theme-secondary" : "mr-4 ml-8 pa-2 mud-theme-tertiary")"
-								  Style="@(IsSender(message.SenderId) ? "align-self: flex-end; max-width: 80%;"  : "align-self: flex-start; max-width: 80%;")" Elevation="0">
+		<MudStack Reverse="true" Class="flex-grow-1" Justify="Justify.FlexStart" Style="overflow:auto;" id="messagesContainer">
+			@foreach (var message in Conversation!.Messages)
+			{
+				<MudPaper Class="@(IsSender(message.SenderId) ? "ml-4 mr-8 pa-2 mud-theme-secondary" : "mr-4 ml-8 pa-2 mud-theme-tertiary")"
+				  Style="@(IsSender(message.SenderId) ? "align-self: flex-end; max-width: 80%;"  : "align-self: flex-start; max-width: 80%;")" Elevation="0">
 					<MudText Style="word-break: normal; overflow-wrap: anywhere">@message.Content</MudText>
-						</MudPaper>
-					}
+				</MudPaper>
+			}
 		</MudStack>
-
-		<MessageTextField OnSend="Send"/>
-
-
+		<MessageTextField OnSend="Send" />
 	}
 </MudStack>
 

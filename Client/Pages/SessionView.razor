@@ -17,45 +17,33 @@
 @inject IJSRuntime JsRuntime
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
 
-<MudPaper Class="d-flex flex-column" Height="100%" Elevation="4">
 
-	<MudPaper Class="pa-2 mud-theme-primary" Square="false" Elevation="0">
-		<MudStack Row="true" Justify="Justify.Center">
-			<MudIcon Icon="@Icons.Material.Filled.Group" />
-			<MudText Align="Align.Center">@($"{SelectedSession?.Name}")</MudText>
-		</MudStack>
-	</MudPaper>
+<MudStack Row="true" Class="" Justify="Justify.Center" Style="height: calc(100%);">
 
-	<MudStack Row="true" Class="d-flex ma-4" Justify="Justify.Center" Style="height:calc(100% - 65px);">
+	<MudPaper id="jitsi" Class="flex-grow-1 pa-2" MaxHeight="100%" Elevation="0" Outlined="true" />
 
-		<MudPaper id="jitsi" Class="flex-grow-1 pa-2" MaxHeight="100%" Elevation="0" Outlined="true" />
-
-
-			<MudStack Class="" Style="height:calc(100%);" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
-			@if(SelectedSession is not null)
-			{
-				<MudPaper Class="d-flex align-stretch" Style="flex: 1 1 auto; height: 20%" Outlined="true">
-					@if(SelectedSession!.CourseRootFolderId.HasValue)
-					{
-						<FileManager InitialFolderId="SelectedSession.CourseRootFolderId.Value" Style="@($"width: 100%; max-width: {MaxWidth.Large}")" />
-					}	
-				</MudPaper>
-
-				<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
+	<MudStack Style="height: 100%;" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
+		@if (SelectedSession is not null && SelectedSession.CourseRootFolderId is not null)
+		{
+			<FileManager InitialFolderId="SelectedSession.CourseRootFolderId.Value" Style="flex: 1 1 auto; height: 20%" Height="100%" />
+			<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
 					<ChatBox SelectedConversationId="SelectedSession?.ConversationId" />
-				</MudPaper>
-			}
-
-		</MudStack>
-
+			</MudPaper>
+		}
 	</MudStack>
-</MudPaper>
+</MudStack>
 
 	@code {
 	[Parameter]
 	public long SelectedSessionId { get; set; }
 
 	private Dto.Session? SelectedSession { get; set; }
+
+	bool openEnd = false;
+	void ToggleEndDrawer()
+	{
+		openEnd = !openEnd;
+	}
 
 	protected override async Task OnInitializedAsync() {
 		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
@@ -67,8 +55,8 @@
 
 		BreadcrumbsService.Set(
 			new BreadcrumbItem("Courses", "/courses"),
-			new BreadcrumbItem(SelectedSession.CourseName, $"/courses/{SelectedSession.CourseId}"),
-			new BreadcrumbItem(SelectedSession.Name, null)
+			new BreadcrumbItem(SelectedSession.CourseName, $"courses/{SelectedSession.CourseId}"),
+			new BreadcrumbItem(SelectedSession.Name, null, true)
 		);
 
 		var meetingName = WebUtility.UrlEncode($"{SelectedSession?.Name} ({SelectedSession?.MeetingGuid.ToString()})");

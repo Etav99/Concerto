@@ -1,11 +1,21 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject IJSRuntime JSRuntime
 <MudNavMenu>
 	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 	<AuthorizeView>
-		<MudNavLink Href="profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
+		<MudNavLink OnClick="OpenAccountManagementConsole" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
 		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MeetingRoom">Courses</MudNavLink>
 		<MudNavLink Href="contacts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">Contacts</MudNavLink>
 		<MudNavLink Href="chat" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
 	</AuthorizeView>
 
 </MudNavMenu>
+
+
+@code {
+
+	private async void OpenAccountManagementConsole()
+	{
+		await JSRuntime.InvokeAsync<object>("open", "http://localhost:7200/Concerto/Keycloak/realms/concerto/account/", "_blank");
+	}
+}

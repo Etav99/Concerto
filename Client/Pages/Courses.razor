@@ -29,12 +29,8 @@
 }
 else
 {
-	<MudPaper Height="100%" Elevation="4">
-		<MudToolBar DisableGutters="true" Dense="true">
-
-			<MudBreadcrumbs Items="BreadcrumbsService.Breadcrumbs"/>
-		</MudToolBar>
-		<MudTable Items="CoursesList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)">
+	<MudTable Items="CoursesList" Hover="true"  Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)"
+		    Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">Your courses</MudText>
 				<MudSpacer />
@@ -68,8 +64,7 @@ else
 			<PagerContent>
 				<MudTablePager PageSizeOptions="new int[]{50, 100}" />
 			</PagerContent>
-		</MudTable>
-	</MudPaper>
+	</MudTable>
 }
 
 
@@ -84,7 +79,7 @@ else
 	protected override void OnInitialized()
 	{
 		BreadcrumbsService.Set(
-			new BreadcrumbItem("Courses", "/courses")
+			new BreadcrumbItem("Courses", null, true)
 		);
 	}
 

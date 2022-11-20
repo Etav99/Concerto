@@ -46,9 +46,9 @@
 		</MudDrawerHeader>
 		<NavMenu />
 	</MudDrawer>
-	<MudMainContent Style="height: 100%">
+	<MudMainContent Class="d-flex flex-column pb-8" Style="height: 100%">
 		<NavigationToolbar />
-		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.ExtraLarge : MaxWidth.Large)" Class="pa-4" Style="height: 100%;">
+		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.ExtraLarge : MaxWidth.Large)" Style="overflow:auto"Class="flex-grow-1">
 			@Body
 		</MudContainer>
 	</MudMainContent>

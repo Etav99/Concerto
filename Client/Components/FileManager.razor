@@ -14,7 +14,7 @@
 @if (FolderContent != null)
 {
 	<MudTable Items="FolderContentItems" Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
-		  Class="@Class" Style="@Style" Outlined="true" Height="calc(100% - 65px)" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
+		  Class="@Class" Style="@Style" Outlined="true" Height="@_height" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
 		<ToolBarContent>
 			<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Disabled="@(!BreadCrumbs.Any())" OnClick="Back" aria-label="Back"></MudIconButton>
 			<MudText Typo="Typo.h6">@FolderContent.Self.Name</MudText>
@@ -79,8 +79,20 @@
 
 	
 @code {
-    [Parameter]
-    public long InitialFolderId { get; set; }
+	[Parameter]
+	public long InitialFolderId { get; set; }
+
+
+	private string _height = string.Empty;
+	[Parameter]
+	public string Height
+	{
+		get => _height;
+		set
+		{
+			_height = $"calc({value} - 64px)";
+		}
+	}
 
     private FolderContent? FolderContent { get; set; }
     private List<FolderContentItem>? FolderContentItems { get; set; }

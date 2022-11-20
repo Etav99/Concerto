@@ -16,9 +16,10 @@
 }
 else
 {
-	<MudTabs Elevation="4" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
-		<MudTabPanel Text="Your contacts">
-			<MudTable Items="contacts" Hover="true" SortLabel="Sort By" Elevation="0" Filter="new Func<Dto.User, bool>(UserFilter)" Class="pa-4">
+	<MudTabs Elevation="4" Rounded="true" ApplyEffectsToContainer="true" PanelClass="flex-grow-1" Style="height: 100%">
+		<MudTabPanel Text="Your contacts" Class="d-flex" Style="height: 100%">
+			<MudTable Items="contacts" SortLabel="Sort By" Filter="new Func<Dto.User, bool>(UserFilter)"
+				Class="flex-grow-1"  Style="height: 100%;" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
 				<ToolBarContent>
 					<MudText Typo="Typo.h6">Contacts</MudText>
 					<MudSpacer />

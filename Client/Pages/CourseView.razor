@@ -19,33 +19,20 @@
 
 <PageTitle>Course</PageTitle>
 
-<MudPaper Class="d-flex flex-column" Height="100%" Elevation="4">
+@if (SelectedCourse is not null)
+{
+	<MudStack Row="true" Class="" Justify="Justify.Center" Style="height: calc(100%);">
 
-		<MudPaper Class="pa-2 mud-theme-primary" Square="false" Elevation="0">
-			<MudStack Row="true" Justify="Justify.Center">
-				<MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
-				<MudText Align="Align.Center">@($"{SelectedCourse?.Name}")</MudText>
-			</MudStack>
-		</MudPaper>
+		<FileManager Class="flex-grow-1" Height="100%" Style="height: 100%; min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
 
-		@if (SelectedCourse is not null)
-		{
-			<MudStack Row="true" Class="d-flex ma-4" Justify="Justify.Center" Style="height:calc(100% - 65px);">
-
-			<FileManager Class="flex-grow-1 flex-shrink-0" Style="height:100%; min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
-
-				<MudStack  Style="height:calc(100%);" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
-					
-					<CourseSessionList Style="width: 100%; height: 20%; flex: 1 1 auto;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected" />
-
-				<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
-					<ChatBox ConversationName="Course conversation" SelectedConversationId="SelectedCourse.ConversationId" />
-				</MudPaper>
-				
-				</MudStack>
-			</MudStack>
-		}
-</MudPaper>
+		<MudStack Style="height: 100%;" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
+			<CourseSessionList Style="width: 100%; height: 20%; flex: 1 1 auto;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected" />
+			<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
+				<ChatBox ConversationName="Course conversation" SelectedConversationId="SelectedCourse.ConversationId" />
+			</MudPaper>
+		</MudStack>
+	</MudStack>
+}
 
 
 @code {
@@ -58,8 +45,8 @@
 		SelectedCourse = await CourseService.GetCourse(SelectedCourseId);
 		if (SelectedCourse == null) NavigationManager.NavigateTo("courses");
 		BreadcrumbsService.Set(
-			new BreadcrumbItem("Courses", "/courses"),
-			new BreadcrumbItem(SelectedCourse?.Name, null)
+			new BreadcrumbItem("Courses", "courses"),
+			new BreadcrumbItem(SelectedCourse?.Name, null, true)
 		);
 	}
 	
