@@ -37,35 +37,52 @@ public static partial class ViewModelConversions
 	public static Dto.FolderSettings ToFolderSettings(this Folder folder)
 	{
 		return new Dto.FolderSettings
+		(
+			Id: folder.Id,
+			Name: folder.Name,
+			OwnerId: folder.OwnerId,
+			CoursePermission: folder.CoursePermission.ToViewModel(),
+			ParentCoursePermission: (folder.Parent?.IsCourseRoot ?? true) ? null : folder.Parent?.CoursePermission.ToViewModel(),
+            ParentUserPermissions: folder.Parent?.UserPermissions.Select(up => up.ToViewModel()) ?? Enumerable.Empty<Dto.UserFolderPermission>(),
+            UserPermissions: folder.UserPermissions.Select(fp => fp.ToViewModel()).ToList(),
+			Type: folder.Type.ToViewModel()
+		);
+	}
+
+    public static Dto.FolderItem ToFolderItem(this Folder folder, bool canWrite, bool canEdit, bool canDelete)
+    {
+		return new Dto.FolderItem(
+			Id: folder.Id,
+			Name: folder.Name,
+			CanWrite: canWrite,
+			CanEdit: canEdit,
+			CanDelete: canDelete,
+			Type: folder.Type.ToViewModel()
+		);
+    }
+
+    public static Dto.FolderType ToViewModel(this FolderType permissionType)
+	{
+		return permissionType switch
 		{
-			Id = folder.Id,
-			Name = folder.Name,
-			OwnerId = folder.OwnerId,
-			CoursePermission = folder.CoursePermission.ToDto(),
-			UserPermissions = folder.UserPermissions.Select(fp => fp.ToDto()).ToList(),
+			FolderType.CourseRoot => Dto.FolderType.CourseRoot,
+			FolderType.Sheets => Dto.FolderType.Sheets,
+			FolderType.Recordings => Dto.FolderType.Recordings,
+			FolderType.Other => Dto.FolderType.Other,
+			_ => throw new ArgumentOutOfRangeException(nameof(permissionType), permissionType, null)
 		};
 	}
-	
-	//public static Dto.FolderItem ToFolderListItem(this Folder folder, bool canWrite, bool canEdit, bool canDelete)
-	//{
-	//    return new Dto.FolderItem
-	//    {
-	//        Id = folder.Id,
-	//        Name = folder.Name,
-	//        CanWrite = canWrite,
-	//        CanEdit = canEdit,
-	//        CanDelete = canDelete,
-	//    };
-	//}
+	public static FolderType ToEntity(this Dto.FolderType permissionType)
+	{
+		return permissionType switch
+		{
+			Dto.FolderType.CourseRoot => FolderType.CourseRoot,
+			Dto.FolderType.Sheets => FolderType.Sheets,
+			Dto.FolderType.Recordings => FolderType.Recordings,
+			Dto.FolderType.Other => FolderType.Other,
+			_ => throw new ArgumentOutOfRangeException(nameof(permissionType), permissionType, null)
+		};
+	}
 
-	//public static Dto.FolderContent ToFolderContent(this Folder folder)
-	//{
-	//    return new Dto.FolderContent
-	//    {
-	//        Id = folder.Id,
-	//        Self = folder.ToFolderListItem(),
-	//        SubFolders = folder.SubFolders.Select(f => f.ToFolderListItem()),
-	//        Files = folder.Files.ToDto(),
-	//    };
-	//}
+
 }

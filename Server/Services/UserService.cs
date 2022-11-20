@@ -30,14 +30,14 @@ public class UserService
 	{
 		User? user = await _context.Users.FindAsync(userId);
 		if (user == null) return null;
-		return user.ToDto();
+		return user.ToViewModel();
 	}
 
 	public async Task<Dto.User?> GetUser(Guid subjectId)
 	{
         User? user = await _context.Users.Where(u => u.SubjectId == subjectId).FirstOrDefaultAsync();
         if (user == null) return null;
-        return user.ToDto();
+        return user.ToViewModel();
     }
 
 	public async Task<bool> AddUserIfNotExists(ClaimsPrincipal userClaimsPrincipal)
@@ -88,7 +88,7 @@ public class UserService
 			.Include(c => c.User1)
 			.Include(c => c.User2)
 			.Select(c => c.User1Id == userId ? c.User2 : c.User1)
-			.Select(c => c.ToDto())
+			.Select(c => c.ToViewModel())
 			.ToListAsync();
 		contacts ??= Enumerable.Empty<Dto.User>();
 		return contacts;
@@ -98,7 +98,7 @@ public class UserService
 	{
 		return await _context.Users
 			.Where(u => u.Id != userId && (EF.Functions.ILike(u.Username, $"%{searchString}%") || EF.Functions.ILike(u.FirstName + " " + u.LastName, $"%{searchString}%")))
-            .Select(u => u.ToDto())
+            .Select(u => u.ToViewModel())
 			.ToListAsync();
 	}
 
@@ -106,7 +106,7 @@ public class UserService
 	{
 		return await _context.Users
 			.Where(u => EF.Functions.ILike(u.Username, $"%{searchString}%") || EF.Functions.ILike(u.FirstName + " " + u.LastName, $"%{searchString}%"))
-			.Select(u => u.ToDto())
+			.Select(u => u.ToViewModel())
 			.ToListAsync();
 	}
 

@@ -93,7 +93,7 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ConversationUser",
+                name: "ConversationUsers",
                 columns: table => new
                 {
                     ConversationId = table.Column<long>(type: "bigint", nullable: false),
@@ -101,15 +101,15 @@ namespace Concerto.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ConversationUser", x => new { x.ConversationId, x.UserId });
+                    table.PrimaryKey("PK_ConversationUsers", x => new { x.ConversationId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_ConversationUser_Conversations_ConversationId",
+                        name: "FK_ConversationUsers_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ConversationUser_Users_UserId",
+                        name: "FK_ConversationUsers_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -125,8 +125,9 @@ namespace Concerto.Server.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ConversationId = table.Column<long>(type: "bigint", nullable: false),
-                    RootFolderId = table.Column<long>(type: "bigint", nullable: false)
+                    RootFolderId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -176,8 +177,7 @@ namespace Concerto.Server.Migrations
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     ParentId = table.Column<long>(type: "bigint", nullable: true),
                     CoursePermission_Type = table.Column<int>(type: "integer", nullable: false),
-                    CoursePermission_Inherited = table.Column<bool>(type: "boolean", nullable: false),
-                    FolderId = table.Column<long>(type: "bigint", nullable: true)
+                    CoursePermission_Inherited = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -188,11 +188,6 @@ namespace Concerto.Server.Migrations
                         principalTable: "Courses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Folders_Folders_FolderId",
-                        column: x => x.FolderId,
-                        principalTable: "Folders",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Folders_Folders_ParentId",
                         column: x => x.ParentId,
@@ -300,8 +295,8 @@ namespace Concerto.Server.Migrations
                 column: "User2Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ConversationUser_UserId",
-                table: "ConversationUser",
+                name: "IX_ConversationUsers_UserId",
+                table: "ConversationUsers",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -312,8 +307,7 @@ namespace Concerto.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Courses_RootFolderId",
                 table: "Courses",
-                column: "RootFolderId",
-                unique: true);
+                column: "RootFolderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CourseUsers_UserId",
@@ -324,11 +318,6 @@ namespace Concerto.Server.Migrations
                 name: "IX_Folders_CourseId",
                 table: "Folders",
                 column: "CourseId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Folders_FolderId",
-                table: "Folders",
-                column: "FolderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Folders_OwnerId",
@@ -371,8 +360,7 @@ namespace Concerto.Server.Migrations
                 table: "Courses",
                 column: "RootFolderId",
                 principalTable: "Folders",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -396,7 +384,7 @@ namespace Concerto.Server.Migrations
                 name: "Contacts");
 
             migrationBuilder.DropTable(
-                name: "ConversationUser");
+                name: "ConversationUsers");
 
             migrationBuilder.DropTable(
                 name: "CourseUsers");

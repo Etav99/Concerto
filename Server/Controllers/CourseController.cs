@@ -1,4 +1,5 @@
-﻿using Concerto.Server.Middlewares;
+﻿using Concerto.Server.Data.Models;
+using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -22,29 +23,44 @@ public class CourseController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<IEnumerable<Dto.Course>> GetCurrentUserCourses()
+	public async Task<ActionResult<IEnumerable<Dto.CourseListItem>>> GetCurrentUserCourses()
 	{
-        long userId = HttpContext.GetUserId();
-		return await _courseService.GetUserCourses(userId);
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin"))
+        {
+            return Ok(await _courseService.GetAllCourses());
+        }
+        return Ok(await _courseService.GetUserCoursesList(userId));
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<Dto.Course>> GetCourse(long courseId)
 	{
-        long userId = HttpContext.GetUserId();
         
-		if (!await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
+        long userId = HttpContext.UserId();
 
-		var course = await _courseService.GetCourse(courseId);
-        if (course == null) return NotFound();
-        return Ok(course);
+        Dto.Course? course;
+        if (User.IsInRole("admin"))
+        {
+            course = await _courseService.GetCourse(courseId);
+            if (course == null) return NotFound();
+            return Ok(course);
+        }
+        if (await _courseService.IsUserCourseMember(userId, courseId))
+        {
+            course = await _courseService.GetCourse(courseId);
+            if (course == null) return NotFound();
+            return Ok(course);
+        }
+        return Forbid();
     }
 
-    [Authorize(Roles = "teacher")]
+
+	[Authorize(Roles = "teacher")]
     [HttpPost]
 	public async Task<ActionResult> CreateCourseForCurrentUser([FromBody] Dto.CreateCourseRequest request)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 
         if (request.Members.Count() != request.Members.DistinctBy(x => x.UserId).Count()) return BadRequest("Duplicate members");
         
@@ -56,7 +72,7 @@ public class CourseController : ControllerBase
     [HttpDelete]
     public async Task<ActionResult> DeleteCourse(long courseId)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 
 		if (!User.IsInRole("admin") && !await _courseService.CanDeleteCourse(courseId, userId)) return Forbid();
         

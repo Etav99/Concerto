@@ -4,23 +4,24 @@
 @using Concerto.Client.Components
 @using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Services
-@using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
-@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
+
+@inject IBreadcrumbsService BreadcrumbsService
 @inject IChatService ChatService
-@inject HttpClient Http;
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICourseService CourseService
+
 
 <PageTitle>Courses</PageTitle>
 
-@if (loading)
+@if (Loading)
 {
 	<MudPaper Class="d-flex align-content-center align-center" Width="100%" Height="100%" Elevation="0">
 		<MudProgressCircular Class="ma-auto" Size="Size.Large" Color="Color.Default" Indeterminate="true" />
@@ -28,8 +29,12 @@
 }
 else
 {
-	<MudPaper Class="flex-grow-0 pa-4 ma-2" Elevation="4" MaxWidth="MaxWidth.Large">
-		<MudTable Items="CoursesList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.Course, bool>(CourseFilter)">
+	<MudPaper Height="100%" Elevation="4">
+		<MudToolBar DisableGutters="true" Dense="true">
+
+			<MudBreadcrumbs Items="BreadcrumbsService.Breadcrumbs"/>
+		</MudToolBar>
+		<MudTable Items="CoursesList" Hover="true" Height="65vh" Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">Your courses</MudText>
 				<MudSpacer />
@@ -47,22 +52,14 @@ else
 			</ToolBarContent>
 			<HeaderContent>
 				<MudTh>Course name</MudTh>
-				<MudTh>Members</MudTh>
+				<MudTh>Created at</MudTh>
 			</HeaderContent>
 			<RowTemplate>
 				<MudTd>
 					<MudText>@context.Name</MudText>
 				</MudTd>
 				<MudTd>
-					<MudList>
-						@foreach (var user in context.Users)
-						{
-							<MudListItem>
-								@($"{user.FirstName} {user.LastName}")
-							</MudListItem>
-						}
-					</MudList>
-
+					<MudText>@context.CreatedDate</MudText>
 				</MudTd>
 				<MudTd Style="text-align:right">
 					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Login" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectCourse(@context))" />
@@ -79,23 +76,24 @@ else
 @code {
 	public string MessageContent { get; set; } = string.Empty;
 	private string searchString = string.Empty;
-	bool loading = true;
 
-	private List<Dto.Course> CoursesList { get; set; } = new List<Dto.Course>();
-	private long? UserId { get; set; }
-	private AuthenticationState AuthenticationState { get; set; }
+	private bool Loading => CoursesList is null;
+
+	private IEnumerable<Dto.CourseListItem>? CoursesList { get; set; }
+
+	protected override void OnInitialized()
+	{
+		BreadcrumbsService.Set(
+			new BreadcrumbItem("Courses", "/courses")
+		);
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
-		loading = true;
-
-		var coursesResponse = await Http.GetFromJsonAsync<Dto.Course[]>($"Course/GetCurrentUserCourses");
-		CoursesList = coursesResponse?.ToList() ?? new List<Dto.Course>();
-		
-		loading = false;
+		CoursesList = await CourseService.GetUserCoursesList();
 	}
 
-	private void SelectCourse(Dto.Course course)
+	private void SelectCourse(Dto.CourseListItem course)
 	{
 		NavigationManager.NavigateTo($"courses/{course.Id}");
 	}
@@ -104,20 +102,16 @@ else
 		var result = await DialogService.Show<CreateCourseDialog>("Create new course").Result;
 		if((bool)(result.Data ?? false))
 		{
-			var coursesResponse = await Http.GetFromJsonAsync<Dto.Course[]>($"Course/GetCurrentUserCourses");
-			CoursesList = coursesResponse?.ToList() ?? new List<Dto.Course>();
+			CoursesList = await CourseService.GetUserCoursesList();
 		}
 	}
 
-	private bool CourseFilter(Dto.Course course)
+	private bool CourseFilter(Dto.CourseListItem course)
 	{
 		if (string.IsNullOrWhiteSpace(searchString))
 			return true;
 		if (course.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
-		if (course.Users.Any(u => $"{u.Username} {u.FirstName} {u.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)))
-			return true;
-
 		return false;
 	}
 

@@ -1,0 +1,120 @@
+﻿@using Concerto.Client.Components.Pickers
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject IStorageService StorageService
+@inject IStorageClient StorageClient
+@inject ISessionClient SessionClient
+
+<MudDialog>
+	<DialogContent>
+		@if (Loading) {
+			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+		}
+		else
+		{
+			<MudStack Spacing="4">
+				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
+				<MudStack Row="true" AlignItems="AlignItems.Center">
+					<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType" />
+					<MudTooltip Text="" Arrow="true">
+						<ChildContent>
+							<MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
+						</ChildContent>
+						<TooltipContent>
+							<MudText Align="Align.Left">
+								<h2>Folder permissions</h2>
+								<br />
+								<h3>Readers</h3>
+								<ul>
+									<li>• View folder content and download files</li>
+								</ul>
+								<br />
+								<h3>Contributors</h3>
+								<ul>
+									<li>• View folder content and download files</li>
+									<li>• Add files and folders</li>
+									<li>• Remove files and folders owned by them</li>
+									<li>• Edit files and folders owned by them</li>
+								</ul>
+								<br />
+								<h3>Editors</h3>
+								<ul>
+									<li>• View folder content and download files</li>
+									<li>• Add, edit and remove any files</li>
+									<li>• Add folders</li>
+									<li>• Remove and edit folders owned by them</li>
+									<li>• Remove and edit folders in which they have Editor permission</li>
+								</ul>
+							</MudText>
+						</TooltipContent>
+					</MudTooltip>
+				</MudStack>
+
+				<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" />
+			</MudStack>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Update</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
+
+	[Parameter]
+	public long EditedFolderId { get; set; }
+
+	private bool Loading { get; set; }
+
+	private FolderPermissionType? _parentPermissionType;
+	public IEnumerable<UserFolderPermission> ParentUserFolderPermissions { get; set; } = null!;
+
+	// Form
+	private UpdateFolderRequest _request = null!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Loading = true;
+		var folderSettings = await StorageService.GetFolderSettings(EditedFolderId);
+
+		_request = new UpdateFolderRequest(folderSettings.Id)
+		{
+			Name = folderSettings.Name,
+			CoursePermission = folderSettings.CoursePermission,
+			UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
+			forceInherit = false
+		};
+		ParentUserFolderPermissions = folderSettings.ParentUserPermissions;
+		_parentPermissionType = folderSettings.ParentCoursePermission?.Type;
+		Loading = false;
+	}
+
+	void Cancel() => Dialog.Cancel();
+	
+	private async Task Submit()
+	{
+		if (String.IsNullOrEmpty(_request.Name))
+		{
+			Snackbar.Add("Folder name cannot be empty", Severity.Error);
+			return;
+		}
+		try
+		{
+			await StorageClient.UpdateFolderAsync(_request);
+			Snackbar.Add("Folder updated", Severity.Success);
+			Dialog.Close(DialogResult.Ok(true));
+		}
+		catch
+		{
+			Snackbar.Add("Failed to update folder", Severity.Error);
+		}
+	}
+
+}

@@ -6,10 +6,10 @@
     anchorElement.remove();
 }
 
-function startMeeting (parentId, courseName) {
+function startMeeting (parentId, roomName) {
 	const domain = 'meet.jit.si';
 	const options = {
-		courseName: courseName,
+		roomName: roomName,
 		width: "100%",
 		height: "100%",
 		parentNode: document.querySelector(`#${parentId}`),
@@ -21,5 +21,5 @@ function startMeeting (parentId, courseName) {
 			fileRecordingsEnabled: true
 		}
 	);
-	api.addListener("videoConferenceLeft", () => { api.dispose(); startMeeting(parentId, courseName) })
+	api.addListener("videoConferenceLeft", () => { api.dispose(); startMeeting(parentId, roomName) })
 }

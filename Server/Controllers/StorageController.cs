@@ -1,7 +1,9 @@
-﻿using Concerto.Server.Extensions;
+﻿using Concerto.Server.Data.Models;
+using Concerto.Server.Extensions;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
+using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +29,12 @@ public class StorageController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Dto.FolderContent>> GetFolderContent([FromQuery] long folderId)
     {
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin"))
+        {
+            return Ok(await _storageService.GetFolderContent(folderId, userId, true));
+        }
+        
         if (!await _storageService.CanReadInFolder(userId, folderId)) return Forbid();
         return Ok(await _storageService.GetFolderContent(folderId, userId));
     }
@@ -35,65 +42,87 @@ public class StorageController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Dto.FolderSettings>> GetFolderSettings([FromQuery] long folderId)
     {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.CanWriteInFolder(userId, folderId)) return Forbid();
-        return Ok(await _storageService.GetFolderSettings(folderId));
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanWriteInFolder(userId, folderId))
+        {
+            return Ok(await _storageService.GetFolderSettings(folderId));
+        }
+        return Forbid();
     }
     
     [HttpDelete]
     public async Task<ActionResult> DeleteFolder([FromQuery] long folderId)
     {
-        long userId = HttpContext.GetUserId();
-        // Check if user can delete folder
-        if(!await _storageService.CanDeleteFolder(userId, folderId)) return Forbid();
-        // Delete folder
-        await _storageService.DeleteFolder(folderId);
-        return NoContent();
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanDeleteFolder(userId, folderId))
+        {
+            await _storageService.DeleteFolder(folderId);
+            return Ok();
+        }
+         return Forbid();
     }
 
-    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult> CreateFolder([FromBody] Dto.CreateFolderRequest createFolderRequest)
     {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.CanWriteInFolder(userId, createFolderRequest.ParentId)) return Forbid();
-        await _storageService.CreateFolder(createFolderRequest, userId);
-        return Ok();
+        long userId = HttpContext.UserId();
+        if(User.IsInRole("admin") || await _storageService.CanWriteInFolder(userId, createFolderRequest.ParentId))
+        {
+            await _storageService.CreateFolder(createFolderRequest, userId);
+            return Ok();
+        }
+        return Forbid();
     }
 
-    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult> UpdateFolder([FromBody] Dto.UpdateFolderRequest updateFolderRequest)
     {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.CanDeleteFolder(userId, updateFolderRequest.Id)) return Forbid();
-        await _storageService.UpdateFolder(updateFolderRequest);
-        return Ok();
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanEditFolder(userId, updateFolderRequest.Id))
+        {
+            await _storageService.UpdateFolder(updateFolderRequest);
+            return Ok();
+        }
+        return Forbid();
     }
 
-    [Authorize(Roles = "teacher")]
     [HttpPost]
     public async Task<ActionResult<IEnumerable<Dto.FileUploadResult>>> UploadFiles([FromForm] IEnumerable<IFormFile> files, [FromQuery] long folderId)
     {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.CanWriteInFolder(userId, folderId)) return Forbid();
-
-        var fileUploadResults = await _storageService.AddFilesToFolder(files, folderId);
-        return Ok(fileUploadResults);
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanWriteInFolder(userId, folderId))
+        {
+            var fileUploadResults = await _storageService.AddFilesToFolder(files, folderId);
+            return Ok(fileUploadResults);
+        }
+        return Forbid();
     }
 
-    [HttpGet]
+	[HttpDelete]
+	public async Task<ActionResult> DeleteFile([FromQuery] long fileId)
+	{
+		long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanManageFile(userId, fileId))
+        {
+            await _storageService.DeleteFile(fileId);
+            return Ok();
+        }
+        return Forbid();
+	}
+
+	[HttpGet]
     public async Task<ActionResult> DownloadFile([FromQuery] long fileId)
     {
-        long userId = HttpContext.GetUserId();
-        if (!await _storageService.HasFileReadAccess(userId, fileId)) return Forbid();
-
-        var file = await _storageService.GetFile(fileId);
-        if (file == null) return NotFound();
-
-        byte[] fileBytes = System.IO.File.ReadAllBytes(file.Path);
-        string fileName = file.DisplayName;
-        return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.HasFileReadAccess(userId, fileId))
+        {
+            var file = await _storageService.GetFile(fileId);
+            if (file == null) return NotFound();
+            byte[] fileBytes = System.IO.File.ReadAllBytes(file.Path);
+            string fileName = file.DisplayName;
+            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        }
+        return Forbid();
     }
 
 }

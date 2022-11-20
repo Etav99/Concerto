@@ -17,8 +17,8 @@
                 {
                     <MudListItem Icon="@Icons.Material.Filled.Person">
                         <MudStack Row="true" AlignItems="AlignItems.Center">
-                            <MudText>@_selectedMembers[courseUser.UserId]</MudText>
-                            <CourseRolePicker Value="courseUser.Role" ValueChanged="RoleChanged" />
+                            <MudText>@_selectedMembers[courseUser.UserId].FullName</MudText>
+                            <CourseRolePicker @bind-Value="courseUser.Role" OnChange="RoleChanged" />
                             <MudIconButton OnClick="@(async () => RemoveMember(courseUser))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
                         </MudStack>
                     </MudListItem>
@@ -56,7 +56,7 @@
 
     private void AddUser(User user)
     {
-        CourseUsers.Add(new CourseUser { UserId = user.Id, Role = CourseUserRole.Member });
+        CourseUsers.Add(new CourseUser(user.Id, CourseUserRole.Member));
         _selectedMembers.Add(user.Id, user);
 
         _addUserAutocomplete!.Reset();

@@ -4,7 +4,7 @@
 
 
     if (container) {
-        container.scrollIntoView(false);
+        container.scrollTop = container.scrollHeight;
     }
         
 }

@@ -1,18 +1,21 @@
 ﻿@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto;
 @inject NavigationManager NavigationManager
 @inject IChatService ChatService
+@inject IUserService UserService
 @implements IDisposable
 
-<MudTable Items="ConversationsList" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true" Style="max-width: 100%; height:100%;">
+<MudTable T="ConversationListItem" Items="ConversationsList" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true" Style="max-width: 100%; height:100%;"
+		  OnRowClick="SelectConversation">
 	<ToolBarContent>
 		<MudText Typo="Typo.h6">Conversations</MudText>
 	</ToolBarContent>
 	<RowTemplate>
-		<MudTd Style="max-width: 80px; overflow:hidden; white-space:nowrap;">@String.Join(',', context.Users.Select(u => $"{u.FirstName} {u.LastName}"))</MudTd>
-		<MudTd Style="max-width: 60px; overflow:hidden; white-space:nowrap;">@(context.LastMessage?.Content ?? string.Empty)</MudTd>
-		<MudTd Style="text-align:right">
-				<MudIconButton Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectConversation(@context))" />
-		</MudTd>
+		@{
+			var TdClass = SelectedConversationId == context.Id ? "mud-theme-primary" : string.Empty;
+			<MudTd Class="TdClass" Style="max-width: 80px; overflow:hidden; white-space:nowrap;">@context.Name</MudTd>
+			<MudTd Class="TdClass" Style="max-width: 60px; overflow:hidden; white-space:nowrap;">@(context.LastMessage?.Content ?? string.Empty)</MudTd>
+		}
 	</RowTemplate>
 </MudTable>
 
@@ -22,28 +25,26 @@
 	public long? SelectedConversationId { get; set; }
 
 	[Parameter]
-	public EventCallback<Dto.Conversation> OnConversationSelected { get; set; }
+	public EventCallback<long> SelectedConversationIdChanged { get; set; }
 
-	private List<Dto.Conversation> ConversationsList
+	private List<ConversationListItem>? ConversationsList;
+
+
+	private async Task SelectConversation(TableRowClickEventArgs<ConversationListItem> tableClick)
 	{
-		get
-		{
-			return ChatService.Conversations.Values.OrderByDescending(x => x.LastMessage?.SendTimestamp).ToList();
-		}
+		await SelectedConversationIdChanged.InvokeAsync(tableClick.Item.Id);
 	}
+
 
 	protected override async Task OnInitializedAsync()
 	{
-		ChatService.OnMessageReceivedCallback += Refresh;
-		ChatService.OnMessageSentCallback += Refresh;
-		await ChatService.LoadConversationsAsync();
+		ChatService.OnMessageReceivedEventHandler += OnMessageReceived;
+		ChatService.OnMessageSentEventHandler += OnMessageReceived;
+
+		await LoadConversations();
 		if (SelectedConversationId == null || SelectedConversationId <= 0)
 		{
 			await SelectLatestConversation();
-		}
-		else
-		{
-			SelectConversation(ChatService.Conversations[SelectedConversationId.Value]);
 		}
 	}
 
@@ -52,21 +53,34 @@
 		StateHasChanged();
 	}
 
-	private void SelectConversation(Dto.Conversation conversation)
+	private async Task LoadConversations()
 	{
-		OnConversationSelected.InvokeAsync(conversation).Wait();
+		ConversationsList = (await ChatService.GetPrivateConversationsAsync()).ToList();
 	}
-
+	
+	private async Task OnMessageReceived(ChatMessage message)
+	{
+		var conversation = ConversationsList?.Find(c => c.Id == message.ConversationId);
+		if (conversation is not null)
+		{
+			conversation.LastMessage = message;
+		}
+		else
+		{
+			await LoadConversations();
+		}
+	}
+	
 	private async Task SelectLatestConversation()
 	{
-		Dto.Conversation? conversation = ConversationsList.FirstOrDefault();
+		Dto.ConversationListItem? conversation = ConversationsList?.FirstOrDefault();
 		if (conversation == null) return;
-		await OnConversationSelected.InvokeAsync(conversation);
+		await SelectedConversationIdChanged.InvokeAsync(conversation.Id);
 	}
-
+	
 	public void Dispose()
 	{
-		ChatService.OnMessageReceivedCallback -= Refresh;
-		ChatService.OnMessageSentCallback -= Refresh;
+		ChatService.OnMessageReceivedEventHandler -= OnMessageReceived;
+		ChatService.OnMessageSentEventHandler -= OnMessageReceived;
 	}
 }

@@ -28,7 +28,7 @@ public class SessionController : ControllerBase
     [HttpPost]
 	public async Task<ActionResult> CreateSession([FromBody] Dto.CreateSessionRequest request)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 		if (!await _courseService.IsUserCourseMember(userId, request.CourseId)) return Forbid();
 
 		if (await _sessionService.CreateSession(request))
@@ -41,16 +41,16 @@ public class SessionController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Dto.Session>> GetSession(long sessionId)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 		if (!await _sessionService.CanAccessSession(userId, sessionId)) return Forbid();
 		var session = await _sessionService.GetSession(sessionId);
         return session is null ? NotFound() : Ok(session);
     }
     
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.Session>>> GetCourseSessions(long courseId)
+	public async Task<ActionResult<IEnumerable<Dto.SessionListItem>>> GetCourseSessions(long courseId)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
         if (!await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
         return Ok(await _sessionService.GetCourseSessions(courseId));
 	}

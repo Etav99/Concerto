@@ -20,3 +20,16 @@ public class UploadedFile : Entity
 	}
 
 }
+
+public static partial class ViewModelConversions
+{
+    public static Dto.FileItem ToFileItem(this UploadedFile file, bool canManage)
+    {
+		return new Dto.FileItem(
+			Id: file.Id,
+			Name: file.DisplayName,
+			CanEdit: canManage,
+			CanDelete: canManage
+		);
+    }
+}

@@ -12,38 +12,66 @@
 @inject IAccessTokenProvider AccessTokenProvider
 
 @if (FolderContent != null)
-	{
-		<MudTable Items="FolderContentItems" Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
-		  Class="@Class" Style="@Style" Height="calc(100% - 65px)" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
-			<ToolBarContent>
-				<MudText Typo="Typo.h6">@FolderContent.Self.Name</MudText>
+{
+	<MudTable Items="FolderContentItems" Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
+		  Class="@Class" Style="@Style" Outlined="true" Height="calc(100% - 65px)" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
+		<ToolBarContent>
+			<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Disabled="@(!BreadCrumbs.Any())" OnClick="Back" aria-label="Back"></MudIconButton>
+			<MudText Typo="Typo.h6">@FolderContent.Self.Name</MudText>
+			<MudSpacer />
+			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+			@if (FolderContent.Self.CanWrite || FolderContent.Self.CanEdit)
+			{
 				<MudSpacer />
-				<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-				@if (FolderContent.Self.CanWrite)
+			}
+			@if (FolderContent.Self.CanWrite)
+			{
+				<MudIconButton Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await UploadFiles()" />
+				<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateFolderDialog()" />
+			}
+			@if (FolderContent.Self.CanEdit)
+			{
+				<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => ShowUpdateFolderDialog(FolderContent.Self)" />
+			}
+		</ToolBarContent>
+
+		<HeaderContent>
+			<MudTh>
+				<MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<FolderContentItem, object>(x=>x.Name)">Name</MudTableSortLabel>
+			</MudTh>
+			<MudTh>Actions</MudTh>
+		</HeaderContent>
+
+		<RowTemplate>
+			<MudTd DataLabel="Name">@context.Name</MudTd>
+			<MudTd Style="text-align:right">
+				@if (context is FolderItem)
 				{
-					<MudSpacer />
-					<MudIconButton Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await ShowCreateOrUpdateFolderDialog()" />
-					<MudIconButton Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" Variant="Variant.Outlined" OnClick="async () => await UploadFiles()"/>
+					FolderItem folder = (context as FolderItem)!;
+					<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => OpenFolder(folder)" />
+					if (folder!.CanDelete)
+					{
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => DeleteFolder(folder)" />
+					}
+					if (folder!.CanEdit)
+					{
+						<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => ShowUpdateFolderDialog(folder)" />
+					}
 				}
-			</ToolBarContent>
-			
-			<HeaderContent>
-				<MudTh>
-					<MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<FolderContentItem, object>(x=>x.Name)">Name</MudTableSortLabel>
-				</MudTh>
-				<MudTh>Actions</MudTh>
-			</HeaderContent>
-			
-			<RowTemplate>
-				<MudTd DataLabel="Name">@context.Name</MudTd>
-				<MudTd Style="text-align:right">
-				@if(context is FolderItem)
+				else if (context is FileItem)
 				{
-					<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => OpenFolder((FolderItem)context)"/>
-					<MudIconButton Icon="@Icons.Material.Filled.FolderDelete" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => DeleteFolder((FolderItem)context)"/>
-					<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => ShowCreateOrUpdateFolderDialog((context.Id))"/>
+					FileItem file = (context as FileItem)!;
+					<MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => DownloadFile(file)" />
+					if (file.CanDelete)
+					{
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => DeleteFile(file)" />
+					}
+					if (file.CanDelete)
+					{
+						<MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Variant="Variant.Outlined" OnClick="() => ShowUpdateFileDialog(file)" />
+					}
 				}
-				</MudTd>
+			</MudTd>
 			</RowTemplate>
 		</MudTable>
 	}
@@ -51,69 +79,103 @@
 
 	
 @code {
-	[Parameter]
-	public long InitialFolderId { get; set; }
+    [Parameter]
+    public long InitialFolderId { get; set; }
 
-	private FolderContent? FolderContent { get; set; }
-	private List<FolderContentItem>? FolderContentItems { get; set; }
+    private FolderContent? FolderContent { get; set; }
+    private List<FolderContentItem>? FolderContentItems { get; set; }
 
-	private bool _loading = true;
-	private string? _searchString;
+    private Stack<FolderItem> BreadCrumbs { get; } = new();
 
-	protected override async Task OnParametersSetAsync()
-	{
-		await Refresh();
+    private bool _loading = true;
+    private string? _searchString;
+
+    private long? CurrentFolderId => FolderContent?.Self.Id;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadFolderContent(InitialFolderId);
+    }
+
+    private async Task RefreshFolderContent()
+    {
+        if (CurrentFolderId != null)
+        {
+            await LoadFolderContent(CurrentFolderId.Value);
+        }
+    }
+
+    private async Task LoadFolderContent(long folderId)
+    {
+        _loading = true;
+        FolderContent = await StorageService.GetFolderContent(folderId);
+        var files = FolderContent.Files.Cast<FolderContentItem>();
+        var subFolders = FolderContent.SubFolders.Cast<FolderContentItem>();
+        FolderContentItems = files.Concat(subFolders).ToList();
+        _loading = false;
+    }
+
+    private bool FolderContentItemFilter(FolderContentItem item)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (item.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    public async Task UploadFiles()
+    {
+        var parameters = new DialogParameters { ["FolderId"] = FolderContent!.Self.Id };
+        var result = await DialogService.Show<UploadFilesDialog>("Upload files to folder", parameters).Result;
+        if ((bool)(result.Data ?? false))
+        {
+            await RefreshFolderContent();
+        }
+    }
+
+    public async Task DeleteFolder(Dto.FolderItem folder)
+    {
+        await StorageService.DeleteFolder(folder.Id);
+        await RefreshFolderContent();
+    }
+
+    public async Task DeleteFile(Dto.FileItem file){
+		await StorageService.DeleteFile(file.Id);
+		await RefreshFolderContent();
 	}
-
-	private async Task Refresh()
-	{
-		_loading = true;
-		long folderId = FolderContent?.Self.Id ?? InitialFolderId;
-		FolderContent = await StorageService.GetFolderContent(folderId);
-		var files = FolderContent.Files.Cast<FolderContentItem>();
-		var subFolders = FolderContent.SubFolders.Cast<FolderContentItem>();
-		FolderContentItems = files.Concat(subFolders).ToList();
-		_loading = false;
-	}
-
-	private bool FolderContentItemFilter(FolderContentItem item)
-	{
-		if (string.IsNullOrWhiteSpace(_searchString))
-			return true;
-		if (item.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-			return true;
-		return false;
-	}
-
-	public async Task UploadFiles()
-	{
-		var parameters = new DialogParameters { ["FolderId"] = FolderContent!.Self.Id };
-		var result = await DialogService.Show<UploadFilesDialog>("Upload files to folder", parameters).Result;
+    public async Task ShowCreateFolderDialog()
+    {
+		var parameters = new DialogParameters
+		{
+			["ParentFolderId"] = FolderContent!.Self.Id,
+			["ParentFolderPermission"] = FolderContent.Self.Type != FolderType.CourseRoot ? FolderContent.CoursePermission.Type : null,
+		};
+		var name = "Create folder";
+		var result = await DialogService.Show<CreateFolderDialog>(name, parameters).Result;
 		if ((bool)(result.Data ?? false))
 		{
-			await Refresh();
+			await RefreshFolderContent();
 		}
 	}
 
-	public async Task DeleteFolder(Dto.FolderItem folder)
+	public async Task ShowUpdateFolderDialog(FolderItem editedFolder)
 	{
-		await StorageService.DeleteFolder(folder.Id);
-	}
-
-	public async Task ShowCreateOrUpdateFolderDialog(long? editedFolderId = null)
-	{
-		var parameters = new DialogParameters { ["EditedFolderId"] = editedFolderId };
-		var name = editedFolderId is null ? "Create folder" : "Edit folder";
-		var result = await DialogService.Show<CreateOrUpdateFolderDialog>(name, parameters).Result;
-		_loading = true;
+		var parameters = new DialogParameters { ["EditedFolderId"] = editedFolder.Id };
+		var name = "Edit folder";
+		var result = await DialogService.Show<UpdateFolderDialog>(name, parameters).Result;
 		if ((bool)(result.Data ?? false))
 		{
-			FolderContent = await StorageService.GetFolderContent(FolderContent!.Self.Id);
+			await RefreshFolderContent();
 		}
-		_loading = false;
+	}
+	
+	public async Task ShowUpdateFileDialog(FileItem file)
+	{
+		// TODO
 	}
 
-	public async Task DownloadFile(Dto.UploadedFile file)
+	public async Task DownloadFile(FileItem file)
 	{
 		var accessTokenResult = await AccessTokenProvider.RequestAccessToken();
 		accessTokenResult.TryGetToken(out var accessToken);
@@ -123,8 +185,12 @@
 
 	public async Task OpenFolder(Dto.FolderItem folder)
 	{
-		_loading = true;
-		FolderContent = await StorageService.GetFolderContent(folder.Id);
-		_loading = false;
+		BreadCrumbs.Push(FolderContent!.Self);
+		await LoadFolderContent(folder.Id);
+	}
+
+	public async Task Back()
+	{
+		if (BreadCrumbs.Any()) await LoadFolderContent(BreadCrumbs.Pop().Id);
 	}
 }

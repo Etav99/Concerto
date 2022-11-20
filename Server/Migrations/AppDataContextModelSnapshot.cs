@@ -98,7 +98,7 @@ namespace Concerto.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ConversationUser");
+                    b.ToTable("ConversationUsers");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>
@@ -112,6 +112,9 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("ConversationId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -123,15 +126,14 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("OwnerId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("RootFolderId")
+                    b.Property<long?>("RootFolderId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ConversationId");
 
-                    b.HasIndex("RootFolderId")
-                        .IsUnique();
+                    b.HasIndex("RootFolderId");
 
                     b.ToTable("Courses");
                 });
@@ -165,9 +167,6 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("FolderId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -184,8 +183,6 @@ namespace Concerto.Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("FolderId");
 
                     b.HasIndex("OwnerId");
 
@@ -370,10 +367,8 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("Concerto.Server.Data.Models.Folder", "RootFolder")
-                        .WithOne()
-                        .HasForeignKey("Concerto.Server.Data.Models.Course", "RootFolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("RootFolderId");
 
                     b.Navigation("Conversation");
 
@@ -407,10 +402,6 @@ namespace Concerto.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Concerto.Server.Data.Models.Folder", null)
-                        .WithMany("SubFolders")
-                        .HasForeignKey("FolderId");
-
                     b.HasOne("Concerto.Server.Data.Models.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
@@ -418,7 +409,7 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("Concerto.Server.Data.Models.Folder", "Parent")
-                        .WithMany()
+                        .WithMany("SubFolders")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade);
 

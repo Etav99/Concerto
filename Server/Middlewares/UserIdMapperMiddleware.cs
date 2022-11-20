@@ -38,7 +38,7 @@ public static class IdAssignmentMiddlewareExtensions
         return builder.UseMiddleware<UserIdMapperMiddleware>();
     }
     
-    public static long GetUserId(this HttpContext context)
+    public static long UserId(this HttpContext context)
     {
         return (long)context.Items["AppUserId"]!;
     }

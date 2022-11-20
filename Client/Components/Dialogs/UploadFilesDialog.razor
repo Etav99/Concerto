@@ -25,7 +25,7 @@
     </DialogActions>
 </MudDialog>
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
     [Parameter] public long FolderId { get; set; }
 
     private bool Clearing = false;

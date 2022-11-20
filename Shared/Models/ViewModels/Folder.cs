@@ -1,50 +1,55 @@
-﻿namespace Concerto.Shared.Models.Dto;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-public record FolderContent : EntityModel
+namespace Concerto.Shared.Models.Dto;
+
+public record FolderContent
 {
+	public FolderPermission CoursePermission { get; init; } = null!;
 	public FolderItem Self { get; init; } = null!;
 	public virtual IEnumerable<FolderItem> SubFolders { get; init; } = Enumerable.Empty<FolderItem>();
 	public virtual IEnumerable<FileItem> Files { get; init; } = Enumerable.Empty<FileItem>();
 }
 
 
-public record FolderContentItem : EntityModel
+public record FolderContentItem(
+	long Id,
+	string Name
+) : EntityModel(Id);
+
+public record FolderItem(
+	long Id,
+	string Name, 
+	bool CanWrite, 
+	bool CanEdit,
+	bool CanDelete, 
+	FolderType Type
+) : FolderContentItem(Id, Name);
+
+public record FileItem(
+	long Id,
+	string Name,
+	bool CanEdit,
+	bool CanDelete
+) : FolderContentItem(Id, Name);
+
+public record FolderSettings(
+	long Id,
+	string Name,
+	long OwnerId,
+	FolderType Type,
+	FolderPermission CoursePermission,
+	FolderPermission? ParentCoursePermission,
+    IEnumerable<UserFolderPermission> UserPermissions,
+    IEnumerable<UserFolderPermission> ParentUserPermissions
+) : EntityModel(Id);
+
+public record UserFolderPermission(User User, FolderPermission Permission)
 {
-    public string Name { get; init; } = null!;
+	public User User { get; set; } = User;
+	public FolderPermission Permission { get; set; } = Permission;
 }
 
-public record FolderItem : FolderContentItem
-{
-	public bool CanWrite { get; init; }
-	public bool CanEdit { get; init; }
-	public bool CanDelete { get; init; }
-}
-
-public record FileItem : FolderContentItem
-{
-	public bool CanEdit { get; init; }
-	public bool CanDelete { get; init; }
-}
-
-public record FolderSettings : EntityModel
-{
-	public string Name { get; init; } = string.Empty;
-	public long OwnerId { get; init; }
-    public FolderPermission CoursePermission { get; init; } = null!;
-    public virtual IEnumerable<UserFolderPermission> UserPermissions { get; init; } = null!;
-}
-
-public record UserFolderPermission
-{
-    public User User { get; set; } = null!;
-    public FolderPermission Permission { get; set; } = null!;
-}
-
-public record FolderPermission
-{
-    public FolderPermissionType Type { get; set; }
-    public bool Inherited { get; set; }
-}
+public record FolderPermission(FolderPermissionType Type, bool Inherited);
 
 public enum FolderPermissionType
 {
@@ -53,18 +58,27 @@ public enum FolderPermissionType
     ReadWrite = 2,
 }
 
+public enum FolderType
+{
+	CourseRoot,
+	Sheets,
+	Recordings,
+	Other,
+}
+
 public record CreateFolderRequest
 {
-	public string Name { get; set; } = null!;
+	public string Name { get; set; } = string.Empty;
     public long ParentId { get; set; }
-    public FolderPermission CoursePermission { get; init; } = null!;
-    public virtual IEnumerable<UserFolderPermission> UserPermissions { get; init; } = null!;
+    public FolderPermission CoursePermission { get; set; } = null!;
 }
 
 public record UpdateFolderRequest : EntityModel
 {
-	public string Name { get; set; }
-    public FolderPermission CoursePermission { get; init; } = null!;
-    public virtual IEnumerable<UserFolderPermission> UserPermissions { get; init; } = null!;
-    public bool PropagatePermissions { get; set; }
+	public string Name { get; set; } = null!;
+	public FolderPermission CoursePermission { get; set; } = null!;
+    public virtual ISet<UserFolderPermission> UserPermissions { get; set; } = null!;
+    public bool forceInherit { get; set; }
+
+	public UpdateFolderRequest(long Id) : base(Id) { }
 }

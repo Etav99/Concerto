@@ -1,14 +1,20 @@
 ﻿namespace Concerto.Shared.Models.Dto;
-public record Session : EntityModel
-{
-	public string Name { get; init; }
-    public long CourseId { get; init; }
-    public long CourseOwnerId { get; init; }
-    public DateTime ScheduledDateTime { get; set; }
-	public Conversation Conversation { get; set; }
-	public IEnumerable<Dto.UploadedFile>? Files { get; set; }
-	public Guid MeetingGuid { get; init; }
-}
+public record Session(
+	long Id,
+	string Name,
+	DateTime ScheduledDateTime,
+	long CourseId,
+	string CourseName,
+	long? CourseRootFolderId,
+	long ConversationId,
+	Guid MeetingGuid
+) : EntityModel(Id);
+
+public record SessionListItem(
+	long Id,
+	string Name,
+	DateTime ScheduledDate
+) : EntityModel(Id);
 
 public record CreateSessionRequest
 {

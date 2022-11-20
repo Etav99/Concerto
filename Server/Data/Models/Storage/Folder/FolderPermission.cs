@@ -5,10 +5,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Concerto.Server.Data.Models;
 
 [Owned]
-public class FolderPermission
+public record FolderPermission
 {
     public FolderPermissionType Type { get; set; }
     public bool Inherited { get; set; }
+
+    public FolderPermission() { }
+	
+	public FolderPermission(FolderPermissionType type, bool inherited)
+	{
+		Type = type;
+		Inherited = inherited;
+	}
 }
 
 public enum FolderPermissionType
@@ -21,24 +29,20 @@ public enum FolderPermissionType
 
 public static partial class ViewModelConversions
 {
-    public static Dto.FolderPermission ToDto(this FolderPermission permission)
+    public static Dto.FolderPermission ToViewModel(this FolderPermission permission)
     {
-        return new Dto.FolderPermission
-        {
-            Type = permission.Type.ToDto(),
-            Inherited = permission.Inherited,
-        };
+        return new Dto.FolderPermission(permission.Type.ToViewModel(), permission.Inherited);
     }
     
-    public static FolderPermission ToEntity(this Dto.FolderPermission permission)
+    public static FolderPermission ToEntity(this Dto.FolderPermission permission, bool? inherited = null)
     {
         return new FolderPermission
         {
             Type = permission.Type.ToEntity(),
-            Inherited = false,
-        };
+			Inherited = inherited ?? permission.Inherited,
+		};
     }
-    public static Dto.FolderPermissionType ToDto(this FolderPermissionType permissionType)
+    public static Dto.FolderPermissionType ToViewModel(this FolderPermissionType permissionType)
     {
         switch (permissionType)
         {

@@ -21,32 +21,30 @@ public class ChatController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<IEnumerable<Dto.Conversation>> GetCurrentUserPrivateConversations()
+	public async Task<IEnumerable<Dto.ConversationListItem>> GetCurrentUserPrivateConversations()
 	{
-		long userId = HttpContext.GetUserId();        
+		long userId = HttpContext.UserId();        
 		return await _chatService.GetPrivateConversationsAsync(userId);
-
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.ChatMessage>>> GetCurrentUserLastMessages([FromQuery] long conversationId)
+	public async Task<ActionResult<Dto.Conversation>> GetConversation(long conversationId)
 	{
-		const int numberOfMessages = 100;
-        long userId = HttpContext.GetUserId();
+		long userId = HttpContext.UserId();
+		if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Forbid();
 
-        if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Unauthorized();
-        // if (userId == null) return Enumerable.Empty<Dto.ChatMessage>();
-        return Ok(await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages));
+		var conversation = await _chatService.GetConversation(conversationId);
+		return conversation is not null ? Ok(conversation) : NotFound();
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.ChatMessage>>> GetCurrentUserLastMessagesBefore([FromQuery] long conversationId, [FromQuery] DateTime startingMessageTimestamp)
+	public async Task<ActionResult<IEnumerable<Dto.ChatMessage>>> GetCurrentUserLastMessages([FromQuery] long conversationId, [FromQuery] long? beforeMessageId)
 	{
-		// TODO move this to config
+		// TODO
 		const int numberOfMessages = 100;
-        long userId = HttpContext.GetUserId();
-        if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Unauthorized();
-		return Ok(await _chatService.GetLastMessagesBeforeAsync(conversationId, startingMessageTimestamp, numberOfMessages));
-	}
+        long userId = HttpContext.UserId();
 
+        if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Unauthorized();
+        return Ok(await _chatService.GetLastMessagesAsync(conversationId, numberOfMessages, beforeMessageId));
+	}
 }

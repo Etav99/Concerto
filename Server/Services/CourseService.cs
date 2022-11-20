@@ -20,59 +20,54 @@ public class CourseService
     // Create
     public async Task<bool> CreateCourse(Dto.CreateCourseRequest request, long userId)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) return false;
-
-        var membersRoles = request.Members.ToDictionary(m => m.UserId, m => m.Role);
-
-        var members = await _context.Users
+        var membersRoles = request.Members.ToDictionary(m => m.UserId, m => m.Role.ToEntity());
+		membersRoles.Add(userId, CourseUserRole.Admin);
+		
+		var members = await _context.Users
             .Where(u => membersRoles.Keys.Contains(u.Id))
             .ToListAsync();
-        
-        // Create course
-        var course = new Course();
-        course.OwnerId = user.Id;
+
+		if (members.Count != membersRoles.Count)
+			return false;
+
+		// Create course
+		var course = new Course();
+        course.OwnerId = userId;
         course.Name = request.Name;
+		course.CreatedDate = DateTime.UtcNow;
 
-        // Add members to course
-        var courseUsers = new List<CourseUser>
-        {
-            new CourseUser
-            {
-                User = user,
-                Course = course,
-                Role = CourseUserRole.Admin
-            }
-        };
-        foreach (var member in members)
+		// Add members to course
+		var courseUsers = members.Select(member => new CourseUser
 		{
-			courseUsers.Add(new CourseUser
-			{
-				User = member,
-				Course = course,
-				Role = membersRoles[member.Id].ToEntity()
-			});
-        }
-
+			Course = course,
+			User = member,
+			Role = membersRoles[member.Id]
+		}).ToList();
         course.CourseUsers = courseUsers;
 
         // Create course conversation
         var courseConversation = members.ToGroupConversation();
         course.Conversation = courseConversation;
 
+		await _context.Courses.AddAsync(course);
+		await _context.SaveChangesAsync();
+		
 		// Create course root folder, with default read permissions for course members
 		var rootFolder = new Folder
 		{
 			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
 			OwnerId = userId,
-			Name = string.Empty,
+			CourseId = course.Id,
+			Name = course.Name,
 			Type = FolderType.CourseRoot,
 		};
-		course.RootFolder = rootFolder;
+		await _context.Folders.AddAsync(rootFolder);
+		await _context.SaveChangesAsync();
+		
+		course.RootFolderId = rootFolder.Id;
+		await _context.SaveChangesAsync();
 
-        await _context.Courses.AddAsync(course);
-        await _context.SaveChangesAsync();
-        return true;
+		return true;
     }
 
     // Read
@@ -82,41 +77,26 @@ public class CourseService
 		if (course == null)
 			return null;
 
-		await _context.Entry(course)
-			.Collection(r => r.CourseUsers)
-			.Query()
-			.Include(ru => ru.User)
-			.LoadAsync();
-		await _context.Entry(course)
-			.Reference(r => r.Conversation)
-			.Query()
-			.Include(c => c.ConversationUsers)
-			.ThenInclude(cu => cu.User)
-			.LoadAsync();
-		await _context.Entry(course)
-			.Collection(r => r.Sessions)
-			.Query()
-			.Include(s => s.Conversation)
-			.ThenInclude(c => c.ConversationUsers)
-			.LoadAsync();
-		return course.ToDto();
+		return course.ToViewModel();
 	}
     
-	public async Task<IEnumerable<Dto.Course>> GetUserCourses(long userId)
+	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(long userId)
 	{
 		return await _context.Courses
-			.Include(r => r.CourseUsers)
-			.Where(r => r.CourseUsers.Any(ru => ru.UserId == userId))
-			.Include(r => r.CourseUsers)
-			.ThenInclude(ru => ru.User)
-			.Include(r => r.Conversation)
-			.ThenInclude(c => c.ConversationUsers)
-			.ThenInclude(cu => cu.User)
-			.Select(r => r.ToDto())
+			.Include(c => c.CourseUsers)
+			.Where(c => c.CourseUsers.Any(cu => cu.UserId == userId))
+			.Select(c => c.ToCourseListItem())
 			.ToListAsync();
 	}
 
-	public async Task<bool> IsUserCourseMember(long userId, long courseId)
+    public async Task<IEnumerable<Dto.CourseListItem>> GetAllCourses()
+    {
+        return await _context.Courses
+            .Select(r => r.ToCourseListItem())
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsUserCourseMember(long userId, long courseId)
 	{
 		var courseUser = await _context.CourseUsers.FindAsync(courseId, userId);
         return courseUser != null;

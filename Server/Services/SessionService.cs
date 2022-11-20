@@ -28,14 +28,7 @@ public class SessionService
             .Reference(s => s.Course)
             .LoadAsync();
 
-        await _context.Entry(session)
-			.Reference(s => s.Conversation)
-			.Query()
-			.Include(c => c.ConversationUsers)
-			.ThenInclude(cu => cu.User)
-			.LoadAsync();
-
-		return session.ToDto();
+		return session.ToViewModel();
 	}
 
 	public async Task<bool> CanAccessSession(long userId, long sessionId)
@@ -44,7 +37,7 @@ public class SessionService
 		if (session == null)
 			return false;
 
-        var courseUser = await _context.CourseUsers.FindAsync(new { session.CourseId, userId });
+        var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
 
         return await _context.Entry(session)
 			.Reference(s => s.Course)
@@ -75,11 +68,11 @@ public class SessionService
 		return true;
 	}
 
-	internal async Task<IEnumerable<Dto.Session>> GetCourseSessions(long courseId)
+	internal async Task<IEnumerable<Dto.SessionListItem>> GetCourseSessions(long courseId)
 	{
 		return await _context.Sessions
 			.Where(s => s.Course.Id == courseId)
-			.Select(s => s.ToDto())
+			.Select(s => s.ToSessionListItem())
 			.ToListAsync();
 	}
 }

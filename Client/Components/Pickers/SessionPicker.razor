@@ -1,4 +1,4 @@
-﻿@using Concerto.Client.Services
+﻿@*@using Concerto.Client.Services
 @inject IContactService ContactService
 @inject ICourseService CourseService
 
@@ -70,13 +70,11 @@
 
     private async Task OnCourseSelected(Dto.Course course)
     {
-        await CourseService.LoadCourseSessions(course.Id);
-        _selectedCourse = course;
+        _selectedCourse = await CourseService.GetCourse(course.Id); ;
     }
 
     private async Task<IEnumerable<Dto.Course>> SearchCourses(string searchString)
     {
-        await CourseService.LoadCoursesAsync();
         if (string.IsNullOrWhiteSpace(searchString))
             return CourseService.Courses;
         return CourseService.Courses.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
@@ -93,3 +91,4 @@
         return CourseService.CourseSessions[_selectedCourse.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
     }
 }
+*@

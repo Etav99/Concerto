@@ -1,0 +1,27 @@
+﻿@using Concerto.Client.Services;
+@implements IDisposable
+@inject IBreadcrumbsService BreadcrumbsService
+
+<MudToolBar DisableGutters="true" Dense="true">
+    <MudBreadcrumbs Items="_breadcrumbs" />
+</MudToolBar>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbs = new();
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbsService.BreadcrumbsChangeEventHandler += SetBreadcrumbs;
+    }
+
+    private void SetBreadcrumbs(object? sender, List<BreadcrumbItem> breadcrumbs)
+    {
+        _breadcrumbs = breadcrumbs;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        BreadcrumbsService.BreadcrumbsChangeEventHandler -= SetBreadcrumbs;
+    }
+}

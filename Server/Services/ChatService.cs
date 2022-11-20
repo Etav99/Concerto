@@ -1,6 +1,7 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Services;
@@ -23,54 +24,51 @@ public class ChatService
 		await _context.SaveChangesAsync();
 	}
 
-	public async Task<IEnumerable<Dto.Conversation>> GetPrivateConversationsAsync(long userId)
+	internal async Task<Dto.Conversation?> GetConversation(long conversationId)
 	{
-		return await _context.Conversations
+		var conversation = await _context.Conversations.FindAsync(conversationId);
+		if (conversation == null) return null;
+
+		await _context.Entry(conversation)
+			.Collection(c => c.ConversationUsers)
+			.Query()
+			.Include(cu => cu.User)
+			.LoadAsync();
+
+		conversation.ChatMessages = await _context.ChatMessages
+			.Where(cm => cm.ConversationId == conversation.Id)
+			.OrderByDescending(cm => cm.Id)
+			.Take(20)
+			.ToListAsync();
+
+		return conversation.ToViewModel();
+	}
+
+	public async Task<IEnumerable<Dto.ConversationListItem>> GetPrivateConversationsAsync(long userId)
+	{
+		return await _context.ConversationUsers
+			.Where(cu => cu.UserId == userId)
+			.Select(cu => cu.Conversation)
 			.Where(c => c.IsPrivate)
-			.Include(c => c.ConversationUsers)
-			.ThenInclude(cu => cu.User)
-			.Where(c => c.ConversationUsers.Any(cu => cu.UserId == userId))
-			.Include(c => c.ChatMessages.OrderByDescending(x => x.SendTimestamp).Take(1))
-			.Select(c => c.ToDto(userId)).ToListAsync();
+			.Include(c => c.ConversationUsers).ThenInclude(cu => cu.User)
+			.Include(c => c.ChatMessages.OrderByDescending(cm => cm.Id).Take(1))
+			.Select(c => c.ToConversationListItem(userId))
+			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<Dto.ChatMessage>> GetLastMessagesAsync(long conversationId, int numberOfMessages)
+	public async Task<IEnumerable<Dto.ChatMessage>> GetLastMessagesAsync(long conversationId, int numberOfMessages, long? beforeMessageId = null)
 	{
-		var conversation = await _context.Conversations
-			.FindAsync(conversationId);
+		var messagesQuery = _context.ChatMessages
+			.Where(cm => cm.ConversationId == conversationId);
 
-		if (conversation == null)
-			return Enumerable.Empty<Dto.ChatMessage>();
+		if (beforeMessageId != null)
+			messagesQuery = messagesQuery.Where(m => m.Id < beforeMessageId);
 
-		IEnumerable<Dto.ChatMessage>? messages = await _context.Entry(conversation)
-			.Collection(c => c.ChatMessages)
-			.Query()
-			.OrderByDescending(cm => cm.SendTimestamp)
+			return await messagesQuery
+			.OrderByDescending(cm => cm.Id)
 			.Take(numberOfMessages)
-			.Select(cm => cm.ToDto())
+			.Select(cm => cm.ToViewModel())
 			.ToListAsync();
-
-		return messages ?? Enumerable.Empty<Dto.ChatMessage>();
-	}
-
-	public async Task<IEnumerable<Dto.ChatMessage>> GetLastMessagesBeforeAsync(long conversationId, DateTime startingMessageTimestamp, int numberOfMessages)
-	{
-		var conversation = await _context.Conversations
-			.FindAsync(conversationId);
-
-		if (conversation == null)
-			return Enumerable.Empty<Dto.ChatMessage>();
-
-		IEnumerable<Dto.ChatMessage>? messages = await _context.Entry(conversation)
-			.Collection(c => c.ChatMessages)
-			.Query()
-			.Where(cm => (cm.SendTimestamp <= startingMessageTimestamp))
-			.OrderByDescending(cm => cm.SendTimestamp)
-			.Take(numberOfMessages)
-			.Select(cm => cm.ToDto())
-			.ToListAsync();
-
-		return messages ?? Enumerable.Empty<Dto.ChatMessage>();
 	}
 
 	public async Task<bool> IsUserInCoversationAsync(long userId, long conversationId)
@@ -80,6 +78,8 @@ public class ChatService
 
 		if (conversation == null)
 			return false;
+
+		await _context.Entry(conversation).Collection(c => c.ConversationUsers).LoadAsync();
 
 		return await _context.Entry(conversation)
 			.Collection(c => c.ConversationUsers)

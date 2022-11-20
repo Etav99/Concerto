@@ -26,11 +26,11 @@ public class UserController : ControllerBase
 	{
 		return await _userService.GetUser(userId);
 	}
-
+    
     [HttpGet]
-    public async Task<long> GetCurrentUserId()
+    public long GetCurrentUserId()
     {
-        return HttpContext.GetUserId();
+        return HttpContext.UserId();
     }
 
     [HttpPost]
@@ -42,21 +42,21 @@ public class UserController : ControllerBase
     [HttpGet]
 	public async Task<Dto.User?> GetCurrentUser()
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
         return await _userService.GetUser(userId);
 	}
 
 	[HttpGet]
 	public async Task<IEnumerable<Dto.User>> GetCurrentUserContacts()
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 		return await _userService.GetUserContacts(userId);
 	}
 
 	[HttpGet]
 	public async Task<IEnumerable<Dto.User>> Search([FromQuery] string searchString)
 	{
-        long userId = HttpContext.GetUserId();
+        long userId = HttpContext.UserId();
 		return await _userService.SearchWithoutUser(userId, searchString);
 	}
 }

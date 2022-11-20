@@ -1,0 +1,60 @@
+﻿@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto;
+@inherits MudComponentBase;
+@inject IDialogService DialogService
+@inject IUserService UserService
+@inject ICourseService CourseService
+@inject HttpClient Http;
+
+<MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="true" Elevation="0" FixedHeader="true" FixedFooter="true"
+		  Height="calc(100% - 15px)" Loading="@Loading" Class="@Class" Style="@Style"
+		  OnRowClick="SelectSession">
+	<ToolBarContent>
+		<MudText Class="mr-2" Typo="Typo.h6">Sessions</MudText>
+		<MudSpacer />
+		<MudIconButton Class="ml-2" Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession" />
+	</ToolBarContent>
+	<HeaderContent>
+		<MudTh>Name</MudTh>
+		<MudTh>Sheduled on</MudTh>
+	</HeaderContent>
+	<RowTemplate>
+		<MudTd>@context.Name</MudTd>
+		<MudTd>@context.ScheduledDate.ToString()</MudTd>
+	</RowTemplate>
+</MudTable>
+
+@code
+{
+	[Parameter]
+	public long CourseId { get; set; }
+
+	[Parameter]
+	public EventCallback<long> OnSessionSelected { get; set; }
+
+	private IEnumerable<SessionListItem>? Sessions;
+	bool Loading => Sessions is null;
+
+	private async Task SelectSession(TableRowClickEventArgs<SessionListItem> tableClick)
+	{
+		await OnSessionSelected.InvokeAsync(tableClick.Item.Id);
+	}
+	
+	protected override async Task OnParametersSetAsync()
+	{
+		Sessions = await CourseService.GetCourseSessionsList(CourseId);
+	}
+
+	private async Task CreateSession(MouseEventArgs mouseEventArgs)
+	{
+		var parameters = new DialogParameters { ["CourseId"] = CourseId };
+		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
+		if ((bool)(result.Data ?? false))
+		{
+			Sessions = null;
+			Sessions = await CourseService.GetCourseSessionsList(CourseId);
+		}
+	}
+
+}

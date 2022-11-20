@@ -7,7 +7,6 @@
 <MudText Class="mb-8">Welcome to Concerto</MudText>
 
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
 
 <h3>ClaimsPrincipal Data</h3>
 
@@ -29,10 +28,10 @@
 
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
-    private string authMessage;
-    private string surnameMessage;
+    private string authMessage = null!;
+    private string surnameMessage = null!;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
 
     private async Task GetClaimsPrincipalData()
@@ -41,10 +40,10 @@
         var user = authState.User;
         bool test = user.IsInRole("user");
         var id = user.Identity as ClaimsIdentity;
-        var x = id.RoleClaimType;
+        var x = id!.RoleClaimType;
 
 
-        if (user.Identity.IsAuthenticated)
+        if (user.Identity!.IsAuthenticated)
         {
             authMessage = $"{user.Identity.Name} is authenticated.";
             claims = user.Claims;

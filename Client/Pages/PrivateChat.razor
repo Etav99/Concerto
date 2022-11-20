@@ -20,13 +20,7 @@
 
 <PageTitle>Chat</PageTitle>
 
-@if (loading)
-{
-	<MudPaper Class="d-flex align-content-center align-center" Width="100%" Height="100%" Elevation="0">
-		<MudProgressCircular Class="ma-auto" Size="Size.Large" Color="Color.Default" Indeterminate="true" />
-	</MudPaper>
-}
-else
+@if (Render)
 {
 	<MudStack Row="true" Justify="Justify.Center" Style="height:100%">
 		<MudPaper Width="350px">
@@ -47,7 +41,7 @@ else
 
 	private Concerto.Client.Components.ChatBox? chatBox;
 
-	bool loading = false;
+	bool Render => !SelectedConversationId.HasValue && SelectedConversationId > 0;
 
 	public void ConversationSelected(Dto.Conversation conversation)
 	{

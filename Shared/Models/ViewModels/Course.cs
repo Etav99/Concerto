@@ -1,20 +1,18 @@
 ﻿namespace Concerto.Shared.Models.Dto;
 
-public record Course : EntityModel
-{
-	public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public long OwnerId { get; set; }
-	public IEnumerable<Dto.User> Users { get; set; } = null!;
-    public Dto.Conversation Conversation { get; set; } = null!;
-    public IEnumerable<Dto.Session> Sessions { get; set; } = null!;
-    public long RootFolderId { get; set; }
-}
+public record Course(
+    long Id,
+    string Name,
+    string Description,
+    long ConversationId,
+    long RootFolderId
+) : EntityModel(Id);
 
-public record CourseUser
+public record CourseListItem(long Id, string Name, string Description, DateTime CreatedDate) : EntityModel(Id);
+
+public record CourseUser(long UserId, CourseUserRole Role)
 {
-    public long UserId { get; set; }
-    public CourseUserRole Role { get; set; }
+    public CourseUserRole Role { get; set; } = Role;
 }
 public enum CourseUserRole
 {

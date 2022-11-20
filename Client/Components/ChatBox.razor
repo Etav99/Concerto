@@ -1,4 +1,5 @@
 ﻿@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto;
 @using Microsoft.AspNetCore.Components.Authorization
 @using Concerto.Shared.Extensions
 
@@ -12,49 +13,56 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudStack Style="width: 100%; height:100%;">
-	<MudPaper Class="pa-2 mb-2 mud-theme-primary" Square="true" Elevation="0">
-		<MudStack Row="true" Justify="Justify.Center">
-			<MudIcon Icon="@Icons.Material.Filled.Chat" />
-			<MudText Align="Align.Center">@($"{(SelectedConversation == null ? null : ConversationName)}")</MudText>
-			</MudStack>
-	</MudPaper>
+	@if(Loading)
+	{
+		
+	}
+	else
+	{
+		<MudPaper Class="pa-2 mb-2 mud-theme-primary" Square="true" Elevation="0">
+			<MudStack Row="true" Justify="Justify.Center">
+				<MudIcon Icon="@Icons.Material.Filled.Chat" />
+				<MudText Align="Align.Center">@($"{(SelectedConversationId == null ? null : ConversationName)}")</MudText>
+				</MudStack>
+		</MudPaper>
 
-	<MudStack Reverse="true" Class="flex-grow-1" Justify="Justify.FlexStart" Style="overflow:auto;" id="stack">
-			@if (SelectedConversation != null && ChatService.Messages.ContainsKey(SelectedConversation.Id))
-			{
-				foreach (var message in ChatService.Messages[SelectedConversation.Id])
-				{
-				<MudPaper Class="@(isSender(message.SenderId) ? "ml-4 mr-8 pa-2 mud-theme-secondary" : "mr-4 ml-8 pa-2 mud-theme-tertiary")"
-					  Style="@(isSender(message.SenderId) ? "align-self: flex-end"  : "align-self: flex-start")"
-					  Elevation="0">
-						@message.Content
-				</MudPaper>
-				}
-			}
-	</MudStack>
+		<MudStack Reverse="true" Class="" Justify="Justify.FlexStart" Style="overflow:auto;" id="messagesContainer">
+					@foreach (var message in Conversation!.Messages)
+					{
+						<MudPaper Class="@(IsSender(message.SenderId) ? "ml-4 mr-8 pa-2 mud-theme-secondary" : "mr-4 ml-8 pa-2 mud-theme-tertiary")"
+								  Style="@(IsSender(message.SenderId) ? "align-self: flex-end; max-width: 80%;"  : "align-self: flex-start; max-width: 80%;")" Elevation="0">
+					<MudText Style="word-break: normal; overflow-wrap: anywhere">@message.Content</MudText>
+						</MudPaper>
+					}
+		</MudStack>
 
-	<MudStack Row="true" AlignItems="AlignItems.Stretch" Class="mx-4 mb-2">
-		<MudTextField @bind-Value="MessageContent" Immediate="true" OnKeyPress="Enter" Label="Message" Variant="Variant.Outlined">></MudTextField>
-		<MudButton OnClick="Send" StartIcon="@Icons.Material.Filled.Send" Color="Color.Primary" ButtonType="ButtonType.Button">Send</MudButton>
-	</MudStack>
+		<MessageTextField OnSend="Send"/>
+
+
+	}
 </MudStack>
 
 @code {
-	public string MessageContent { get; set; } = string.Empty;
-	bool loading = true;
+	[Parameter]
+	public long? SelectedConversationId { get; set; }
 
 	[Parameter]
-	public Dto.Conversation? SelectedConversation { get; set; }
-	private string ConversationName { get; set; } = string.Empty;
+	public string? ConversationName { get; set; } = null!;
 
-	private bool isSender(long senderId) => senderId == UserService.UserId;
+	private string Header => ConversationName ?? (Conversation == null ? string.Empty : Conversation.UsersString);
+
+	private Conversation? Conversation { get; set; }
+
+	bool Loading => ChatService.Disconnected || SelectedConversationId is null || Conversation is null;
+
+	private bool IsSender(long senderId) => senderId == UserService.UserId;
+
 
 	protected override async Task OnInitializedAsync()
 	{
-		ChatService.OnMessageReceivedCallback += OnMessageReceivedCallback;
+		ChatService.OnMessageReceivedEventHandler += OnMessageReceivedCallback;
+		ChatService.OnMessageSentEventHandler += OnMessageSendCallback;
 		await ChatService.ConnectToChatAsync();
-		loading = true;
-		await LoadSelectedConversation();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -62,55 +70,41 @@
 		await JsRuntime.InvokeAsync<string>("scrollToBottom", "messagesContainer");
 	}
 
-	private async Task Send()
+	private async Task Send(string content)
 	{
-		if (ChatService.Connected && !string.IsNullOrEmpty(MessageContent) && SelectedConversation != null && SelectedConversation.Id > 0)
-		{
-			Dto.ChatMessage message = new Dto.ChatMessage { SenderId = UserService.UserId!.Value, ConversationId = SelectedConversation!.Id, SendTimestamp = DateTime.UtcNow, Content = MessageContent };
-			await ChatService.SendChatMessageAsync(message);
-			MessageContent = string.Empty;
-			ShouldRender();
-		}
+		if (string.IsNullOrEmpty(content)) return;
+		Dto.ChatMessage message = new Dto.ChatMessage { SenderId = UserService.UserId!.Value, ConversationId = SelectedConversationId!.Value, SendTimestamp = DateTime.UtcNow, Content = content };
+		await ChatService.SendChatMessageAsync(message);
 	}
 
-	private async Task Enter(KeyboardEventArgs e)
-	{
-		if (e.Code == "Enter" || e.Code == "NumpadEnter")
-		{
-			await Send();
-		}
-	}
-	
+
+
 	protected override async Task OnParametersSetAsync() {
-		await LoadSelectedConversation();
+		if (SelectedConversationId.HasValue)
+		{
+			Conversation = await ChatService.GetConversation(SelectedConversationId.Value);
+		}
 	}
 
-	public async Task ChangeConversation(Dto.Conversation conversation)
+	private async Task OnMessageReceivedCallback(Dto.ChatMessage message)
 	{
-		SelectedConversation = conversation;
-		await LoadSelectedConversation();
+		if (message.ConversationId == SelectedConversationId)
+		{
+			await InvokeAsync(() => Conversation?.Messages.Insert(0, message));
+		}
 	}
 
-	private async Task LoadSelectedConversation()
+	private async Task OnMessageSendCallback(Dto.ChatMessage message)
 	{
-		if (SelectedConversation == null)
-			return;
-		await ChatService.LoadChatMessagesAsync(SelectedConversation.Id);
-		GenerateConversationName();
-		StateHasChanged();
-	}
-	
-	private void OnMessageReceivedCallback(Dto.ChatMessage message)
-	{
-		StateHasChanged();
-	}
-
-	private void GenerateConversationName()
-	{
-		ConversationName = String.Join(", ", SelectedConversation?.Users?.Select(u => u.FullName) ?? Enumerable.Empty<string>());
+		if (message.ConversationId == SelectedConversationId)
+		{
+			await InvokeAsync(() => Conversation?.Messages.Insert(0, message));
+		}
+		await JsRuntime.InvokeAsync<string>("scrollToBottom", "messagesContainer");
 	}
 
 	public void Dispose() {
-		ChatService.OnMessageReceivedCallback -= OnMessageReceivedCallback;
+		ChatService.OnMessageReceivedEventHandler -= OnMessageReceivedCallback;
+		ChatService.OnMessageSentEventHandler -= OnMessageSendCallback;
 	}
 }

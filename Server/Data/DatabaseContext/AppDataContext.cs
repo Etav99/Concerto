@@ -16,6 +16,7 @@ public class AppDataContext : DbContext
     public DbSet<UploadedFile> UploadedFiles { get; set; }
     public DbSet<Folder> Folders { get; set; }
     public DbSet<UserFolderPermission> UserFolderPermissions { get; set; }
+    public DbSet<ConversationUser> ConversationUsers { get; set; }
 
     public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
 
@@ -57,8 +58,9 @@ public class AppDataContext : DbContext
         // Course entity configuration
         modelBuilder.Entity<Course>()
             .HasOne(c => c.RootFolder)
-            .WithOne()
-            .HasForeignKey<Course>(c => c.RootFolderId);
+            .WithMany()
+            .IsRequired(false)
+            .HasForeignKey(c => c.RootFolderId);
 
         // CourseUser entity configuration
         modelBuilder.Entity<CourseUser>()
@@ -100,10 +102,10 @@ public class AppDataContext : DbContext
             .HasForeignKey(f => f.CourseId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Folder n-1 Folders
-        modelBuilder.Entity<Folder>()
+		// Folder n-1 Folders
+		modelBuilder.Entity<Folder>()
             .HasOne(f => f.Parent)
-            .WithMany()
+            .WithMany(p => p.SubFolders)
             .HasForeignKey(f => f.ParentId)
             .OnDelete(DeleteBehavior.Cascade);
 

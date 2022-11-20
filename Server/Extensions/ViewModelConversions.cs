@@ -3,7 +3,7 @@
 namespace Concerto.Server.Extensions;
 public static class ViewModelConversions
 {
-	public static Dto.User ToDto(this User user)
+	public static Dto.User ToViewModel(this User user)
 	{
 		return new Dto.User
 		{
@@ -14,35 +14,26 @@ public static class ViewModelConversions
 		};
 	}
 
-	public static IEnumerable<Dto.User> ToDto(this IEnumerable<User>? users)
+	public static IEnumerable<Dto.User> ToViewModel(this IEnumerable<User>? users)
 	{
 		if (users == null)
 			return Enumerable.Empty<Dto.User>();
-		return users.Select(c => c.ToDto());
+		return users.Select(c => c.ToViewModel());
 	}
 
-	public static Dto.Conversation ToDto(this Conversation conversation)
+	public static Dto.Conversation ToViewModel(this Conversation conversation, long? withoutUserId = null)
 	{
 		return new Dto.Conversation
 		{
 			Id = conversation.Id,
 			IsPrivate = conversation.IsPrivate,
-			Users = conversation.ConversationUsers.Select(cu => cu.User).ToDto(),
-			LastMessage = conversation.ChatMessages?.FirstOrDefault()?.ToDto()
-		};
-	}
-	public static Dto.Conversation ToDto(this Conversation conversation, long userId)
-	{
-		return new Dto.Conversation
-		{
-			Id = conversation.Id,
-			IsPrivate = conversation.IsPrivate,
-			Users = conversation.ConversationUsers.Select(cu => cu.User).Where(u => u.Id != userId).ToDto(),
-			LastMessage = conversation.ChatMessages.FirstOrDefault()?.ToDto()
+			Users = withoutUserId.HasValue ? conversation.ConversationUsers.Select(cu => cu.User).Where(u => u.Id != withoutUserId).ToViewModel()
+										   : conversation.ConversationUsers.Select(cu => cu.User).ToViewModel(),
+			Messages = conversation.ChatMessages.Select(cm => cm.ToViewModel()).ToList(),
 		};
 	}
 
-	public static Dto.ChatMessage ToDto(this ChatMessage message)
+	public static Dto.ChatMessage ToViewModel(this ChatMessage message)
 	{
 		return new Dto.ChatMessage
 		{
@@ -83,20 +74,19 @@ public static class ViewModelConversions
 		});
 	}
 
-	public static Dto.UploadedFile ToDto(this UploadedFile file)
+	public static Dto.UploadedFile ToViewModel(this UploadedFile file)
 	{
-		return new Dto.UploadedFile
-		{
-			Id = file.Id,
-			Name = file.DisplayName,
-		};
+		return new Dto.UploadedFile(
+			Id: file.Id,
+			Name: file.DisplayName
+		);
 	}
-	public static IEnumerable<Dto.UploadedFile> ToDto(this IEnumerable<UploadedFile> files)
+	public static IEnumerable<Dto.UploadedFile> ToViewModel(this IEnumerable<UploadedFile> files)
 	{
-		return files.Select(u => u.ToDto());
+		return files.Select(u => u.ToViewModel());
 	}
 
-	public static Dto.FileUploadResult ToDto(this FileUploadResult fileUploadResult)
+	public static Dto.FileUploadResult ToViewModel(this FileUploadResult fileUploadResult)
 	{
 		return new Dto.FileUploadResult
 		{
@@ -106,9 +96,9 @@ public static class ViewModelConversions
 		};
 	}
 
-	public static IEnumerable<Dto.FileUploadResult> ToDto(this IEnumerable<FileUploadResult> fileUploadResults)
+	public static IEnumerable<Dto.FileUploadResult> ToViewModel(this IEnumerable<FileUploadResult> fileUploadResults)
 	{
-		return fileUploadResults.Select(u => u.ToDto());
+		return fileUploadResults.Select(u => u.ToViewModel());
 	}
 
 

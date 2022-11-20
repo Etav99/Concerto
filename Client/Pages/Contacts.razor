@@ -56,9 +56,6 @@ else
 					<MudTd DataLabel="Username">@context.Username</MudTd>
 					<MudTd DataLabel="First name">@context.FirstName</MudTd>
 					<MudTd DataLabel="Last name">@context.LastName</MudTd>
-					<MudTd>
-						<MudIconButton Icon="@Icons.Filled.PersonAdd" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => Invite(context))" />
-					</MudTd>
 				</RowTemplate>
 				<PagerContent>
 					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
@@ -105,10 +102,5 @@ else
 													: searchResultResponse.ToList();
 		StateHasChanged();
 	}
-
-	private async Task Invite(Dto.User user){
-		
-	}
-
 
 }

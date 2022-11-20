@@ -18,6 +18,8 @@ public class User : Entity
 	public virtual ICollection<ConversationUser> ConversationsUser { get; set; } = null!;
 	public virtual ICollection<CourseUser> CoursesUser { get; set; } = null!;
 
+	public string FullName => $"{FirstName} {LastName}";
+
 	public User() { }
 
 	public User(ClaimsPrincipal claimsPrincipal)
