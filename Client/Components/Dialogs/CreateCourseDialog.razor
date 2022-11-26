@@ -10,7 +10,7 @@
 <MudDialog>
     <DialogContent>
         <MudTextField @bind-Value="_courseName" T="string" Label="Name"></MudTextField>
-        <CourseMemberPicker @bind-CourseUsers="_members" />
+        <CourseMemberPicker @bind-SelectedCourseUsers="_members" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -21,8 +21,8 @@
     [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
     private string? _courseName;
-	
-    private ISet<CourseUser> _members = new HashSet<CourseUser>();
+
+    private HashSet<CourseUser> _members = new(new CourseUserIdEqualityComparer());
 
     private async Task Submit()
     {

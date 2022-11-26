@@ -16,7 +16,7 @@
 @inject ISyncLocalStorageService LocalStorage
 
 <MudThemeProvider @bind-IsDarkMode="@DarkMode" />
-<MudDialogProvider />
+<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" />
 <MudSnackbarProvider />
 
 <MudLayout Style="height:100vh;">

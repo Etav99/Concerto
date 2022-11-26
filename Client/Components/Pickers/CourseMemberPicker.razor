@@ -1,73 +1,168 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
+@using System.Diagnostics.CodeAnalysis;
 @inject IContactService ContactService
 
-<MudPaper Elevation="0" Outlined="true" Class="pa-4">
-    <MudStack Spacing="4">
-        <MudStack Row="true">
-            <MudAutocomplete T="User" Label="Select user" @ref="_addUserAutocomplete"
-                             ValueChanged="@AddUser" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
-                             ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
-                             ToStringFunc="@(u => u == null ? null : $"{u.FullName}")" />
-        </MudStack>
-        <MudPaper Elevation="0">
+<MudTable @ref="table" T="CourseUser" Comparer="comparer" Items="Items" MultiSelection="!_editing" @bind-SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser,bool>(Filter)"
+          RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
+          ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
+          IsEditRowSwitchingBlocked="true" 
+          SortLabel="Sort By" Dense="true" Hover="true" CanCancelEdit="true" Outlined="true" FixedFooter="true" FixedHeader="true" Height="400px">
 
-            <MudList>
-                @foreach (var courseUser in CourseUsers)
-                {
-                    <MudListItem Icon="@Icons.Material.Filled.Person">
-                        <MudStack Row="true" AlignItems="AlignItems.Center">
-                            <MudText>@_selectedMembers[courseUser.UserId].FullName</MudText>
-                            <CourseRolePicker @bind-Value="courseUser.Role" OnChange="RoleChanged" />
-                            <MudIconButton OnClick="@(async () => RemoveMember(courseUser))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
-                        </MudStack>
-                    </MudListItem>
-                }
-            </MudList>
+    <ToolBarContent>
+        <MudText Typo="Typo.subtitle1">Select members</MudText>
+        <MudSpacer />
+        <MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only selected</MudSwitch>
+        <MudSpacer />
+        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+    </ToolBarContent>
 
-        </MudPaper>
-    </MudStack>
-</MudPaper>
+    <ColGroup>
+        <col style="padding: 0; width:32px" />
+        <col style="width:32px;" />
+        <col style="width:100px;" />
+        <col style="width:100px;" />
+        <col style="width:200px;" />
+        <col style="width:100px;" />
+    </ColGroup>
+
+    <HeaderContent>
+        @if (_editing)
+        {
+            <MudTh></MudTh>
+        }
+        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> SelectedCourseUsers.Contains(x))">Selected</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> Users[x.UserId].FirstName)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel></MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        @if(_editing)
+        {
+            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="@SelectedCourseUsers.Contains(context)" /></MudTd>
+        }
+        <MudTd DataLabel="Selected">←</MudTd>
+        <MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
+        <MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
+        @if(SelectedCourseUsers.Contains(context)){
+            <MudTd DataLabel="Role">@context.Role.ToDisplayString()</MudTd>
+        }
+        else
+        {
+            <MudTd DataLabel="Role">-</MudTd>
+        }
+    </RowTemplate>
+
+    <RowEditingTemplate>
+        <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="true" /></MudTd>
+        <MudTd DataLabel="Selected">←</MudTd>
+        <MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
+        <MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
+        <MudTd DataLabel="Role">
+            <CourseRolePicker @bind-Value="context.Role"/>
+         </MudTd>
+    </RowEditingTemplate>
+
+    <FooterContent>
+        @if (_editing)
+        {
+            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="CourseUsers.Count == SelectedCourseUsers.Count" /></MudTd>
+            <MudTd colspan="4">Select All</MudTd>
+        }
+        else
+        {
+            <MudTd colspan="4">Select All</MudTd>
+        }
+    </FooterContent>
+
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{2, 50, 100}" />
+    </PagerContent>
+
+</MudTable>
 
 
 @code
 {
     [Parameter]
-    public ISet<CourseUser> CourseUsers { get; set; } = null!;
+    public HashSet<CourseUser> SelectedCourseUsers { get; set; } = null!;
+
     [Parameter]
-    public EventCallback<ISet<CourseUser>> CourseUsersChanged { get; set; }
+    public EventCallback<HashSet<CourseUser>> SelectedCourseUsersChanged { get; set; }
 
-    private Dictionary<long, User> _selectedMembers = new Dictionary<long, User>();
+    bool Loading => CourseUsers is null || Users is null;
 
-    private MudAutocomplete<User>? _addUserAutocomplete;
-	
-    private async Task<IEnumerable<User>> SearchContacts(string searchString)
+    private HashSet<CourseUser> CourseUsers { get; set; } = new();
+    private Dictionary<long, User> Users { get; set; } = new();
+
+    private CourseUser? _editedRowBackup;
+    private string _searchString = "";
+
+    bool _editing = false;
+
+    bool _showSelectedOnly = false;
+    HashSet<CourseUser> Items => _showSelectedOnly ? SelectedCourseUsers : CourseUsers;
+
+    MudTable<CourseUser>? table;
+
+    CourseUserIdEqualityComparer comparer = new();
+    protected override async Task OnInitializedAsync()
     {
         await ContactService.LoadContactsAsync();
-        if (string.IsNullOrWhiteSpace(searchString))
-			return ContactService.Contacts.Where(c => !_selectedMembers.Keys.Contains(c.Id));
-        return ContactService.Contacts.Where(c => (c.FullName.Contains(searchString) || c.Username.Contains(searchString)) && !_selectedMembers.Keys.Contains(c.Id));
+        CourseUsers = ContactService.Contacts.Select(u => new CourseUser(u.Id, CourseUserRole.Member)).ToHashSet(comparer);
+        Users = ContactService.Contacts.ToDictionary(u => u.Id);
     }
 
-    private async Task RoleChanged()
+    private void EditCommited(object commitedCourseUser)
     {
-        await CourseUsersChanged.InvokeAsync(CourseUsers);
+        if (!SelectedCourseUsers.Contains((CourseUser)commitedCourseUser))
+        {
+            SelectedCourseUsers.Add((CourseUser)commitedCourseUser);
+        }
+        SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers).AndForget();
+        _editing = false;
     }
 
-    private void AddUser(User user)
+    private void EditCanceled(object editedCourseUser)
     {
-        CourseUsers.Add(new CourseUser(user.Id, CourseUserRole.Member));
-        _selectedMembers.Add(user.Id, user);
-
-        _addUserAutocomplete!.Reset();
-        CourseUsersChanged.InvokeAsync(CourseUsers);
+        ((CourseUser)editedCourseUser).Role = _editedRowBackup!.Role;
+        _editing = false;
+        StateHasChanged();
     }
 
-    private void RemoveMember(CourseUser courseUser)
+    private async Task RowClick(TableRowClickEventArgs<CourseUser> rowClick)
     {
-        CourseUsers.Remove(courseUser);
-        _selectedMembers.Remove(courseUser.UserId);
-		
-        CourseUsersChanged.InvokeAsync(CourseUsers);
+        if (_editing) return;
+        CourseUser courseUser = rowClick.Item;
+        if (!SelectedCourseUsers.Contains(courseUser))
+        {
+            SelectedCourseUsers.Add(courseUser);
+        }
+        else
+        {
+            SelectedCourseUsers.Remove(courseUser);
+        }
+        await SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers);
+    }
+
+    private void OnRowEdit(object editedCourseUser)
+    {
+        _editedRowBackup = (CourseUser)editedCourseUser with { };
+        _editing = true;
+        StateHasChanged();
+    }
+
+    private bool Filter(CourseUser user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (Users[user.UserId].FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (Users[user.UserId].LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (Users[user.UserId].FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 }
