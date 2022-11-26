@@ -68,7 +68,19 @@ public class CourseController : ControllerBase
 		return BadRequest();
 	}
 
-    [Authorize(Roles = "teacher")]
+	[Authorize(Roles = "teacher")]
+	[HttpPost]
+	public async Task<ActionResult> UpdateCourse([FromBody] Dto.UpdateCourseRequest request)
+	{
+		long userId = HttpContext.UserId();
+
+		if (!User.IsInRole("admin") && !await _courseService.CanUpdateCourse(request.CourseId, userId)) return Forbid();
+
+		if (await _courseService.UpdateCourse(request, userId)) return Ok();
+		return BadRequest();
+	}
+
+	[Authorize(Roles = "teacher")]
     [HttpDelete]
     public async Task<ActionResult> DeleteCourse(long courseId)
 	{

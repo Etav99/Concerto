@@ -1,6 +1,6 @@
 ﻿@using Concerto.Shared.Models.Dto;
 
-<MudSelect T="CourseUserRole" Value="Value" ValueChanged="ValueChanged" Label="Role" AnchorOrigin="Origin.BottomCenter">
+<MudSelect T="CourseUserRole" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" Label="Role" AnchorOrigin="Origin.BottomCenter">
     <MudSelectItem Value="@(CourseUserRole.Admin)">Administrator</MudSelectItem>
     <MudSelectItem Value="@(CourseUserRole.Supervisor)">Supervisor</MudSelectItem>
     <MudSelectItem Value="@(CourseUserRole.Member)">Member</MudSelectItem>

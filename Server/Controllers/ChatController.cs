@@ -31,7 +31,7 @@ public class ChatController : ControllerBase
 	public async Task<ActionResult<Dto.Conversation>> GetConversation(long conversationId)
 	{
 		long userId = HttpContext.UserId();
-		if (!await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Forbid();
+		if (!User.IsInRole("admin") && !await _chatService.IsUserInCoversationAsync(userId, conversationId)) return Forbid();
 
 		var conversation = await _chatService.GetConversation(conversationId);
 		return conversation is not null ? Ok(conversation) : NotFound();

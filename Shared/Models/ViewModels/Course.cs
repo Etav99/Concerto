@@ -27,3 +27,11 @@ public record CreateCourseRequest
     public string Description { get; set; } = string.Empty;
     public IEnumerable<Dto.CourseUser> Members { get; set; } = null!;
 }
+
+public record UpdateCourseRequest
+{
+	public long CourseId { get; set; }
+	public string Name { get; set; } = null!;
+	public string Description { get; set; } = string.Empty;
+	public IEnumerable<Dto.CourseUser> Members { get; set; } = null!;
+}

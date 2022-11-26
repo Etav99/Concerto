@@ -17,6 +17,10 @@
 	{
 		
 	}
+	else if (Error)
+	{
+		<MudText>Error</MudText>
+	}
 	else
 	{
 		<MudPaper Class="pa-2 mb-2 mud-theme-primary" Square="true" Elevation="0">
@@ -51,6 +55,7 @@
 	private Conversation? Conversation { get; set; }
 
 	bool Loading => ChatService.Disconnected || SelectedConversationId is null || Conversation is null;
+	bool Error { get; set; } = false;
 
 	private bool IsSender(long senderId) => senderId == UserService.UserId;
 
@@ -79,7 +84,14 @@
 	protected override async Task OnParametersSetAsync() {
 		if (SelectedConversationId.HasValue)
 		{
-			Conversation = await ChatService.GetConversation(SelectedConversationId.Value);
+			try
+			{
+				Conversation = await ChatService.GetConversation(SelectedConversationId.Value);
+			}
+			catch
+			{
+				Error = true;
+			}
 		}
 	}
 
