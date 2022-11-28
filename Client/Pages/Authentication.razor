@@ -2,11 +2,11 @@
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-
 @inject IChatService ChatService
 @inject IUserService UserService
+@inject NavigationManager Navigation
 
-<RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="OnLogInSucceeded" />
+<RemoteAuthenticatorView Action="@Action" OnLogOutSucceeded="OnLogOutSucceeded" OnLogInSucceeded="OnLogInSucceeded" />
 
 @code {
 	[CascadingParameter]
@@ -21,5 +21,11 @@
 		await UserService.FetchUserId();
 		if (UserService.IsLoggedIn)
 			await ChatService.ConnectToChatAsync();
+	}
+	async Task OnLogOutSucceeded()
+	{
+		UserService.SetAuthenticationState(null);
+		await ChatService.DisconnectAsync();
+		Navigation.NavigateTo("");
 	}
 }

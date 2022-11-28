@@ -119,10 +119,10 @@ public class CourseService
 
 	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(long userId)
 	{
-		return await _context.Courses
-			.Include(c => c.CourseUsers)
-			.Where(c => c.CourseUsers.Any(cu => cu.UserId == userId))
-			.Select(c => c.ToCourseListItem())
+		return await _context.CourseUsers
+			.Where(cu => cu.UserId == userId)
+			.Include(cu => cu.Course)
+			.Select(cu => cu.Course.ToCourseListItem())
 			.ToListAsync();
 	}
 

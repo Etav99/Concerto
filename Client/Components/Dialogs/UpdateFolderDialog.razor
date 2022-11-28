@@ -8,15 +8,22 @@
 @inject ICourseService CourseService
 
 <MudDialog>
+	 <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
+			Folder settings
+        </MudText>
+    </TitleContent>
 	<DialogContent>
-		@if (Loading) {
+		@if (Loading)
+		{
 			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
 		}
 		else
 		{
 			<MudStack Spacing="4">
 				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
-				<MudStack Row="true" AlignItems="AlignItems.Center">
+				<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Baseline">
 					<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType" />
 					<MudTooltip Text="" Arrow="true">
 						<ChildContent>
@@ -85,19 +92,19 @@
 		var folderSettings = await StorageService.GetFolderSettings(EditedFolderId);
 		CourseUsers = (await CourseService.GetCourseUsers(folderSettings.CourseId)).ToHashSet();
 		_request = new UpdateFolderRequest(folderSettings.Id)
-		{
-			Name = folderSettings.Name,
-			CoursePermission = folderSettings.CoursePermission,
-			UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
-			forceInherit = false
-		};
+			{
+				Name = folderSettings.Name,
+				CoursePermission = folderSettings.CoursePermission,
+				UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
+				forceInherit = false
+			};
 		ParentUserFolderPermissions = folderSettings.ParentUserPermissions.ToHashSet();
 		_parentPermissionType = folderSettings.ParentCoursePermission?.Type;
 		Loading = false;
 	}
 
 	void Cancel() => Dialog.Cancel();
-	
+
 	private async Task Submit()
 	{
 		if (String.IsNullOrEmpty(_request.Name))

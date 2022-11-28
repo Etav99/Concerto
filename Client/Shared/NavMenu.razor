@@ -1,12 +1,33 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using Concerto.Client.Services;
+@using Concerto.Shared.Models.Dto;
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IJSRuntime JSRuntime
+@inject ICourseService CourseService
+@inject IUserService UserService
+@implements IDisposable
+
 <MudNavMenu>
 	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 	<AuthorizeView>
-		<MudNavLink OnClick="OpenAccountManagementConsole" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
-		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MeetingRoom">Courses</MudNavLink>
-		<MudNavLink Href="contacts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">Contacts</MudNavLink>
-		<MudNavLink Href="chat" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
+
+		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Courses</MudNavLink>
+
+		<MudNavGroup Class="hidden" Title="Courses" Icon="@Icons.Material.Filled.MenuBook" ExpandIcon="@Icons.Material.Filled.ArrowDownward"  Expanded="true">
+			@if (_coursesList is null)
+			{
+				<MudNavLink  Href="#">
+					<MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true"/>
+				</MudNavLink>
+			}
+			else
+			{
+				@foreach (var course in _coursesList.OrderByDescending(c => c.Id).Take(30))
+				{
+					<MudNavLink title="@course.Name" Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Href="@($"courses/{course.Id}")" Match="NavLinkMatch.All">@course.Name</MudNavLink>
+				}
+			}
+
+		</MudNavGroup>
 	</AuthorizeView>
 
 </MudNavMenu>
@@ -14,8 +35,28 @@
 
 @code {
 
+	IEnumerable<CourseListItem>? _coursesList;
+
+	private void SetCoursesList(object? sender, IEnumerable<CourseListItem> coursesList)
+	{
+		_coursesList = coursesList;
+		StateHasChanged();
+	}
+
+	protected override void OnInitialized()
+	{
+		CourseService.UserCoursesFetchEventHandler += SetCoursesList;
+		if(UserService.IsLoggedIn) CourseService.GetUserCoursesList().AndForget();
+	}
+
 	private async void OpenAccountManagementConsole()
 	{
-		await JSRuntime.InvokeAsync<object>("open", "http://localhost:7200/Concerto/Keycloak/realms/concerto/account/", "_blank");
+		await JSRuntime.InvokeAsync<object>("open", "", "_blank");
 	}
+
+	public void Dispose()
+	{
+		CourseService.UserCoursesFetchEventHandler -= SetCoursesList;
+	}
+
 }

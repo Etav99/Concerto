@@ -1,6 +1,6 @@
 ﻿@using Concerto.Shared.Models.Dto;
 
-<MudSelect T="FolderPermission" Value="Value" ValueChanged="ValueChanged" Label="Permission" AnchorOrigin="Origin.BottomCenter">
+<MudSelect Dense="true" Margin="Margin.Dense" T="FolderPermission" Value="Value" ValueChanged="ValueChanged" Label="Permission" AnchorOrigin="Origin.BottomCenter" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Security">
     @if (Inherited.HasValue)
     {
         <MudSelectItem Value="@(new FolderPermission(Inherited.Value, true))">@($"Inherited - {ToText(Inherited.Value)}")</MudSelectItem>

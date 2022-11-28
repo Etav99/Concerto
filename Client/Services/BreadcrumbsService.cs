@@ -10,18 +10,21 @@ namespace Concerto.Client.Services;
 public interface IBreadcrumbsService
 {
 	public List<BreadcrumbItem> Breadcrumbs { get; set; }
-	public EventHandler<List<BreadcrumbItem>>? BreadcrumbsChangeEventHandler { get; set; }
-    public void Set(params BreadcrumbItem[] breadcrumbs);
+	public EventHandler<BreadcrumbsPackage>? BreadcrumbsChangeEventHandler { get; set; }
+	public void Set(string icon, string title, params BreadcrumbItem[] breadcrumbs);
 }
+
 public class BreadcrumbsService : IBreadcrumbsService
 {
 	public List<BreadcrumbItem> Breadcrumbs { get; set; } = new List<BreadcrumbItem>();
 
-	public EventHandler<List<BreadcrumbItem>>? BreadcrumbsChangeEventHandler { get; set; }
+	public EventHandler<BreadcrumbsPackage>? BreadcrumbsChangeEventHandler { get; set; }
 
-    public void Set(params BreadcrumbItem[] breadcrumbs)
+    public void Set(string icon, string title, params BreadcrumbItem[] breadcrumbs)
 	{
 		Breadcrumbs = new List<BreadcrumbItem>(breadcrumbs);
-		BreadcrumbsChangeEventHandler?.Invoke(this, Breadcrumbs);
+		BreadcrumbsChangeEventHandler?.Invoke(this, new BreadcrumbsPackage(Breadcrumbs, icon, title));
     }
 }
+
+public record struct BreadcrumbsPackage(List<BreadcrumbItem> BreadcrumbItems, string Icon, string Title);

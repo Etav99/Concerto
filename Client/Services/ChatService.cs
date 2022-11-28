@@ -13,6 +13,7 @@ public interface IChatService
 	public bool Connected { get; }
 	public bool Disconnected { get; }
 	public Task ConnectToChatAsync();
+	public Task DisconnectAsync();
 	public Task SendChatMessageAsync(Dto.ChatMessage message);
 
 	public delegate Task AsyncMessageEventHandler(Dto.ChatMessage message);
@@ -67,6 +68,11 @@ public class ChatService : IChatService
 	public async Task ConnectToChatAsync()
 	{
 		if (Disconnected) await ChatHubConnection.StartAsync();
+	}
+
+	public async Task DisconnectAsync()
+	{
+		await ChatHubConnection.DisposeAsync();
 	}
 
 	public async Task<IEnumerable<ConversationListItem>> GetPrivateConversationsAsync()

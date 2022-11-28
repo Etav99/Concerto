@@ -25,7 +25,7 @@
 		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
 
 		<MudTabPanel Text="Content">
-			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100%); min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
+			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px); min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Sessions">
@@ -57,6 +57,8 @@
 		SelectedCourse = await CourseService.GetCourse(SelectedCourseId);
 		if (SelectedCourse == null) NavigationManager.NavigateTo("courses");
 		BreadcrumbsService.Set(
+			Icons.Material.Filled.MenuBook,
+			SelectedCourse?.Name ?? string.Empty,
 			new BreadcrumbItem("Courses", "courses"),
 			new BreadcrumbItem(SelectedCourse?.Name, null, true)
 		);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Concerto.Shared.Models.Dto;
 
@@ -48,6 +49,19 @@ public record UserFolderPermission(User User, FolderPermission Permission)
 {
 	public User User { get; set; } = User;
 	public FolderPermission Permission { get; set; } = Permission;
+}
+
+public class UserFolderPermissionIdEqualityComparer : IEqualityComparer<UserFolderPermission>
+{
+    public bool Equals(UserFolderPermission? x, UserFolderPermission? y)
+    {
+		return x?.User.Id == y?.User.Id;
+    }
+
+    public int GetHashCode([DisallowNull] UserFolderPermission obj)
+    {
+        return obj.User.Id.GetHashCode();
+    }
 }
 
 public record FolderPermission(FolderPermissionType Type, bool Inherited);

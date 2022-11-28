@@ -1,0 +1,28 @@
+﻿@inject IDialogService DialogService
+@inject HttpClient Http
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@($"Are you sure you want to delete {ItemName}?")</MudText>
+        <MudSwitch @bind-Checked="@userSure" Label="Yes, I'm Sure." Color="Color.Error" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Disabled="!userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+    @code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
+
+    [Parameter]
+    public string ItemName { get; set; } = null!;
+	
+    [Parameter]
+    public bool Confirmation { get; set; } = false;
+
+    bool userSure = false;
+
+    private void Delete() => Dialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => Dialog.Cancel();
+}

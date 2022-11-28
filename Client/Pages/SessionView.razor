@@ -54,7 +54,8 @@
 		}
 
 		BreadcrumbsService.Set(
-			new BreadcrumbItem("Courses", "/courses"),
+			Icons.Material.Filled.MeetingRoom,
+			SelectedSession.Name,
 			new BreadcrumbItem(SelectedSession.CourseName, $"courses/{SelectedSession.CourseId}"),
 			new BreadcrumbItem(SelectedSession.Name, null, true)
 		);

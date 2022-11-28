@@ -9,7 +9,7 @@ public interface IUserService
 {
 	public bool IsLoggedIn { get; }
 	public long? UserId { get; }
-	public void SetAuthenticationState(AuthenticationState authenticationState);
+	public void SetAuthenticationState(AuthenticationState? authenticationState);
 	public Task FetchUserId();
 	public Task<IEnumerable<User>> GetUsers();
 	public Task<User?> GetUser(long userId);
@@ -30,7 +30,7 @@ public class UserService : IUserService
 	public bool IsLoggedIn => _authenticationState?.User.Identity?.IsAuthenticated ?? false;
 	public long? UserId { get; private set; }
 
-	public void SetAuthenticationState(AuthenticationState authenticationState)
+	public void SetAuthenticationState(AuthenticationState? authenticationState)
 	{
 		_authenticationState = authenticationState;
 	}

@@ -14,6 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
 
 @inject IBreadcrumbsService BreadcrumbsService
 @inject IChatService ChatService
@@ -30,21 +31,16 @@
 }
 else
 {
-	<MudTable Items="CoursesList" Hover="true"  Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)"
+	<MudTable T="CourseListItem" Items="CoursesList" Hover="true"  Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)"
 		    Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
-			RowsPerPage="25">
+			RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">Your courses</MudText>
 				<MudSpacer />
 				<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 				<MudSpacer />
-				@if (CoursesList == null || !CoursesList.Any())
-				{
-					<MudAlert Variant="Variant.Filled" Severity="Severity.Info">You're currently not a member of any course.</MudAlert>
-					<MudSpacer />
-				}
 				<AuthorizeView Roles="teacher">
-					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateCourse" />
+					<MudIconButton Class="ml-2" DisableElevation="true" Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" />
 				</AuthorizeView>
 			</ToolBarContent>
 			<HeaderContent>
@@ -59,7 +55,16 @@ else
 					<MudText>@context.CreatedDate</MudText>
 				</MudTd>
 				<MudTd Style="text-align:right">
-					<MudIconButton Size="Size.Large" Icon="@Icons.Material.Sharp.Login" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => SelectCourse(@context))" />
+
+					<MudMenu Dense="true">
+						<ActivatorContent>
+							<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
+						</ActivatorContent>
+						<ChildContent>
+							<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnClick="() => SelectCourse(context)">Open</MudMenuItem>
+							<MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteCourse(context)">Delete</MudMenuItem>
+						</ChildContent>
+					</MudMenu>
 				</MudTd>
 			</RowTemplate>
 			<PagerContent>
@@ -80,6 +85,8 @@ else
 	protected override void OnInitialized()
 	{
 		BreadcrumbsService.Set(
+			Icons.Material.Filled.List,
+			"Courses",
 			new BreadcrumbItem("Courses", null, true)
 		);
 	}
@@ -89,9 +96,34 @@ else
 		CoursesList = await CourseService.GetUserCoursesList();
 	}
 
-	private void SelectCourse(Dto.CourseListItem course)
+	private void SelectCourse(CourseListItem course)
 	{
 		NavigationManager.NavigateTo($"courses/{course.Id}");
+	}
+
+	private async Task DeleteCourse(CourseListItem course)
+	{
+		var parameters = new DialogParameters { ["ItemName"] = $"course {course.Name}", ["Confirmation"] = true, };
+		var name = "Delete course";
+		var result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
+		if ((bool)(result.Data ?? false))
+		{
+			try
+			{
+				await CourseService.DeleteCourse(course.Id);
+				Snackbar.Add("Course deleted", Severity.Success);
+				CoursesList = await CourseService.GetUserCoursesList();
+			}
+			catch
+			{
+				Snackbar.Add("Failed to delete course.", Severity.Error);
+			}
+		}
+	}
+
+	private void OnRowClick(TableRowClickEventArgs<CourseListItem> rowClick)
+	{
+		SelectCourse(rowClick.Item);
 	}
 	
 	private async Task CreateCourse(MouseEventArgs mouseEventArgs){

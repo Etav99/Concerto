@@ -1,7 +1,9 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
+@using MudBlazor.Services;
 @inject IUserService UserService
 @inject ICourseService CourseService
+@inject IBreakpointService BreakpointService
 
 @if(Loading)
 {
@@ -15,42 +17,67 @@ else
             <MudStack Row="true">
                 <MudText>User specific permissions</MudText>
                 <MudTooltip Text="Those settings will override folder permissions for specified users" Arrow="true">
-                    <MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
+                    <MudIcon Icon="@Icons.Material.Filled.Info" />
                 </MudTooltip>
             </MudStack>
 
             <MudAutocomplete Margin="Margin.Dense" Dense="true" T="User" Label="Add user" @ref="_addUserAutocomplete"
                          ValueChanged="@AddUser" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
                          ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
-                         ToStringFunc="@(u => u == null ? null : $"{u.FullName}")" />
+                         ToStringFunc="@(u => u == null ? null : $"{u.FullName}")"
+                         AdornmentIcon="@Icons.Material.Filled.PersonAdd" AdornmentColor="Color.Default" Adornment="Adornment.Start"
+                         />
             <MudPaper Elevation="0">
-                <MudList>
-                    @foreach (var userPermission in UserFolderPermissions)
-                    {
-                        <MudListItem Icon="@Icons.Material.Filled.Person">
-                            <MudStack Row="true" AlignItems="AlignItems.Center">
-                                <MudText>@userPermission.User.FullName</MudText>
-                                @{
-                                    var parentMatch = ParentUserFolderPermissions.FirstOrDefault(p => p.User.Id == userPermission.User.Id);
-                                    <FolderPermissionPicker @bind-Value="userPermission.Permission" Inherited="parentMatch?.Permission.Type" />
 
-                                    @if (parentMatch is null)
-                                    {
-                                        <MudTooltip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
-                                            <MudIconButton OnClick="@(async () => RemoveUserPermission(userPermission))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
-                                        </MudTooltip>
-                                    }
-                                    @if (parentMatch is not null && !userPermission.Permission.Inherited)
-                                    {
-                                        <MudTooltip Text="Restore - permission will be inherited from parent folder">
-                                            <MudIconButton OnClick="@(async () => RestoreInherited(userPermission, parentMatch))" Icon="@Icons.Material.Filled.Restore" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
-                                        </MudTooltip>
-                                    }
-                                }
-                            </MudStack>
-                        </MudListItem>
-                    }
-                </MudList>
+                @if(UserFolderPermissions.Count > 0)
+                {
+                    <MudTable Comparer="comparer" Items="UserFolderPermissions" Hover="true" Breakpoint="Breakpoint.Sm">
+					    <HeaderContent>
+						    <MudTh></MudTh>
+						    <MudTh>Name</MudTh>
+						    <MudTh>Surname</MudTh>
+						    <MudTh>Permission</MudTh>
+                            <MudTh>Actions</MudTh>
+					    </HeaderContent>
+						
+                        <ColGroup>
+                            <col style="padding: 0; width:20px" />
+                            <col />
+                            <col />
+                            <col style="min-width:215px" />
+                            <col style="width: 104px" />
+                        </ColGroup>
+
+
+					    <RowTemplate>
+                            <MudTd DataLabel="">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small"/>
+                            </MudTd>
+						    <MudTd DataLabel="Name">@context.User.FirstName</MudTd>
+						    <MudTd DataLabel="Surname">@context.User.LastName</MudTd>
+                            @{
+                                var parentMatch = ParentUserFolderPermissions.FirstOrDefault(p => p.User.Id == context.User.Id);
+
+                                <MudTd DataLabel="Role">
+                                    <FolderPermissionPicker @bind-Value="context.Permission" Inherited="parentMatch?.Permission.Type" />
+                                </MudTd>
+
+                                <MudTd Style="text-align: left">
+
+                                    <MudTooltip Text="Restore to default - permission will be the same as parent folder">
+                                        <MudIconButton Class="ms-1" Disabled="@(parentMatch is null || context.Permission.Inherited)" OnClick="@(async () => RestoreInherited(context, parentMatch))" Icon="@Icons.Material.Filled.Restore" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" />
+							        </MudTooltip>
+
+                                    <MudTooltip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
+                                        <MudIconButton Class="ms-1"  Disabled="@(parentMatch is not null)" OnClick="@(async () => RemoveUserPermission(context))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" />
+                                    </MudTooltip>
+								
+                                </MudTd>
+                            }
+
+					    </RowTemplate>
+				    </MudTable>
+                }
             </MudPaper>
 
         </MudStack>
@@ -71,6 +98,8 @@ else
 
     [Parameter]
     public EventCallback<HashSet<UserFolderPermission>> UserFolderPermissionsChanged { get; set; }
+
+    UserFolderPermissionIdEqualityComparer comparer = new();
 
     bool Loading => Users is null;
 

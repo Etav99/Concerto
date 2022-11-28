@@ -16,12 +16,16 @@ public interface ICourseService
 	public Task<CourseSettings> GetCourseSettings(long courseId);
 	public Task<IEnumerable<User>> GetCourseUsers(long courseId);
 	public Task UpdateCourse(UpdateCourseRequest request);
+	public Task DeleteCourse(long courseId);
+	public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
 }
 public class CourseService : ICourseService
 {
 	private readonly ICourseClient _courseClient;
 	private readonly ISessionClient _sessionClient;
 	private readonly ISnackbar _snackbar;
+
+	public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
 
 	public CourseService(ICourseClient courseClient, ISessionClient sessionClient, ISnackbar snackbar)
 	{
@@ -32,7 +36,12 @@ public class CourseService : ICourseService
 
 	public async Task<Course> GetCourse(long courseId) => await _courseClient.GetCourseAsync(courseId);
 	public async Task<CourseSettings> GetCourseSettings(long courseId) => await _courseClient.GetCourseSettingsAsync(courseId);
-	public async Task<IEnumerable<CourseListItem>> GetUserCoursesList() => await _courseClient.GetCurrentUserCoursesAsync();
+	public async Task<IEnumerable<CourseListItem>> GetUserCoursesList()
+	{
+		var courses = await _courseClient.GetCurrentUserCoursesAsync();
+		UserCoursesFetchEventHandler?.Invoke(this, courses);
+		return courses;
+	}
 
 	public async Task<bool> CreateCourse(CreateCourseRequest request)
 	{
@@ -63,4 +72,6 @@ public class CourseService : ICourseService
 	}
 
     public async Task<IEnumerable<User>> GetCourseUsers(long courseId) => await _courseClient.GetCourseUsersAsync(courseId);
+
+	public async Task DeleteCourse(long courseId) => await _courseClient.DeleteCourseAsync(courseId);
 }
