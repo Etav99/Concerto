@@ -46,13 +46,13 @@ public class UserController : ControllerBase
         return await _userService.GetUser(userId);
 	}
 
-	[HttpGet]
-	public async Task<IEnumerable<Dto.User>> GetCurrentUserContacts()
-	{
+    [HttpGet]
+    public async Task<IEnumerable<Dto.User>> GetUsers()
+    {
         long userId = HttpContext.UserId();
-		return await _userService.GetUserContacts(userId);
-	}
-
+        return await _userService.GetUsers(userId);
+    }
+    
 	[HttpGet]
 	public async Task<IEnumerable<Dto.User>> Search([FromQuery] string searchString)
 	{

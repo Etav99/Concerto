@@ -1,77 +1,87 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
-@inject IContactService ContactService
+@inject IUserService UserService
+@inject ICourseService CourseService
 
-<MudPaper Elevation="0" Outlined="true" Class="pa-4">
-    <MudStack Spacing="4">
+@if(Loading)
+{
+    
+}
+else
+{
+    <MudPaper Elevation="0" Outlined="true" Class="pa-4">
+        <MudStack Spacing="4">
 
-        <MudStack Row="true">
-            <MudText>User specific permissions</MudText>
-            <MudTooltip Text="Those settings will override folder permissions for specified users" Arrow="true">
-                <MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
-            </MudTooltip>
+            <MudStack Row="true">
+                <MudText>User specific permissions</MudText>
+                <MudTooltip Text="Those settings will override folder permissions for specified users" Arrow="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
+                </MudTooltip>
+            </MudStack>
+
+            <MudAutocomplete Margin="Margin.Dense" Dense="true" T="User" Label="Add user" @ref="_addUserAutocomplete"
+                         ValueChanged="@AddUser" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
+                         ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
+                         ToStringFunc="@(u => u == null ? null : $"{u.FullName}")" />
+            <MudPaper Elevation="0">
+                <MudList>
+                    @foreach (var userPermission in UserFolderPermissions)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Person">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudText>@userPermission.User.FullName</MudText>
+                                @{
+                                    var parentMatch = ParentUserFolderPermissions.FirstOrDefault(p => p.User.Id == userPermission.User.Id);
+                                    <FolderPermissionPicker @bind-Value="userPermission.Permission" Inherited="parentMatch?.Permission.Type" />
+
+                                    @if (parentMatch is null)
+                                    {
+                                        <MudTooltip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
+                                            <MudIconButton OnClick="@(async () => RemoveUserPermission(userPermission))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                    @if (parentMatch is not null && !userPermission.Permission.Inherited)
+                                    {
+                                        <MudTooltip Text="Restore - permission will be inherited from parent folder">
+                                            <MudIconButton OnClick="@(async () => RestoreInherited(userPermission, parentMatch))" Icon="@Icons.Material.Filled.Restore" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                }
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudPaper>
+
         </MudStack>
+    </MudPaper>
+}
 
-		<MudAutocomplete T="User" Label="Add user" @ref="_addUserAutocomplete"
-						 ValueChanged="@AddUser" SearchFunc="@SearchContacts" Variant="Variant.Outlined"
-						 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
-						 ToStringFunc="@(u => u == null ? null : $"{u.FullName}")" />
-
-
-       
-        <MudPaper Elevation="0">
-            <MudList>
-                @foreach (var userPermission in UserFolderPermissions)
-                {
-                    <MudListItem Icon="@Icons.Material.Filled.Person">
-                        <MudStack Row="true" AlignItems="AlignItems.Center">
-                            <MudText>@userPermission.User.FullName</MudText>
-                            @{
-                                var parentMatch = ParentUserFolderPermissions.FirstOrDefault(p => p.User.Id == userPermission.User.Id);
-                                <FolderPermissionPicker @bind-Value="userPermission.Permission" Inherited="parentMatch?.Permission.Type" />
-
-                                @if(parentMatch is null)
-                                {
-                                    <MudTooltip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
-                                        <MudIconButton OnClick="@(async () => RemoveUserPermission(userPermission))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
-                                    </MudTooltip>
-                                }
-                                @if (parentMatch is not null && !userPermission.Permission.Inherited)
-                                {
-                                    <MudTooltip Text="Restore - permission will be inherited from parent folder">
-                                        <MudIconButton OnClick="@(async () => RestoreInherited(userPermission, parentMatch))" Icon="@Icons.Material.Filled.Restore" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" />
-                                    </MudTooltip>
-                                }
-							}
-                        </MudStack>
-                    </MudListItem>
-                }
-            </MudList>
-        </MudPaper>
-
-    </MudStack>
-</MudPaper>
 
 
 @code {
     [Parameter]
-    public ISet<UserFolderPermission> UserFolderPermissions { get; set; } = null!;
+    public HashSet<User> Users { get; set; } = null!;
 
     [Parameter]
-    public IEnumerable<UserFolderPermission> ParentUserFolderPermissions { get; set; } = null!;
+    public HashSet<UserFolderPermission> UserFolderPermissions { get; set; } = null!;
 
     [Parameter]
-    public EventCallback<ISet<UserFolderPermission>> UserFolderPermissionsChanged { get; set; }
+    public HashSet<UserFolderPermission> ParentUserFolderPermissions { get; set; } = null!;
 
+    [Parameter]
+    public EventCallback<HashSet<UserFolderPermission>> UserFolderPermissionsChanged { get; set; }
+
+    bool Loading => Users is null;
 
     private MudAutocomplete<User>? _addUserAutocomplete;
 
     private async Task<IEnumerable<User>> SearchContacts(string searchString)
     {
-        await ContactService.LoadContactsAsync();
-        if (string.IsNullOrWhiteSpace(searchString))
-            return ContactService.Contacts.Where(c => !UserFolderPermissions.Select(ufp => ufp.User).Contains(c));
-        return ContactService.Contacts.Where(c => (c.FullName.Contains(searchString) || c.Username.Contains(searchString)) && !UserFolderPermissions.Select(ufp => ufp.User).Contains(c));
+        if (Users is null) return Enumerable.Empty<User>();
+        var notSelectedUsers = Users.Where(u => !UserFolderPermissions.Select(ufp => ufp.User).Contains(u));
+        if (string.IsNullOrWhiteSpace(searchString)) return notSelectedUsers;
+        return notSelectedUsers.Where(u => u.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
     }
 
 

@@ -36,6 +36,7 @@ public record FolderSettings(
 	long Id,
 	string Name,
 	long OwnerId,
+	long CourseId,
 	FolderType Type,
 	FolderPermission CoursePermission,
 	FolderPermission? ParentCoursePermission,
@@ -77,7 +78,7 @@ public record UpdateFolderRequest : EntityModel
 {
 	public string Name { get; set; } = null!;
 	public FolderPermission CoursePermission { get; set; } = null!;
-    public virtual ISet<UserFolderPermission> UserPermissions { get; set; } = null!;
+    public virtual HashSet<UserFolderPermission> UserPermissions { get; set; } = null!;
     public bool forceInherit { get; set; }
 
 	public UpdateFolderRequest(long Id) : base(Id) { }

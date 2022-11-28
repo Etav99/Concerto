@@ -54,8 +54,6 @@ public class UserService
 
 			// Add all users to contacts
 			var allUsers = await _context.Users.ToListAsync();
-            List<Contact> contacts = allUsers.Where(u => u.Id != user.Id).Select(u => new Contact { User1Id = user.Id, User2Id = u.Id }).ToList();
-
 			// Create conversations with all users
 			List<Conversation> conversations = new();
             foreach (var u in allUsers)
@@ -72,8 +70,6 @@ public class UserService
 					conversations.Add(conversation);
                 }
             }
-
-            await _context.Contacts.AddRangeAsync(contacts);
             await _context.Conversations.AddRangeAsync(conversations);
             await _context.SaveChangesAsync();
             return true;
@@ -81,17 +77,13 @@ public class UserService
 		return false;
     }
 
-	public async Task<IEnumerable<Dto.User>> GetUserContacts(long userId)
+	public async Task<IEnumerable<Dto.User>> GetUsers(long userId)
 	{
-		IEnumerable<Dto.User>? contacts = await _context.Contacts
-			.Where(c => c.User1Id == userId || c.User2Id == userId)
-			.Include(c => c.User1)
-			.Include(c => c.User2)
-			.Select(c => c.User1Id == userId ? c.User2 : c.User1)
-			.Select(c => c.ToViewModel())
+		var users = await _context.Users
+			.Where(u => u.Id != userId)
+			.Select(u => u.ToViewModel())
 			.ToListAsync();
-		contacts ??= Enumerable.Empty<Dto.User>();
-		return contacts;
+		return users;
 	}
 
 	public async Task<IEnumerable<Dto.User>> SearchWithoutUser(long userId, string searchString)

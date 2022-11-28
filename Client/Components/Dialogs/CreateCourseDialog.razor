@@ -2,15 +2,16 @@
 @using Concerto.Client.Components.Pickers
 @using Concerto.Shared.Models.Dto;
 @inject IDialogService DialogService
-@inject IContactService ContactService
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="_courseName" T="string" Label="Name"></MudTextField>
-        <CourseMemberPicker @bind-SelectedCourseUsers="_members" />
+        <MudStack Spacing="8">
+            <MudTextField @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
+            <CourseMemberPicker @bind-SelectedUsers="_members" />
+        </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -22,7 +23,7 @@
 
     private string? _courseName;
 
-    private HashSet<CourseUser> _members = new(new CourseUserIdEqualityComparer());
+    private HashSet<User> _members = new(new UserIdEqualityComparer());
 
     private async Task Submit()
     {
@@ -34,12 +35,12 @@
             Snackbar.Add("Members cannot be empty", Severity.Error);
             return;
         }
-		
+
         // Move to course manager
-		var request = new Dto.CreateCourseRequest {
-			Name = _courseName,
-            Members = _members
-		};
+        var request = new Dto.CreateCourseRequest {
+            Name = _courseName,
+            Members = _members.Select(m => new CourseUser(m.Id, CourseUserRole.Member)),
+        };
 		
         if (await CourseService.CreateCourse(request))
 		{

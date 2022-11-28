@@ -68,31 +68,6 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contacts",
-                columns: table => new
-                {
-                    User1Id = table.Column<long>(type: "bigint", nullable: false),
-                    User2Id = table.Column<long>(type: "bigint", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Contacts", x => new { x.User1Id, x.User2Id });
-                    table.ForeignKey(
-                        name: "FK_Contacts_Users_User1Id",
-                        column: x => x.User1Id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Contacts_Users_User2Id",
-                        column: x => x.User2Id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ConversationUsers",
                 columns: table => new
                 {
@@ -290,11 +265,6 @@ namespace Concerto.Server.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contacts_User2Id",
-                table: "Contacts",
-                column: "User2Id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ConversationUsers_UserId",
                 table: "ConversationUsers",
                 column: "UserId");
@@ -379,9 +349,6 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "ChatMessages");
-
-            migrationBuilder.DropTable(
-                name: "Contacts");
 
             migrationBuilder.DropTable(
                 name: "ConversationUsers");

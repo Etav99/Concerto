@@ -19,7 +19,12 @@ public enum CourseUserRole
 
 public static partial class ViewModelConversions
 {
-	public static CourseUserRole ToEntity(this Dto.CourseUserRole role)
+    public static Dto.CourseUser ToViewModel(this CourseUser role)
+    {
+        return new Dto.CourseUser(role.UserId, role.Role.ToViewModel());  
+    }
+
+    public static CourseUserRole ToEntity(this Dto.CourseUserRole role)
 	{
             switch (role)
             {
@@ -32,5 +37,19 @@ public static partial class ViewModelConversions
                 default:
                     throw new ArgumentOutOfRangeException(nameof(role), role, null);
             }
+    }
+    public static Dto.CourseUserRole ToViewModel(this CourseUserRole role)
+    {
+        switch (role)
+        {
+            case CourseUserRole.Admin:
+                return Dto.CourseUserRole.Admin;
+            case CourseUserRole.Supervisor:
+                return Dto.CourseUserRole.Supervisor;
+            case CourseUserRole.Member:
+                return Dto.CourseUserRole.Member;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(role), role, null);
+        }
     }
 }

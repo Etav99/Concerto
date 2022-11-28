@@ -34,21 +34,6 @@ public enum FolderType
 
 public static partial class ViewModelConversions
 {
-	public static Dto.FolderSettings ToFolderSettings(this Folder folder)
-	{
-		return new Dto.FolderSettings
-		(
-			Id: folder.Id,
-			Name: folder.Name,
-			OwnerId: folder.OwnerId,
-			CoursePermission: folder.CoursePermission.ToViewModel(),
-			ParentCoursePermission: (folder.Parent?.IsCourseRoot ?? true) ? null : folder.Parent?.CoursePermission.ToViewModel(),
-            ParentUserPermissions: folder.Parent?.UserPermissions.Select(up => up.ToViewModel()) ?? Enumerable.Empty<Dto.UserFolderPermission>(),
-            UserPermissions: folder.UserPermissions.Select(fp => fp.ToViewModel()).ToList(),
-			Type: folder.Type.ToViewModel()
-		);
-	}
-
     public static Dto.FolderItem ToFolderItem(this Folder folder, bool canWrite, bool canEdit, bool canDelete)
     {
 		return new Dto.FolderItem(

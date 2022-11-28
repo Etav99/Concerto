@@ -51,7 +51,7 @@ public class SessionController : ControllerBase
 	public async Task<ActionResult<IEnumerable<Dto.SessionListItem>>> GetCourseSessions(long courseId)
 	{
         long userId = HttpContext.UserId();
-        if (!await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
+        if (!User.IsInRole("admin") && !await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
         return Ok(await _sessionService.GetCourseSessions(courseId));
 	}
 

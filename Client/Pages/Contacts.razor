@@ -5,6 +5,7 @@
 
 @inject HttpClient Http
 @inject IChatService ChatService
+@inject IUserService UserService
 
 <PageTitle>Contacts</PageTitle>
 
@@ -16,70 +17,39 @@
 }
 else
 {
-	<MudTabs Elevation="4" Rounded="true" ApplyEffectsToContainer="true" PanelClass="flex-grow-1" Style="height: 100%">
-		<MudTabPanel Text="Your contacts" Class="d-flex" Style="height: 100%">
-			<MudTable Items="contacts" SortLabel="Sort By" Filter="new Func<Dto.User, bool>(UserFilter)"
-				Class="flex-grow-1"  Style="height: 100%;" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
-				<ToolBarContent>
-					<MudText Typo="Typo.h6">Contacts</MudText>
-					<MudSpacer />
-					<MudTextField @bind-Value="contactSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-				</ToolBarContent>
-				<HeaderContent>
-					<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
-				</HeaderContent>
-				<RowTemplate>
-					<MudTd DataLabel="Username">@context.Username</MudTd>
-					<MudTd DataLabel="First name">@context.FirstName</MudTd>
-					<MudTd DataLabel="Last name">@context.LastName</MudTd>
-				</RowTemplate>
-				<PagerContent>
-					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-				</PagerContent>
-			</MudTable>
-		</MudTabPanel>
-
-		<MudTabPanel Text="Search contacts">
-			<MudTable Items="searchResult" Hover="true" SortLabel="Sort By" Elevation="0" Class="pa-4">
-				<ToolBarContent>
-					<MudText Typo="Typo.h6">Search for users</MudText>
-					<MudSpacer />
-					<MudTextField ValueChanged="@((string s) => Search(s))" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-				</ToolBarContent>
-				<HeaderContent>
-					<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
-				</HeaderContent>
-				<RowTemplate>
-					<MudTd DataLabel="Username">@context.Username</MudTd>
-					<MudTd DataLabel="First name">@context.FirstName</MudTd>
-					<MudTd DataLabel="Last name">@context.LastName</MudTd>
-				</RowTemplate>
-				<PagerContent>
-					<MudTablePager PageSizeOptions="new int[]{50, 100}" />
-				</PagerContent>
-			</MudTable>
-		</MudTabPanel>
-
-	</MudTabs>
+	<MudTable Items="contacts" SortLabel="Sort By" Filter="new Func<Dto.User, bool>(UserFilter)"
+		Class="flex-grow-1"  Style="height: 100%;" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true">
+		<ToolBarContent>
+			<MudText Typo="Typo.h6">Contacts</MudText>
+			<MudSpacer />
+			<MudTextField @bind-Value="contactSearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+		</ToolBarContent>
+		<HeaderContent>
+			<MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Dto.User, object>(x=>x.Username)">Username</MudTableSortLabel></MudTh>
+			<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.FirstName)">First name</MudTableSortLabel></MudTh>
+			<MudTh><MudTableSortLabel SortBy="new Func<Dto.User, object>(x=>x.LastName)">Last name</MudTableSortLabel></MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Username">@context.Username</MudTd>
+			<MudTd DataLabel="First name">@context.FirstName</MudTd>
+			<MudTd DataLabel="Last name">@context.LastName</MudTd>
+		</RowTemplate>
+		<PagerContent>
+			<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+		</PagerContent>
+	</MudTable>
 }
 
 @code
 {
 	private List<Dto.User> contacts = new List<Dto.User>();
-	private List<Dto.User> searchResult = new List<Dto.User>();
 	private bool loading = true;
 	private string contactSearchString = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
 		loading = true;
-		var contactsResponse = await Http.GetFromJsonAsync<Dto.User[]>("User/GetCurrentUserContacts");
-		contacts = contactsResponse == null ? new List<Dto.User>()
-											: contactsResponse.ToList();
+		contacts = (await UserService.GetUsers()).ToList();
 		loading = false;
 	}
 
@@ -93,15 +63,4 @@ else
 			return true;
 		return false;
 	}
-
-	private async Task Search(string userSearchString)
-	{
-		if (string.IsNullOrWhiteSpace(userSearchString))
-			return;
-		var searchResultResponse = await Http.GetFromJsonAsync<Dto.User[]>($"User/Search?searchString={userSearchString}");
-		searchResult = searchResultResponse == null ? new List<Dto.User>()
-													: searchResultResponse.ToList();
-		StateHasChanged();
-	}
-
 }

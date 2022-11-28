@@ -128,6 +128,10 @@ app.MapFallbackToFile("index.html");
 await using var scope = app.Services.CreateAsyncScope();
 using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
+    if(db == null)
+    {
+        throw new NullReferenceException("Error while getting database context.");
+    }
     bool success = false;
     while(!success)
     {
@@ -136,7 +140,7 @@ using (var db = scope.ServiceProvider.GetService<AppDataContext>())
             db.Database.Migrate();
             success = true;
         }
-        catch (Npgsql.NpgsqlException e)
+        catch (Npgsql.NpgsqlException)
         {
             logger.LogError("Can't connect to database, retrying in 5 seconds");
             await Task.Delay(5000);

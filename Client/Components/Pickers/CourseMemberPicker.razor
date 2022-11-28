@@ -1,18 +1,14 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
 @using System.Diagnostics.CodeAnalysis;
-@inject IContactService ContactService
+@inject IUserService UserService
 
-<MudTable @ref="table" T="CourseUser" Comparer="comparer" Items="Items" MultiSelection="!_editing" @bind-SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser,bool>(Filter)"
-          RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
-          ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
-          IsEditRowSwitchingBlocked="true" 
-          SortLabel="Sort By" Dense="true" Hover="true" CanCancelEdit="true" Outlined="true" FixedFooter="true" FixedHeader="true" Height="400px">
+<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User,bool>(Filter)"
+		  RowsPerPage="25" Loading="Loading"
+          SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true" Height="400px">
 
     <ToolBarContent>
-        <MudText Typo="Typo.subtitle1">Select members</MudText>
-        <MudSpacer />
-        <MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only selected</MudSwitch>
+        <MudText Typo="Typo.subtitle1">Course members</MudText>
         <MudSpacer />
         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
     </ToolBarContent>
@@ -22,52 +18,24 @@
         <col style="width:32px;" />
         <col style="width:100px;" />
         <col style="width:100px;" />
-        <col style="width:200px;" />
-        <col style="width:100px;" />
     </ColGroup>
 
     <HeaderContent>
-        @if (_editing)
-        {
-            <MudTh></MudTh>
-        }
-        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> SelectedCourseUsers.Contains(x))">Selected</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> Users[x.UserId].FirstName)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<CourseUser, object>(x=> SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> SelectedUsers.Contains(x))">Selected</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> x.FirstName)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel></MudTh>
     </HeaderContent>
 
     <RowTemplate>
-        @if(_editing)
-        {
-            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="@SelectedCourseUsers.Contains(context)" /></MudTd>
-        }
         <MudTd DataLabel="Selected">←</MudTd>
-        <MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
-        <MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-        @if(SelectedCourseUsers.Contains(context)){
-            <MudTd DataLabel="Role">@context.Role.ToDisplayString()</MudTd>
-        }
-        else
-        {
-            <MudTd DataLabel="Role">-</MudTd>
-        }
+        <MudTd DataLabel="Name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Surname">@context.LastName</MudTd>
     </RowTemplate>
-
-    <RowEditingTemplate>
-        <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="true" /></MudTd>
-        <MudTd DataLabel="Selected">←</MudTd>
-        <MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
-        <MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-        <MudTd DataLabel="Role">
-            <CourseRolePicker @bind-Value="context.Role"/>
-         </MudTd>
-    </RowEditingTemplate>
 
     <FooterContent>
         @if (_editing)
         {
-            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="CourseUsers.Count == SelectedCourseUsers.Count" /></MudTd>
+            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count" /></MudTd>
             <MudTd colspan="4">Select All</MudTd>
         }
         else
@@ -86,82 +54,38 @@
 @code
 {
     [Parameter]
-    public HashSet<CourseUser> SelectedCourseUsers { get; set; } = null!;
-
+    public HashSet<User> SelectedUsers { get; set; } = null!;
+	
     [Parameter]
-    public EventCallback<HashSet<CourseUser>> SelectedCourseUsersChanged { get; set; }
+    public EventCallback<HashSet<User>> SelectedUsersChanged { get; set; }
 
-    bool Loading => CourseUsers is null || Users is null;
+    bool Loading => Users is null;
 
-    private HashSet<CourseUser> CourseUsers { get; set; } = new();
-    private Dictionary<long, User> Users { get; set; } = new();
-
+    private HashSet<User> Users { get; set; } = new();
+	
     private CourseUser? _editedRowBackup;
     private string _searchString = "";
-
+	
     bool _editing = false;
 
-    bool _showSelectedOnly = false;
-    HashSet<CourseUser> Items => _showSelectedOnly ? SelectedCourseUsers : CourseUsers;
+    MudTable<User>? table;
 
-    MudTable<CourseUser>? table;
-
-    CourseUserIdEqualityComparer comparer = new();
+    UserIdEqualityComparer comparer = new();
     protected override async Task OnInitializedAsync()
     {
-        await ContactService.LoadContactsAsync();
-        CourseUsers = ContactService.Contacts.Select(u => new CourseUser(u.Id, CourseUserRole.Member)).ToHashSet(comparer);
-        Users = ContactService.Contacts.ToDictionary(u => u.Id);
+        Users = (await UserService.GetUsers()).ToHashSet(comparer);
     }
+	
 
-    private void EditCommited(object commitedCourseUser)
-    {
-        if (!SelectedCourseUsers.Contains((CourseUser)commitedCourseUser))
-        {
-            SelectedCourseUsers.Add((CourseUser)commitedCourseUser);
-        }
-        SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers).AndForget();
-        _editing = false;
-    }
-
-    private void EditCanceled(object editedCourseUser)
-    {
-        ((CourseUser)editedCourseUser).Role = _editedRowBackup!.Role;
-        _editing = false;
-        StateHasChanged();
-    }
-
-    private async Task RowClick(TableRowClickEventArgs<CourseUser> rowClick)
-    {
-        if (_editing) return;
-        CourseUser courseUser = rowClick.Item;
-        if (!SelectedCourseUsers.Contains(courseUser))
-        {
-            SelectedCourseUsers.Add(courseUser);
-        }
-        else
-        {
-            SelectedCourseUsers.Remove(courseUser);
-        }
-        await SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers);
-    }
-
-    private void OnRowEdit(object editedCourseUser)
-    {
-        _editedRowBackup = (CourseUser)editedCourseUser with { };
-        _editing = true;
-        StateHasChanged();
-    }
-
-    private bool Filter(CourseUser user)
+    private bool Filter(User user)
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
-        if (Users[user.UserId].FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (user.FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (Users[user.UserId].LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (user.LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (Users[user.UserId].FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (user.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         return false;
     }

@@ -29,7 +29,6 @@ public class ChatService : IChatService
 	private readonly NavigationManager _navigationManager;
 	private readonly IAccessTokenProvider _accessTokenProvider;
 	private readonly IChatClient _chatClient;
-	private readonly IContactService _contactsManager;
 	private readonly ISnackbar _snackbar;
 	
 	public AsyncMessageEventHandler? OnMessageReceivedEventHandler { get; set; }
@@ -39,11 +38,10 @@ public class ChatService : IChatService
 	public bool Connected => ChatHubConnection?.State == HubConnectionState.Connected;
 	public bool Disconnected => ChatHubConnection?.State == HubConnectionState.Disconnected;
 
-	public ChatService(NavigationManager navigationManager, IChatClient chatClient, IContactService contactsManager, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
+	public ChatService(NavigationManager navigationManager, IChatClient chatClient, IAccessTokenProvider accessTokenProvider, ISnackbar snackbar)
 	{
 		_navigationManager = navigationManager;
 		_chatClient = chatClient;
-		_contactsManager = contactsManager;
 		_accessTokenProvider = accessTokenProvider;
 		_snackbar = snackbar;
 
@@ -71,9 +69,9 @@ public class ChatService : IChatService
 		if (Disconnected) await ChatHubConnection.StartAsync();
 	}
 
-	public Task<IEnumerable<ConversationListItem>> GetPrivateConversationsAsync()
+	public async Task<IEnumerable<ConversationListItem>> GetPrivateConversationsAsync()
 	{
-		return _chatClient.GetCurrentUserPrivateConversationsAsync();
+		return await _chatClient.GetCurrentUserPrivateConversationsAsync();
 	}
 
 

@@ -123,6 +123,7 @@ public class StorageService
             Name: folder.Name,
             CoursePermission: folder.CoursePermission.ToViewModel(),
             OwnerId: folder.OwnerId,
+            CourseId: folder.CourseId,
             ParentCoursePermission: folder.Parent?.CoursePermission.ToViewModel(),
             Type: folder.Type.ToViewModel(),
             UserPermissions: folder.UserPermissions.Select(fp => fp.ToViewModel()),

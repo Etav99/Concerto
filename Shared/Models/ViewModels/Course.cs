@@ -7,7 +7,17 @@ public record Course(
     string Name,
     string Description,
     long ConversationId,
-    long RootFolderId
+    long RootFolderId,
+    bool CanManage
+) : EntityModel(Id);
+
+public record CourseSettings(
+    long Id,
+    string Name,
+    string Description,
+    IEnumerable<CourseUser> Members,
+    CourseUserRole CurrentUserRole,
+    bool CanManage
 ) : EntityModel(Id);
 
 public record CourseListItem(long Id, string Name, string Description, DateTime CreatedDate) : EntityModel(Id);
@@ -66,5 +76,5 @@ public record UpdateCourseRequest
 	public long CourseId { get; set; }
 	public string Name { get; set; } = null!;
 	public string Description { get; set; } = string.Empty;
-	public IEnumerable<Dto.CourseUser> Members { get; set; } = null!;
+	public HashSet<Dto.CourseUser> Members { get; set; } = null!;
 }

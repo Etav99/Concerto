@@ -10,7 +10,6 @@
 @inject SignOutSessionStateManager SignOutManager
 @inject IChatService ChatService
 @inject IBreadcrumbsService BreadcrumbsService
-@inject IContactService ContactsManager
 @inject IUserService UserService
 @inject ISnackbar Snackbar
 @inject ISyncLocalStorageService LocalStorage
@@ -18,6 +17,7 @@
 <MudThemeProvider @bind-IsDarkMode="@DarkMode" />
 <MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" />
 <MudSnackbarProvider />
+<CustomStyleProvider DarkMode="@DarkMode" />
 
 <MudLayout Style="height:100vh;">
 	<MudAppBar Elevation="0" Dense="true">
@@ -48,7 +48,7 @@
 	</MudDrawer>
 	<MudMainContent Class="d-flex flex-column pb-8" Style="height: 100%">
 		<NavigationToolbar />
-		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.ExtraLarge : MaxWidth.Large)" Style="overflow:auto"Class="flex-grow-1">
+		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.Large : MaxWidth.Large)" Style="overflow:auto"Class="flex-grow-1">
 			@Body
 		</MudContainer>
 	</MudMainContent>

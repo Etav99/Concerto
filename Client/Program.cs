@@ -46,7 +46,6 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 	.CreateClient("WebAPI"));
 
 builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();

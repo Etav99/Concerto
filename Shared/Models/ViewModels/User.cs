@@ -1,4 +1,6 @@
-﻿namespace Concerto.Shared.Models.Dto;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Concerto.Shared.Models.Dto;
 
 public record User
 {
@@ -14,4 +16,17 @@ public record User
 			return $"{FirstName} {LastName}";
 		}
 	}
+}
+
+public class UserIdEqualityComparer : IEqualityComparer<User>
+{
+    public bool Equals(User? x, User? y)
+    {
+        return x?.Id == y?.Id;
+    }
+
+    public int GetHashCode([DisallowNull] User obj)
+    {
+        return obj.Id.GetHashCode();
+    }
 }

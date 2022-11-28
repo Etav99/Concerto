@@ -12,6 +12,5 @@ public static class IWebHostEnvironmentExtensions
 	public static bool IsRemote(this IWebHostEnvironment environment)
 	{
         return AppSettings.Environment.Remote.Equals("true");
-        return EnvironmentHelper.GetVariable("ASPNETCORE_REMOTE").Equals("true");
 	}
 }

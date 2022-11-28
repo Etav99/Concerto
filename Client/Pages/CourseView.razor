@@ -21,17 +21,29 @@
 
 @if (SelectedCourse is not null)
 {
-	<MudStack Row="true" Class="" Justify="Justify.Center" Style="height: calc(100%);">
+	<MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
+		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
 
-		<FileManager Class="flex-grow-1" Height="100%" Style="height: 100%; min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
+		<MudTabPanel Text="Content">
+			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100%); min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
+		</MudTabPanel>
 
-		<MudStack Style="height: 100%;" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch">
-			<CourseSessionList Style="width: 100%; height: 20%; flex: 1 1 auto;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected" />
-			<MudPaper Class="" Style="flex: 1 1 auto; height: 20%" Outlined="true">
-				<ChatBox ConversationName="Course conversation" SelectedConversationId="SelectedCourse.ConversationId" />
-			</MudPaper>
-		</MudStack>
-	</MudStack>
+		<MudTabPanel Text="Sessions">
+			<CourseSessionList Style="width: 100%; height: 100%; flex: 1 1 auto;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected" />
+		</MudTabPanel>
+
+		<MudTabPanel Text="Forum">
+			<ChatBox ConversationName="Course conversation" SelectedConversationId="SelectedCourse.ConversationId" />
+		</MudTabPanel>
+
+		@if (SelectedCourse.CanManage)
+		{
+			<MudTabPanel Text="Settings">
+				<CourseSettingsView CourseId="SelectedCourseId" />
+			</MudTabPanel>
+		}
+
+	</MudTabs>
 }
 
 

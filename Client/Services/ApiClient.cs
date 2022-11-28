@@ -243,12 +243,12 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ConversationListItem>> GetCurrentUserPrivateConversationsAsync();
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ConversationListItem>> GetCurrentUserPrivateConversationsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ConversationListItem>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ConversationListItem>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
@@ -261,12 +261,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -299,7 +299,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ConversationListItem>> GetCurrentUserPrivateConversationsAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ConversationListItem>> GetCurrentUserPrivateConversationsAsync()
         {
             return GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken.None);
         }
@@ -307,7 +307,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ConversationListItem>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ConversationListItem>> GetCurrentUserPrivateConversationsAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Chat/GetCurrentUserPrivateConversations");
@@ -344,7 +344,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<ConversationListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ConversationListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ChatException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -452,7 +452,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId)
         {
             return GetCurrentUserLastMessagesAsync(conversationId, beforeMessageId, System.Threading.CancellationToken.None);
         }
@@ -460,7 +460,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ChatException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<ChatMessage>> GetCurrentUserLastMessagesAsync(long? conversationId, long? beforeMessageId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Chat/GetCurrentUserLastMessages?");
@@ -506,7 +506,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<ChatMessage>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<ChatMessage>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ChatException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -641,12 +641,12 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<CourseListItem>> GetCurrentUserCoursesAsync();
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CourseListItem>> GetCurrentUserCoursesAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<CourseListItem>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CourseListItem>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
@@ -659,12 +659,39 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CourseSettings> GetCourseSettingsAsync(long? courseId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CourseSettings> GetCourseSettingsAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCourseUsersAsync(long? courseId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCourseUsersAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
         System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateCourseAsync(UpdateCourseRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateCourseAsync(UpdateCourseRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
@@ -706,7 +733,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<CourseListItem>> GetCurrentUserCoursesAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CourseListItem>> GetCurrentUserCoursesAsync()
         {
             return GetCurrentUserCoursesAsync(System.Threading.CancellationToken.None);
         }
@@ -714,7 +741,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<CourseListItem>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CourseListItem>> GetCurrentUserCoursesAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Course/GetCurrentUserCourses");
@@ -751,7 +778,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<CourseListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CourseListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new CourseException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -859,6 +886,164 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<CourseSettings> GetCourseSettingsAsync(long? courseId)
+        {
+            return GetCourseSettingsAsync(courseId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<CourseSettings> GetCourseSettingsAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Course/GetCourseSettings?");
+            if (courseId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("courseId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CourseSettings>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new CourseException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCourseUsersAsync(long? courseId)
+        {
+            return GetCourseUsersAsync(courseId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetCourseUsersAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Course/GetCourseUsers?");
+            if (courseId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("courseId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new CourseException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task CreateCourseForCurrentUserAsync(CreateCourseRequest body)
         {
             return CreateCourseForCurrentUserAsync(body, System.Threading.CancellationToken.None);
@@ -871,6 +1056,78 @@ namespace Concerto.Client.Services
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Course/CreateCourseForCurrentUser");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new CourseException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task UpdateCourseAsync(UpdateCourseRequest body)
+        {
+            return UpdateCourseAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="CourseException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task UpdateCourseAsync(UpdateCourseRequest body, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Course/UpdateCourse");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1128,12 +1385,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<SessionListItem>> GetCourseSessionsAsync(long? courseId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SessionListItem>> GetCourseSessionsAsync(long? courseId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<SessionListItem>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SessionListItem>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -1317,7 +1574,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<SessionListItem>> GetCourseSessionsAsync(long? courseId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SessionListItem>> GetCourseSessionsAsync(long? courseId)
         {
             return GetCourseSessionsAsync(courseId, System.Threading.CancellationToken.None);
         }
@@ -1325,7 +1582,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<SessionListItem>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SessionListItem>> GetCourseSessionsAsync(long? courseId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Session/GetCourseSessions?");
@@ -1367,7 +1624,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<SessionListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<SessionListItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new SessionException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1547,12 +1804,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -1978,7 +2235,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files)
         {
             return UploadFilesAsync(folderId, files, System.Threading.CancellationToken.None);
         }
@@ -1986,7 +2243,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/UploadFiles?");
@@ -2046,7 +2303,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<FileUploadResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<FileUploadResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2363,21 +2620,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> GetCurrentUserContactsAsync();
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetUsersAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> GetCurrentUserContactsAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetUsersAsync(System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> SearchAsync(string searchString);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -2712,18 +2969,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> GetCurrentUserContactsAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetUsersAsync()
         {
-            return GetCurrentUserContactsAsync(System.Threading.CancellationToken.None);
+            return GetUsersAsync(System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> GetCurrentUserContactsAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> GetUsersAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("User/GetCurrentUserContacts");
+            urlBuilder_.Append("User/GetUsers");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2757,7 +3014,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2786,7 +3043,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> SearchAsync(string searchString)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString)
         {
             return SearchAsync(searchString, System.Threading.CancellationToken.None);
         }
@@ -2794,7 +3051,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="UserException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<User>> SearchAsync(string searchString, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("User/Search?");
@@ -2836,7 +3093,7 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.IEnumerable<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<User>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new UserException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);

@@ -36,27 +36,45 @@ public class CourseController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Dto.Course>> GetCourse(long courseId)
 	{
-        
         long userId = HttpContext.UserId();
-
-        Dto.Course? course;
-        if (User.IsInRole("admin"))
+		bool isAdmin = User.IsInRole("admin");
+		if (isAdmin || await _courseService.IsUserCourseMember(userId, courseId))
         {
-            course = await _courseService.GetCourse(courseId);
-            if (course == null) return NotFound();
-            return Ok(course);
-        }
-        if (await _courseService.IsUserCourseMember(userId, courseId))
-        {
-            course = await _courseService.GetCourse(courseId);
+            var course = await _courseService.GetCourse(courseId, userId, isAdmin);
             if (course == null) return NotFound();
             return Ok(course);
         }
         return Forbid();
     }
+    
+    [HttpGet]
+    public async Task<ActionResult<Dto.CourseSettings>> GetCourseSettings(long courseId)
+    {
+        long userId = HttpContext.UserId();
+        bool isAdmin = User.IsInRole("admin");
+        if (isAdmin || await _courseService.CanManageCourse(courseId, userId))
+        {
+            var courseSettings = await _courseService.GetCourseSettings(courseId, userId, isAdmin);
+            if (courseSettings == null) return NotFound();
+            return Ok(courseSettings);
+        }
+        return Forbid();
+    }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Dto.User>>> GetCourseUsers(long courseId)
+    {
+        long userId = HttpContext.UserId();
+        bool isAdmin = User.IsInRole("admin");
+        if (isAdmin || await _courseService.IsUserCourseMember(userId, courseId))
+        {
+            var courseUsers = await _courseService.GetCourseUsers(courseId, userId);
+            return Ok(courseUsers);
+        }
+        return Forbid();
+    }
 
-	[Authorize(Roles = "teacher")]
+    [Authorize(Roles = "teacher")]
     [HttpPost]
 	public async Task<ActionResult> CreateCourseForCurrentUser([FromBody] Dto.CreateCourseRequest request)
 	{
@@ -73,8 +91,7 @@ public class CourseController : ControllerBase
 	public async Task<ActionResult> UpdateCourse([FromBody] Dto.UpdateCourseRequest request)
 	{
 		long userId = HttpContext.UserId();
-
-		if (!User.IsInRole("admin") && !await _courseService.CanUpdateCourse(request.CourseId, userId)) return Forbid();
+		if (!User.IsInRole("admin") && !await _courseService.CanManageCourse(request.CourseId, userId)) return Forbid();
 
 		if (await _courseService.UpdateCourse(request, userId)) return Ok();
 		return BadRequest();

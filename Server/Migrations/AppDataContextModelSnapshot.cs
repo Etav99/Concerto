@@ -52,24 +52,6 @@ namespace Concerto.Server.Migrations
                     b.ToTable("ChatMessages");
                 });
 
-            modelBuilder.Entity("Concerto.Server.Data.Models.Contact", b =>
-                {
-                    b.Property<long>("User1Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("User2Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("User1Id", "User2Id");
-
-                    b.HasIndex("User2Id");
-
-                    b.ToTable("Contacts");
-                });
-
             modelBuilder.Entity("Concerto.Server.Data.Models.Conversation", b =>
                 {
                     b.Property<long>("Id")
@@ -320,25 +302,6 @@ namespace Concerto.Server.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("Concerto.Server.Data.Models.Contact", b =>
-                {
-                    b.HasOne("Concerto.Server.Data.Models.User", "User1")
-                        .WithMany("InvitedContacts")
-                        .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Concerto.Server.Data.Models.User", "User2")
-                        .WithMany("InvitingContacts")
-                        .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
-                });
-
             modelBuilder.Entity("Concerto.Server.Data.Models.ConversationUser", b =>
                 {
                     b.HasOne("Concerto.Server.Data.Models.Conversation", "Conversation")
@@ -544,10 +507,6 @@ namespace Concerto.Server.Migrations
                     b.Navigation("ConversationsUser");
 
                     b.Navigation("CoursesUser");
-
-                    b.Navigation("InvitedContacts");
-
-                    b.Navigation("InvitingContacts");
                 });
 #pragma warning restore 612, 618
         }

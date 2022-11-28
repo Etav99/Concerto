@@ -77,15 +77,46 @@ public class CourseService
 		return courseUser != null;
 	}
 	
-	public async Task<Dto.Course?> GetCourse(long courseId)
+	public async Task<Dto.Course?> GetCourse(long courseId, long userId, bool isAdmin = false)
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		if (course == null)
 			return null;
-
-		return course.ToViewModel();
+	
+		return course.ToViewModel(isAdmin || await CanManageCourse(courseId, userId));
 	}
-    
+
+    public async Task<Dto.CourseSettings?> GetCourseSettings(long courseId, long userId, bool isAdmin = false)
+    {
+        var course = await _context.Courses.FindAsync(courseId);
+        if (course == null)
+            return null;
+
+		CourseUserRole? courseRole;
+		if (isAdmin)
+		{
+			courseRole = CourseUserRole.Admin;
+		}
+		else
+		{
+			courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
+			if (courseRole == null)
+				return null;
+		}
+		_context.Entry(course).Collection(c => c.CourseUsers).Load();
+        return course.ToSettingsViewModel(userId, courseRole.Value, courseRole == CourseUserRole.Admin);
+    }
+
+	internal async Task<IEnumerable<Dto.User>> GetCourseUsers(long courseId, long userId)
+	{
+		return await _context.CourseUsers
+			.Where(cu => cu.CourseId == courseId)
+			.Where(cu => cu.UserId != userId)
+			.Include(cu => cu.User)
+			.Select(cu => cu.User.ToViewModel())
+			.ToListAsync();
+	}
+
 	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(long userId)
 	{
 		return await _context.Courses
@@ -103,7 +134,7 @@ public class CourseService
     }
 
 	// Update
-	internal async Task<bool> CanUpdateCourse(long courseId, long userId)
+	internal async Task<bool> CanManageCourse(long courseId, long userId)
 	{
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole == CourseUserRole.Admin;
@@ -113,6 +144,8 @@ public class CourseService
 		var course = _context.Courses.Find(request.CourseId);
 		if (course == null) return false;
 
+		var updatingUser = _context.CourseUsers.Find(request.CourseId, userId);
+
 		_context.Entry(course).Collection(c => c.CourseUsers).Load();
 		
 		List<CourseUser> newCourseUsers = request.Members.Select(member => new CourseUser
@@ -121,6 +154,11 @@ public class CourseService
 			UserId = member.UserId,
 			Role = member.Role.ToEntity()
 		}).ToList();
+
+		if (updatingUser is not null)
+		{
+			newCourseUsers.Add(updatingUser);
+		}
 
 		var deletedUsersIds = course.CourseUsers.Select(cu => cu.UserId).Except(newCourseUsers.Select(ncu => ncu.UserId)).ToHashSet();
 		var deletedUserFolderPermissionsQuery = _context.UserFolderPermissions.Where(ufp => ufp.Folder.CourseId == course.Id && deletedUsersIds.Contains(ufp.UserId));
@@ -150,4 +188,5 @@ public class CourseService
         await _context.SaveChangesAsync();
         return true;
     }
+
 }

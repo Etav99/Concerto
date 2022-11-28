@@ -6,6 +6,7 @@
 @using Concerto.Client.Services
 @using Concerto.Shared.Extensions
 
+@using Concerto.Shared.Models.Dto;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -30,7 +31,8 @@
 else
 {
 	<MudTable Items="CoursesList" Hover="true"  Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)"
-		    Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true">
+		    Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
+			RowsPerPage="25">
 			<ToolBarContent>
 				<MudText Typo="Typo.h6">Your courses</MudText>
 				<MudSpacer />
@@ -38,7 +40,6 @@ else
 				<MudSpacer />
 				@if (CoursesList == null || !CoursesList.Any())
 				{
-					
 					<MudAlert Variant="Variant.Filled" Severity="Severity.Info">You're currently not a member of any course.</MudAlert>
 					<MudSpacer />
 				}
@@ -47,8 +48,8 @@ else
 				</AuthorizeView>
 			</ToolBarContent>
 			<HeaderContent>
-				<MudTh>Course name</MudTh>
-				<MudTh>Created at</MudTh>
+				<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.Name)">Course name</MudTableSortLabel></MudTh>
+				<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel></MudTh>
 			</HeaderContent>
 			<RowTemplate>
 				<MudTd>
@@ -62,7 +63,7 @@ else
 				</MudTd>
 			</RowTemplate>
 			<PagerContent>
-				<MudTablePager PageSizeOptions="new int[]{50, 100}" />
+				<MudTablePager PageSizeOptions="new int[]{25, 50, 100}" />
 			</PagerContent>
 	</MudTable>
 }
@@ -74,7 +75,7 @@ else
 
 	private bool Loading => CoursesList is null;
 
-	private IEnumerable<Dto.CourseListItem>? CoursesList { get; set; }
+	private IEnumerable<CourseListItem>? CoursesList { get; set; }
 
 	protected override void OnInitialized()
 	{
