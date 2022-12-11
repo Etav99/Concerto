@@ -7,10 +7,17 @@ public record Session(
 	string CourseName,
 	long? CourseRootFolderId,
 	long ConversationId,
+	bool CanManage,
 	Guid MeetingGuid
 ) : EntityModel(Id);
 
 public record SessionListItem(
+	long Id,
+	string Name,
+	DateTime ScheduledDate
+) : EntityModel(Id);
+
+public record SessionSettings(
 	long Id,
 	string Name,
 	DateTime ScheduledDate
@@ -21,4 +28,11 @@ public record CreateSessionRequest
 	public string Name { get; set; }
 	public DateTime ScheduledDateTime { get; set; }
 	public long CourseId { get; set; }
+}
+
+public record UpdateSessionRequest
+{
+	public long SessionId { get; set; }
+	public string Name { get; set; }
+	public DateTime ScheduledDateTime { get; set; }
 }

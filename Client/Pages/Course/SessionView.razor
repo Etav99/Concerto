@@ -1,0 +1,83 @@
+﻿@attribute [Authorize]
+@page "/courses/{CourseId:long}/sessions/{SelectedSessionId:long}"
+
+@using Concerto.Client.Components
+@using Concerto.Client.Components.Input
+@using Concerto.Client.Components.Lists
+@using Concerto.Client.Services
+@using Concerto.Shared.Extensions
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net
+
+@inject NavigationManager NavigationManager
+@inject IBreadcrumbsService BreadcrumbsService;
+@inject ISessionClient SessionClient;
+<PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
+
+
+@if (Loading)
+{
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+}
+else
+{
+	<MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
+		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);"
+		 KeepPanelsAlive="true">
+
+		<MudTabPanel Text="Meeting" >
+			<Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid" />
+		</MudTabPanel>
+
+		<MudTabPanel Text="Course content">
+			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px); min-width: 70%" InitialFolderId="SelectedSession!.CourseRootFolderId.Value" />
+		</MudTabPanel>
+
+		<MudTabPanel Text="Session forum">
+			<ChatBox ConversationName="Session conversation" SelectedConversationId="SelectedSession!.ConversationId" />
+		</MudTabPanel>
+
+		<MudTabPanel Text="Session settings">
+			<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" />
+		</MudTabPanel>
+
+	</MudTabs>
+}
+
+@code {
+	[Parameter]
+	public long SelectedSessionId { get; set; }
+
+	[Parameter]
+	public long CourseId { get; set; }
+
+	private Dto.Session? SelectedSession { get; set; }
+
+	private bool Loading => SelectedSession is null;
+
+	protected override async Task OnInitializedAsync() {
+		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
+		if (SelectedSession == null)
+		{
+			NavigationManager.NavigateTo("courses");
+			return;
+		}
+
+		BreadcrumbsService.Set(
+			Icons.Material.Filled.MeetingRoom,
+			SelectedSession.Name,
+			new BreadcrumbItem("Courses", $"courses"),
+			new BreadcrumbItem(SelectedSession.CourseName, $"courses/{SelectedSession.CourseId}"),
+			new BreadcrumbItem(SelectedSession.Name, null, true)
+		);
+	}
+
+	private void OnSessionDeleted()
+	{
+		NavigationManager.NavigateTo($"courses/{SelectedSession!.CourseId}");
+	}
+
+}

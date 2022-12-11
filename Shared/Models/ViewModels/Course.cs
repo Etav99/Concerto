@@ -29,12 +29,12 @@ public record CourseUser(long UserId, CourseUserRole Role)
 
 public class CourseUserIdEqualityComparer : IEqualityComparer<CourseUser>
 {
-    public bool Equals(CourseUser? x, CourseUser? y)
-    {
-        return x?.UserId == y?.UserId;
-    }
+	public bool Equals(CourseUser? x, CourseUser? y)
+	{
+		return x?.UserId == y?.UserId;
+	}
 
-    public int GetHashCode([DisallowNull] CourseUser obj)
+	public int GetHashCode([DisallowNull] CourseUser obj)
     {
         return obj.UserId.GetHashCode();
     }
@@ -60,10 +60,6 @@ public static class CourseUserRoleExtensions
         };
     }
 }
-
-
-
-
 public record CreateCourseRequest
 {
     public string Name { get; set; } = null!;
@@ -77,4 +73,17 @@ public record UpdateCourseRequest
 	public string Name { get; set; } = null!;
 	public string Description { get; set; } = string.Empty;
 	public HashSet<Dto.CourseUser> Members { get; set; } = null!;
+}
+public record CloneCourseRequest
+{
+    public long CourseId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
+    public bool CopyCourseUsers { get; set; } = true;
+    public bool CopyRoles { get; set; } = true;
+
+    public bool CopyFolders { get; set; } = true;
+    public bool CopyFoldersPermissions { get; set; } = true;
+    public bool CopyFiles { get; set; } = false;
 }

@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Diagnostics.CodeAnalysis;
-
 namespace Concerto.Shared.Models.Dto;
 
 public record FolderContent
 {
 	public FolderPermission CoursePermission { get; init; } = null!;
 	public FolderItem Self { get; init; } = null!;
+	public long CourseId { get; init; }
 	public virtual IEnumerable<FolderItem> SubFolders { get; init; } = Enumerable.Empty<FolderItem>();
 	public virtual IEnumerable<FileItem> Files { get; init; } = Enumerable.Empty<FileItem>();
 }
@@ -14,24 +14,27 @@ public record FolderContent
 
 public record FolderContentItem(
 	long Id,
-	string Name
+	string Name,
+	bool CanEdit,
+	bool CanDelete
 ) : EntityModel(Id);
 
 public record FolderItem(
 	long Id,
-	string Name, 
+	string Name,
 	bool CanWrite, 
 	bool CanEdit,
 	bool CanDelete, 
 	FolderType Type
-) : FolderContentItem(Id, Name);
+) : FolderContentItem(Id, Name, CanEdit, CanDelete);
 
 public record FileItem(
 	long Id,
 	string Name,
+	string Extension,
 	bool CanEdit,
 	bool CanDelete
-) : FolderContentItem(Id, Name);
+) : FolderContentItem(Id, Name, CanEdit, CanDelete);
 
 public record FolderSettings(
 	long Id,
@@ -75,25 +78,67 @@ public enum FolderPermissionType
 
 public enum FolderType
 {
-	CourseRoot,
-	Sheets,
-	Recordings,
-	Other,
+    CourseRoot,
+    Sheets,
+    Recordings,
+    Video,
+    Audio,
+    Documents,
+    Other
+}
+
+public static class FolderTypeExtensions
+{
+	public static string ToDisplayString(this FolderType type)
+	{
+        return type switch
+        {
+            FolderType.CourseRoot => "Course Root",
+            FolderType.Sheets => "Sheets",
+            FolderType.Recordings => "Recordings",
+            FolderType.Video => "Video",
+            FolderType.Audio => "Audio",
+            FolderType.Documents => "Documents",
+            FolderType.Other => "Other",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+    }
 }
 
 public record CreateFolderRequest
 {
+	public long ParentId { get; set; }
 	public string Name { get; set; } = string.Empty;
-    public long ParentId { get; set; }
+	public FolderType Type { get; set; } = FolderType.Other;
     public FolderPermission CoursePermission { get; set; } = null!;
 }
 
 public record UpdateFolderRequest : EntityModel
 {
 	public string Name { get; set; } = null!;
+	public FolderType Type { get; set; }
 	public FolderPermission CoursePermission { get; set; } = null!;
     public virtual HashSet<UserFolderPermission> UserPermissions { get; set; } = null!;
     public bool forceInherit { get; set; }
 
 	public UpdateFolderRequest(long Id) : base(Id) { }
+}
+
+public record MoveFolderItemsRequest
+{
+    public IEnumerable<long> FolderIds { get; set; }
+    public IEnumerable<long> FileIds { get; set; }
+    public long DestinationFolderId { get; set; }
+}
+
+public record CopyFolderItemsRequest
+{
+	public IEnumerable<long> FolderIds { get; set; }
+	public IEnumerable<long> FileIds { get; set; }
+	public long DestinationFolderId { get; set; }
+}
+public record DeleteFolderItemsRequest
+{
+	public IEnumerable<long> FolderIds { get; set; }
+	public IEnumerable<long> FileIds { get; set; }
 }

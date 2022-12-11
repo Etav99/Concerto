@@ -40,41 +40,29 @@ public class UserService
         return user.ToViewModel();
     }
 
-	public async Task<bool> AddUserIfNotExists(ClaimsPrincipal userClaimsPrincipal)
+	public async Task<long> GetUserIdAndUpdate(ClaimsPrincipal userClaimsPrincipal)
 	{
 		User? user = await _context.Users
 			.Where(u => u.SubjectId == userClaimsPrincipal.GetSubjectId())
 			.FirstOrDefaultAsync();
 
-		if (user == null)
+		if(user is not null)
 		{
-			user = new User(userClaimsPrincipal);
-			await _context.Users.AddAsync(user);
-			await _context.SaveChangesAsync();
-
-			// Add all users to contacts
-			var allUsers = await _context.Users.ToListAsync();
-			// Create conversations with all users
-			List<Conversation> conversations = new();
-            foreach (var u in allUsers)
-            {
-                if (u.Id != user.Id)
-                {
-                    var conversation = new Conversation { IsPrivate = true };
-                    var conversationUsers = new List<ConversationUser>
-                    {
-                        new() { Conversation = conversation, User = user },
-                        new() { Conversation = conversation, User = u }
-                    };
-                    conversation.ConversationUsers = conversationUsers;
-					conversations.Add(conversation);
-                }
+            if (user.Username != userClaimsPrincipal.GetUsername() || user.FirstName != userClaimsPrincipal.GetFirstName() || user.LastName != userClaimsPrincipal.GetLastName())
+			{
+				user.Username = userClaimsPrincipal.GetUsername();
+				user.LastName = userClaimsPrincipal.GetLastName();
+				user.FirstName = userClaimsPrincipal.GetFirstName();
+                await _context.SaveChangesAsync();
             }
-            await _context.Conversations.AddRangeAsync(conversations);
+        }
+		else
+		{
+            user = new User(userClaimsPrincipal);
+            await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            return true;
-		}
-		return false;
+        }
+        return user.Id;
     }
 
 	public async Task<IEnumerable<Dto.User>> GetUsers(long userId)

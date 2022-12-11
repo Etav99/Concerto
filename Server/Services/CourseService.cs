@@ -11,14 +11,16 @@ public class CourseService
 	private readonly ILogger<CourseService> _logger;
 
 	private readonly AppDataContext _context;
-	public CourseService(ILogger<CourseService> logger, AppDataContext context)
-	{
-		_logger = logger;
-		_context = context;
-	}
+	private readonly StorageService _storageService;
+	public CourseService(ILogger<CourseService> logger, AppDataContext context, StorageService storageService)
+    {
+        _logger = logger;
+        _context = context;
+        _storageService = storageService;
+    }
 
     // Create
-    public async Task<bool> CreateCourse(Dto.CreateCourseRequest request, long userId)
+    public async Task<long> CreateCourse(Dto.CreateCourseRequest request, long userId)
     {
         var membersRoles = request.Members.ToDictionary(m => m.UserId, m => m.Role.ToEntity());
 		membersRoles.Add(userId, CourseUserRole.Admin);
@@ -28,7 +30,7 @@ public class CourseService
             .ToListAsync();
 
 		if (members.Count != membersRoles.Count)
-			return false;
+			return 0;
 
 		// Create course
 		var course = new Course();
@@ -67,7 +69,7 @@ public class CourseService
 		course.RootFolderId = rootFolder.Id;
 		await _context.SaveChangesAsync();
 
-		return true;
+		return course.Id;
     }
 
 	// Read
@@ -187,6 +189,66 @@ public class CourseService
 		_context.Remove(course);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    internal async Task<long> CloneCourse(Dto.CloneCourseRequest request, long userId)
+    {
+        var course = await _context.Courses.FindAsync(request.CourseId);
+        if (course == null)
+            return 0;
+
+		Dto.CreateCourseRequest createCourseRequest = new Dto.CreateCourseRequest
+		{
+			Name = request.Name,
+			Description = request.Description,
+            Members = Enumerable.Empty<Dto.CourseUser>()
+        };
+
+		long courseId = await CreateCourse(createCourseRequest, userId);
+        if (courseId == 0)
+            return 0;
+
+        var newCourse = await _context.Courses.FindAsync(courseId);
+        if (newCourse == null)
+            return 0;
+
+		await _context.Entry(newCourse).Collection(c => c.CourseUsers).LoadAsync();
+
+
+        if(request.CopyCourseUsers)
+		{
+            var copiedCourseUsers = await _context.CourseUsers
+                .AsNoTracking()
+                .Where(cu => cu.CourseId == request.CourseId)
+                .ToListAsync();
+
+            copiedCourseUsers.ForEach(cu => cu.CourseId = newCourse.Id);
+
+			if (!request.CopyRoles)
+			{
+                copiedCourseUsers.ForEach(cu => cu.Role = cu.UserId == userId ? CourseUserRole.Admin : CourseUserRole.Member);
+            }
+			newCourse.CourseUsers = copiedCourseUsers;
+        }
+
+
+        if (!request.CopyCourseUsers) request.CopyFoldersPermissions = false;
+        if (request.CopyFolders && course.RootFolderId is not null)
+        {
+            var rootFolderCopy = await _storageService.CreateFolderCopy(course.RootFolderId.Value, request.CourseId, request.CopyFiles, request.CopyFoldersPermissions);
+            if (rootFolderCopy is not null)
+            {
+                _context.Entry(newCourse).Reference(c => c.RootFolder).Load();
+                if (newCourse.RootFolder is not null) _context.Remove(newCourse.RootFolder);
+
+                rootFolderCopy.ParentId = null;
+                newCourse.RootFolder = rootFolderCopy;
+                newCourse.RootFolder.Name = newCourse.Name;
+
+            }
+        }
+        await _context.SaveChangesAsync();
+        return newCourse.Id;
     }
 
 }

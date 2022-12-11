@@ -3,12 +3,7 @@ using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
 using Concerto.Server.Settings;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Diagnostics.SymbolStore;
-using System.Linq.Expressions;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.Xml.Linq;
 
 namespace Concerto.Server.Services;
 
@@ -34,15 +29,15 @@ public class StorageService
 		var coursePermission = RootParentOrNotInheriting ? request.CoursePermission.ToEntity(inherited: false)
 														 : parent.CoursePermission with { Inherited = true };
 
-		var newFolder = new Folder()
+        var newFolder = new Folder()
         {
             Name = request.Name,
             OwnerId = ownerId,
             ParentId = parent.Id,
             CourseId = parent.CourseId,
             CoursePermission = coursePermission,
-            Type = FolderType.Other
-        };
+            Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity()
+		};
 
 		// Inherit permissions from parent;
 		await _context.Folders.AddAsync(newFolder);
@@ -101,7 +96,8 @@ public class StorageService
         {
             Self = selfFolderItem,
             SubFolders = subFolders,
-            Files = files,
+			CourseId = folder.CourseId,
+			Files = files,
             CoursePermission = folder.CoursePermission.ToViewModel(),
         };
 	}
@@ -131,6 +127,14 @@ public class StorageService
         );
     }
 
+    internal async Task<Dto.FileSettings?> GetFileSettings(long id)
+    {
+        var file = await _context.UploadedFiles.FindAsync(id);
+        if (file == null) return null;
+
+        return new Dto.FileSettings(file.Id, file.DisplayName);
+    }
+
 
     public async Task<IEnumerable<Dto.FileUploadResult>> AddFilesToFolder(IEnumerable<IFormFile> files, long folderId)
     {
@@ -138,11 +142,12 @@ public class StorageService
 
         foreach (var fileUploadResult in fileUploadResults)
         {
-            if (fileUploadResult.Uploaded && !string.IsNullOrEmpty(fileUploadResult.DisplayFileName) && !string.IsNullOrEmpty(fileUploadResult.StorageFileName))
+            if (fileUploadResult.Uploaded)
             {
                 var uploadedFile = new UploadedFile()
                 {
                     DisplayName = fileUploadResult.DisplayFileName,
+                    Extension = fileUploadResult.Extension,
                     StorageName = fileUploadResult.StorageFileName,
                     FolderId = folderId
                 };
@@ -154,7 +159,7 @@ public class StorageService
         return fileUploadResults.ToViewModel();
     }
 
-    public async Task<IEnumerable<FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
+    private async Task<IEnumerable<FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
     {
         var maxAllowedFiles = 5;
         long maxFileSize = 1024 * 1024 * 15;
@@ -164,9 +169,6 @@ public class StorageService
         foreach (IFormFile file in files)
         {
             var fileUploadResult = new FileUploadResult();
-            var sanitizedDisplayFileName = WebUtility.HtmlEncode(file.FileName);
-            fileUploadResult.DisplayFileName = sanitizedDisplayFileName;
-
             if (filesProcessed < maxAllowedFiles)
             {
                 if (file.Length > maxFileSize)
@@ -177,7 +179,16 @@ public class StorageService
                 {
                     try
                     {
-                        string storageFileName = string.Format(@$"{sanitizedDisplayFileName}.{Guid.NewGuid()}");
+						var sanitizedFilename = WebUtility.HtmlEncode(file.FileName);
+						if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
+					
+						var filename = Path.GetFileNameWithoutExtension(sanitizedFilename);
+                        var extension = Path.GetExtension(sanitizedFilename).ToLower();
+
+						fileUploadResult.DisplayFileName = filename;
+						fileUploadResult.Extension = extension;
+
+						string storageFileName = string.Format(@$"{sanitizedFilename}.{Guid.NewGuid()}");
                         fileUploadResult.StorageFileName = storageFileName;
                         string path = Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}", storageFileName);
                         Directory.CreateDirectory(Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}"));
@@ -190,20 +201,26 @@ public class StorageService
                         _logger.LogError($"{file.FileName} error on upload: {ex.Message}");
                         fileUploadResult.ErrorCode = 3;
                     }
-                }
+					catch (FilenameException ex)
+                    {
+						_logger.LogError($"{file.FileName} error on upload: {ex.Message}");
+						fileUploadResult.ErrorCode = 4;
+					}
+
+				}
                 filesProcessed++;
             }
             else
             {
                 _logger.LogInformation($"{file.FileName} skipped, too many files uploaded at once");
-                fileUploadResult.ErrorCode = 4;
+                fileUploadResult.ErrorCode = 5;
             }
             fileUploadResults.Add(fileUploadResult);
         }
         return fileUploadResults;
     }
 
-    internal async Task<bool> HasFileReadAccess(long userId, long fileId)
+    internal async Task<bool> CanReadFile(long userId, long fileId)
     {
         var file = await _context.UploadedFiles.FindAsync(fileId);
         if (file == null) return false;
@@ -283,7 +300,21 @@ public class StorageService
             
         return false;
     }
-	
+
+	internal async Task<bool> CanMoveFolder(long userId, long folderId)
+	{
+		var folder = await _context.Folders.FindAsync(folderId);
+		if (folder is null) return false;
+		if (folder.IsCourseRoot) return false;
+
+		// True if ReadWrite in folder's parent or ReadWriteOwned in folder's parent and owns folder
+		var parentFolder = await _context.Folders.FindAsync(folder.ParentId);
+		var parentFolderPermission = await UserPermissionInFolder(userId, parentFolder);
+		if (parentFolderPermission == FolderPermissionType.ReadWrite) return true;
+        if (parentFolderPermission == FolderPermissionType.ReadWriteOwned || folder.OwnerId == userId) return true;
+		return false;
+	}
+
 	public async Task<bool> CanManageFile(long userId, long fileId)
 	{
 		var file = _context.UploadedFiles.Find(fileId);
@@ -309,6 +340,7 @@ public class StorageService
         if (folder == null) return;
 
         folder.Name = request.Name;
+        folder.Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity();
         
         if (request.CoursePermission.Inherited)
         {
@@ -401,6 +433,14 @@ public class StorageService
 		}
     }
 
+	internal async Task DeleteFolders(IEnumerable<long> folderIds)
+	{
+        foreach (var folderId in folderIds)
+        {
+            await DeleteFolder(folderId);
+        }
+	}
+
 	internal async Task DeleteFolder(long folderId)
 	{
 		var folder = await _context.Folders.FindAsync(folderId);
@@ -409,13 +449,10 @@ public class StorageService
         await DeleteFolderRecursively(folder);
 		var deletedFiles = _context.ChangeTracker.Entries<UploadedFile>().Where(e => e.State == EntityState.Deleted).Select(e => e.Entity).ToList();
 		await _context.SaveChangesAsync();
-		foreach(var deletedFile in deletedFiles)
-        {
-			await DeletePhysicalFile(deletedFile);
-		}
 
+        var deleteTasks = deletedFiles.Select(f => DeletePhysicalFile(f));
+		await Task.WhenAll(deleteTasks);
 	}
-	
 	private async Task DeleteFolderRecursively(Folder folder)
 	{
         // Remove files
@@ -441,6 +478,27 @@ public class StorageService
         await _context.SaveChangesAsync();
         await DeletePhysicalFile(file);
 	}
+
+	internal async Task DeleteFiles(IEnumerable<long> fileIds)
+	{
+		var fileIdsSet = fileIds.ToHashSet();
+		var files = await _context.UploadedFiles.Where(f => fileIds.Contains(f.Id)).ToListAsync();
+		_context.UploadedFiles.RemoveRange(files);
+		await _context.SaveChangesAsync();
+		
+		var deleteTasks = files.Select(f => DeletePhysicalFile(f));
+		await Task.WhenAll(deleteTasks);
+	}
+
+	internal async Task<bool> UpdateFile(Dto.UpdateFileRequest request)
+    {
+        var file = await _context.UploadedFiles.FindAsync(request.FileId);
+        if (file == null) return false;
+
+        file.DisplayName =  WebUtility.HtmlEncode(request.Name);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 	
 	private async Task DeletePhysicalFile(UploadedFile file)
 	{
@@ -449,4 +507,160 @@ public class StorageService
             System.IO.File.Delete(file.Path);
 		}
 	}
+
+	internal async Task CopyFiles(IEnumerable<long> fileIds, long destinationFolderId, long userId)
+	{
+		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
+		if (destinationFolder is null) return;
+		
+		var fileIdSet = fileIds.ToHashSet();
+		
+		await _context.Entry(destinationFolder).Collection(f => f.Files).LoadAsync();
+
+        var files = await _context.UploadedFiles
+            .AsNoTracking()
+            .Where(f => fileIdSet.Contains(f.Id))
+			.ToListAsync();
+
+		foreach(var file in files)
+        {
+			file.Id = 0;
+			file.OwnerId = userId;
+            destinationFolder.Files.Add(file);
+		}
+        await _context.SaveChangesAsync();
+	}
+
+	internal async Task CopyFolders(IEnumerable<long> folderIds, long destinationFolderId, long userId)
+    {
+		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
+        if (destinationFolder is null) return;
+		
+		var folderIdsList = folderIds.ToList();
+		
+        await _context.Entry(destinationFolder).Collection(f => f.SubFolders).LoadAsync();
+
+		foreach(var folderId in folderIdsList)
+        {
+            var folderCopy = await CreateFolderCopy(folderId, destinationFolder.CourseId, true, false, userId);
+			if (folderCopy is not null) destinationFolder.SubFolders.Add(folderCopy);
+		}
+        await _context.SaveChangesAsync();
+	}
+
+	internal async Task<Folder?> CreateFolderCopy(long folderId, long courseId, bool withFiles, bool withFolderPermissions, long? newOwner = null)
+    {
+        var folderCopy = await _context.Folders.FindAsync(folderId);
+        if (folderCopy == null)
+            return null;
+        _context.Entry(folderCopy).State = EntityState.Detached;
+
+        await CopyFolderRecursively(folderCopy, courseId, withFiles, withFolderPermissions, newOwner);
+        return folderCopy;
+    }
+
+    internal async Task CopyFolderRecursively(Folder copiedFolder, long courseId, bool withFiles, bool withFolderPermissions, long? newOwner = null)
+    {
+        var subFolders = await _context.Folders
+            .AsNoTracking()
+            .Where(f => f.ParentId == copiedFolder.Id)
+            .ToListAsync();
+
+        foreach (var subFolder in subFolders)
+        {
+            await CopyFolderRecursively(subFolder, courseId, withFiles, withFolderPermissions);
+        }
+
+        if (withFolderPermissions)
+        {
+            var permissions = await _context.UserFolderPermissions
+                    .AsNoTracking()
+                    .Where(fp => fp.FolderId == copiedFolder.Id)
+                    .ToListAsync();
+
+            permissions.ForEach(ufp => ufp.FolderId = 0);
+            copiedFolder.UserPermissions = permissions;
+        }
+
+        if (withFiles)
+        {
+            var files = await _context.UploadedFiles
+                .AsNoTracking()
+                .Where(f => f.FolderId == copiedFolder.Id)
+                .ToListAsync();
+
+			files.ForEach(f =>
+			{
+				f.Id = 0;
+                if (newOwner.HasValue) f.OwnerId = newOwner.Value;
+			});
+			
+			copiedFolder.Files = files;
+        }
+
+        copiedFolder.SubFolders = subFolders;
+        copiedFolder.Id = 0;
+        copiedFolder.ParentId = 0;
+        copiedFolder.CourseId = courseId;
+		if (newOwner.HasValue) copiedFolder.OwnerId = newOwner.Value;
+	}
+
+	internal async Task MoveFiles(IEnumerable<long> fileIds, long destinationFolderId)
+	{
+		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
+		if (destinationFolder is null) return;
+
+		var fileIdSet = fileIds.ToHashSet();
+		var files = await _context.UploadedFiles.Where(f => fileIdSet.Contains(f.Id)).ToListAsync();
+		files.ForEach(f => f.FolderId = destinationFolderId);
+		await _context.SaveChangesAsync();
+	}
+
+	internal async Task MoveFolders(IEnumerable<long> folderIds, long destinationFolderId)
+    {
+		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
+		if (destinationFolder is null) return;
+		
+		foreach (var folderId in folderIds)
+		{
+			await MoveFolder(folderId, destinationFolderId, destinationFolder.CourseId);
+		}
+        await _context.SaveChangesAsync();
+	}
+
+	internal async Task MoveFolder(long folderId, long destinationFolderId, long? courseId = null)
+	{
+		var movedFolder = await _context.Folders.FindAsync(folderId);
+		if (movedFolder == null)
+			return;
+
+        movedFolder.ParentId = destinationFolderId;
+		if (courseId.HasValue && movedFolder.CourseId != courseId)
+        {
+			HashSet<long> updatedFoldersIds = new();
+			await UpdateFolderCourseRecursively(movedFolder, courseId.Value, updatedFoldersIds);
+
+			// Remove user specific permissions if the folder is moved to another course
+			var userPermissions = await _context.UserFolderPermissions
+				.Where(ufp => updatedFoldersIds.Contains(ufp.FolderId))
+				.ToListAsync();
+			_context.UserFolderPermissions.RemoveRange(userPermissions);
+		}
+	}
+	
+	internal async Task UpdateFolderCourseRecursively(Folder folder, long courseId, HashSet<long> updatedFoldersIds)
+	{
+		folder.CourseId = courseId;
+		updatedFoldersIds.Add(folder.Id);
+		
+		var subFolders = await _context.Folders
+			.Where(f => f.ParentId == folder.Id)
+			.ToListAsync();
+
+		foreach (var subFolder in subFolders)
+		{
+			await UpdateFolderCourseRecursively(subFolder, courseId, updatedFoldersIds);
+		}
+	}
+
 }

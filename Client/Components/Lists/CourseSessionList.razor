@@ -2,6 +2,8 @@
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
 @inherits MudComponentBase;
+
+@inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IUserService UserService
 @inject ICourseService CourseService
@@ -9,19 +11,53 @@
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="true" Elevation="0" FixedHeader="true" FixedFooter="true"
 		  Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style"
-		  OnRowClick="SelectSession">
+		  OnRowClick="OnRowClick">
 	<ToolBarContent>
 		<MudText Class="mr-2" Typo="Typo.h6">Sessions</MudText>
 		<MudSpacer />
-		<MudIconButton Class="ml-2" Size="Size.Large" Icon="@Icons.Material.Sharp.Add" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CreateSession" />
+		<MudButtonGroup OverrideStyles="false">
+
+			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
+			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateSession" Disabled="false" />
+
+			<MudMenu Dense="true">
+				<ActivatorContent>
+					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+				</ActivatorContent>
+				<ChildContent>
+					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
+								 OnClick="CreateSession" Disabled="false">
+						Refresh view
+					</MudMenuItem>
+					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
+								 OnClick="CreateSession" Disabled="false">
+						Create session
+					</MudMenuItem>
+				</ChildContent>
+			</MudMenu>
+		</MudButtonGroup>
+
+
 	</ToolBarContent>
 	<HeaderContent>
 		<MudTh>Name</MudTh>
 		<MudTh>Sheduled on</MudTh>
+		<MudTh />
 	</HeaderContent>
 	<RowTemplate>
 		<MudTd>@context.Name</MudTd>
-		<MudTd>@context.ScheduledDate.ToString()</MudTd>
+		<MudTd>@context.ScheduledDate.ToLocalTime().ToString()</MudTd>
+		<MudTd Style="text-align:right">
+			<MudMenu Dense="true">
+				<ActivatorContent>
+					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+				</ActivatorContent>
+				<ChildContent>
+					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnClick="() => SelectSession(context)">Open</MudMenuItem>
+					<MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteSession(context)">Delete</MudMenuItem>
+				</ChildContent>
+			</MudMenu>
+		</MudTd>
 	</RowTemplate>
 </MudTable>
 
@@ -36,24 +72,49 @@
 	private IEnumerable<SessionListItem>? Sessions;
 	bool Loading => Sessions is null;
 
-	private async Task SelectSession(TableRowClickEventArgs<SessionListItem> tableClick)
+	private async Task SelectSession(SessionListItem session)
 	{
-		await OnSessionSelected.InvokeAsync(tableClick.Item.Id);
+		await OnSessionSelected.InvokeAsync(session.Id);
 	}
-	
-	protected override async Task OnParametersSetAsync()
+
+	private async Task OnRowClick(TableRowClickEventArgs<SessionListItem> tableClick)
+	{
+		await SelectSession(tableClick.Item);
+	}
+
+	private async Task Initialize()
 	{
 		Sessions = await CourseService.GetCourseSessionsList(CourseId);
 	}
 
-	private async Task CreateSession(MouseEventArgs mouseEventArgs)
+	protected override async Task OnParametersSetAsync()
+	{
+		await Initialize();
+	}
+
+	private async Task CreateSession()
 	{
 		var parameters = new DialogParameters { ["CourseId"] = CourseId };
 		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
-		if ((bool)(result.Data ?? false))
+		if (result.Cancelled) return;
+		await Initialize();
+	}
+
+	private async Task DeleteSession(SessionListItem session)
+	{
+		var parameters = new DialogParameters { ["ItemName"] = $"session {session.Name}", ["Confirmation"] = true };
+		var name = "Delete session";
+		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
+		if (result.Cancelled) return;
+		try
 		{
-			Sessions = null;
-			Sessions = await CourseService.GetCourseSessionsList(CourseId);
+			await CourseService.DeleteSession(session.Id);
+			Snackbar.Add($"Session {session.Name} deleted", Severity.Success);
+			await Initialize();
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to delete session {session.Name}.", Severity.Error);
 		}
 	}
 

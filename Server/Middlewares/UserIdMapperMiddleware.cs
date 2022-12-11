@@ -1,13 +1,16 @@
 ﻿using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Nito.AsyncEx;
 using System.Security.Claims;
+using System.Threading;
 
 namespace Concerto.Server.Middlewares;
 
 public class UserIdMapperMiddleware
 {
-    private readonly RequestDelegate _next;
+    private AsyncLock mutex = new AsyncLock();
+	private readonly RequestDelegate _next;
     public UserIdMapperMiddleware(RequestDelegate next)
     {
         _next = next;
@@ -17,14 +20,11 @@ public class UserIdMapperMiddleware
     {
         if(httpContext.User.Identity?.IsAuthenticated ?? false)
         {
-            var UserId = await userService.GetUserId(httpContext.User.GetSubjectId());
-            if(UserId == null)
+            using (await mutex.LockAsync())
             {
-                await userService.AddUserIfNotExists(httpContext.User);
-                UserId = await userService.GetUserId(httpContext.User.GetSubjectId());
+                var UserId = await userService.GetUserIdAndUpdate(httpContext.User);
+                httpContext.Items["AppUserId"] = UserId;
             }
-            
-            httpContext.Items["AppUserId"] = UserId;
         }
         await _next(httpContext);
     }

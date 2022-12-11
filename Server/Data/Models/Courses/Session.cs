@@ -17,7 +17,7 @@ public class Session : Entity
 
 public static partial class ViewModelConversions
 {
-    public static Dto.Session ToViewModel(this Session session)
+    public static Dto.Session ToViewModel(this Session session, bool canManage)
     {
         return new Dto.Session(
             Id: session.Id,
@@ -27,8 +27,9 @@ public static partial class ViewModelConversions
             ScheduledDateTime: session.ScheduledDate,
             CourseRootFolderId: session.Course.RootFolderId,
             ConversationId: session.ConversationId,
-            MeetingGuid: session.MeetingGuid
-        );
+            MeetingGuid: session.MeetingGuid,
+			CanManage: canManage
+		);
     }
 
     public static Dto.SessionListItem ToSessionListItem(this Session session)
@@ -39,5 +40,14 @@ public static partial class ViewModelConversions
             ScheduledDate: session.ScheduledDate
         );
     }
+
+	public static Dto.SessionSettings ToSettingsViewModel(this Session session)
+	{
+		return new Dto.SessionSettings(
+			Id: session.Id,
+			Name: session.Name,
+			ScheduledDate: session.ScheduledDate
+		);
+	}
 
 }

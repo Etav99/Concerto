@@ -34,9 +34,9 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<bool> AfterLogin()
+    public async Task<long> AfterLogin()
     {
-		return await _userService.AddUserIfNotExists(User);
+		return await _userService.GetUserIdAndUpdate(User);
     }
 
     [HttpGet]

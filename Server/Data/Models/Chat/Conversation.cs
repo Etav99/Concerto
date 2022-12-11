@@ -7,6 +7,9 @@ public class Conversation : Entity
 	public bool IsPrivate { get; set; }
 	public virtual ICollection<ChatMessage> ChatMessages { get; set; }
 	public virtual ICollection<ConversationUser> ConversationUsers { get; set; }
+
+    public Course? Course { get; set; }
+    public Session? Session { get; set; }
 }
 
 

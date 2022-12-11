@@ -17,7 +17,13 @@ public interface ICourseService
 	public Task<IEnumerable<User>> GetCourseUsers(long courseId);
 	public Task UpdateCourse(UpdateCourseRequest request);
 	public Task DeleteCourse(long courseId);
-	public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
+	public Task<long> CloneCourse(CloneCourseRequest request);
+	public Task DeleteSession(long sessionId);
+	public Task<SessionSettings> GetSessionSettings(long sessionId);
+    public Task UpdateSession(UpdateSessionRequest request);
+
+
+    public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
 }
 public class CourseService : ICourseService
 {
@@ -74,4 +80,10 @@ public class CourseService : ICourseService
     public async Task<IEnumerable<User>> GetCourseUsers(long courseId) => await _courseClient.GetCourseUsersAsync(courseId);
 
 	public async Task DeleteCourse(long courseId) => await _courseClient.DeleteCourseAsync(courseId);
+
+	public async Task DeleteSession(long sessionId) => await _sessionClient.DeleteSessionAsync(sessionId);
+	public async Task<SessionSettings> GetSessionSettings(long sessionId) => await _sessionClient.GetSessionSettingsAsync(sessionId);
+	public async Task UpdateSession(UpdateSessionRequest request) => await _sessionClient.UpdateSessionAsync(request);
+
+	public async Task<long> CloneCourse(CloneCourseRequest request) => await _courseClient.CloneCourseAsync(request);
 }

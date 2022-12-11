@@ -1,5 +1,5 @@
 ﻿@using Concerto.Client.Services
-@using Concerto.Client.Components.Pickers
+@using Concerto.Client.Components.Input
 @using Concerto.Shared.Models.Dto;
 @inject IDialogService DialogService
 @inject ICourseService CourseService
@@ -29,10 +29,6 @@
     {
         if(String.IsNullOrEmpty(_courseName)){
             Snackbar.Add("Course name cannot be empty", Severity.Error);
-            return;
-        }
-        if(!_members.Any()) {
-            Snackbar.Add("Members cannot be empty", Severity.Error);
             return;
         }
 

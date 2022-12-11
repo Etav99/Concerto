@@ -1,0 +1,130 @@
+﻿@using Concerto.Client.Components
+@using Concerto.Client.Components.Dialogs;
+@using Concerto.Client.Services;
+@using Concerto.Shared.Models.Dto;
+
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+
+@if (Loading)
+{
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+}
+else
+{
+	<MudStack Spacing="4" Class="pa-4" Style="overflow: auto">
+
+		<MudStack Row="true" Style="background-color: var(--mud-palette-default)" Justify="Justify.SpaceBetween">
+			<MudButtonGroup OverrideStyles="false">
+				<MudButton OnClick="Discard" Disabled="!Changed" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Restore" Color="Color.Error">Discard</MudButton>
+				<MudButton OnClick="Save" Disabled="!Changed" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Success">Save</MudButton>
+			</MudButtonGroup>
+			<MudButtonGroup OverrideStyles="false">
+				<MudButton OnClick="Delete" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Delete session</MudButton>
+			</MudButtonGroup>
+		</MudStack>
+
+		<MudTextField Immediate="true" @bind-Value="_request.Name" T="string" Label="Name"></MudTextField>
+		<MudDatePicker Label="Date" @bind-Date="Date" />
+		<MudTimePicker Label="Time" @bind-Time="Time" />
+
+	</MudStack>
+}
+
+
+
+
+@code {
+	[Parameter]
+	public long SessionId { get; set; }
+
+	[Parameter]
+	public EventCallback OnSessionDeleted { get; set; }
+
+	private bool Loading => _sessionSettings is null || _request is null;
+	private bool Changed => _request is not null && (_request.Name != _sessionSettings?.Name || _request.ScheduledDateTime != _sessionSettings?.ScheduledDate);
+	private SessionSettings? _sessionSettings { get; set; }
+	private UpdateSessionRequest _request = null!;
+
+	private DateTime? Date
+	{
+		get
+		{
+			return _request.ScheduledDateTime.Date;
+		}
+		set
+		{
+			if(value is not null && Time is not null)
+			{
+				_request.ScheduledDateTime = value.Value + Time.Value;
+			}
+		}
+	}
+
+	private TimeSpan? Time
+	{
+		get
+		{
+			return _request.ScheduledDateTime.TimeOfDay;
+		}
+		set
+		{
+			if (value is not null && Date is not null)
+			{
+				_request.ScheduledDateTime = Date.Value + value.Value;
+			}
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Initialize();
+	}
+
+	private async Task Initialize()
+	{
+		_sessionSettings = await CourseService.GetSessionSettings(SessionId);
+		_request = new UpdateSessionRequest
+			{
+				SessionId = _sessionSettings.Id,
+				Name = _sessionSettings.Name,
+				ScheduledDateTime = _sessionSettings.ScheduledDate,
+			};
+	}
+
+
+	private async Task Discard()
+	{
+		await Initialize();
+	}
+
+	private async Task Save()
+	{
+		await CourseService.UpdateSession(_request);
+		await Initialize();
+	}
+
+	private async Task Delete()
+	{
+		var parameters = new DialogParameters { ["ItemName"] = $"session {_sessionSettings!.Name}", ["Confirmation"] = true };
+		var name = "Delete session";
+
+		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
+		if (result.Cancelled) return;
+		
+		try
+		{
+			await CourseService.DeleteSession(_sessionSettings.Id);
+			Snackbar.Add($"Session {_sessionSettings!.Name} deleted", Severity.Success);
+			await OnSessionDeleted.InvokeAsync();
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to delete session {_sessionSettings!.Name}.", Severity.Error);
+		}
+	}
+	
+}

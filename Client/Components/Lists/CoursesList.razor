@@ -1,0 +1,203 @@
+﻿@using Concerto.Client.Components
+@using Concerto.Client.Components.Dialogs
+@using Concerto.Client.Services
+@using Concerto.Shared.Extensions
+
+@using Concerto.Shared.Models.Dto;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
+
+@inject IBreadcrumbsService BreadcrumbsService
+@inject IChatService ChatService
+@inject ICourseService CourseService
+
+@if (Loading)
+{
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+}
+else
+{
+	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<Dto.CourseListItem, bool>(CourseFilter)"
+		  Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
+		  RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;">
+		<ToolBarContent>
+			<MudText Typo="Typo.h6">Your courses</MudText>
+			<MudSpacer />
+			<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+			<MudSpacer />
+			<MudButtonGroup OverrideStyles="false">
+				<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
+
+				@if (ManagementEnabled)
+				{
+					<AuthorizeView Roles="teacher">
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false" />
+					</AuthorizeView>
+				}
+
+				<MudMenu Dense="true">
+					<ActivatorContent>
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+					</ActivatorContent>
+					<ChildContent>
+						<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
+								 OnClick="Initialize">
+							Refresh view
+						</MudMenuItem>
+
+						@if (ManagementEnabled)
+						{
+							<AuthorizeView Roles="teacher">
+								<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
+									 OnClick="CreateCourse" Disabled="false">
+									Create course
+								</MudMenuItem>
+							</AuthorizeView>
+						}
+
+					</ChildContent>
+				</MudMenu>
+			</MudButtonGroup>
+		</ToolBarContent>
+		<HeaderContent>
+			<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.Name)">Course name</MudTableSortLabel></MudTh>
+			<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel></MudTh>
+			<MudTh></MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd>
+				<MudText>@context.Name</MudText>
+			</MudTd>
+			<MudTd>
+				<MudText>@context.CreatedDate</MudText>
+			</MudTd>
+			<MudTd Style="text-align:right">
+
+				<MudMenu Dense="true">
+					<ActivatorContent>
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+					</ActivatorContent>
+					<ChildContent>
+						<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItem>
+						@if (ManagementEnabled)
+						{
+							<AuthorizeView Roles="teacher" Context="auth">
+								<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnClick="() => CloneCourse(context)" >Clone</MudMenuItem>
+							</AuthorizeView>
+						}
+
+					</ChildContent>
+				</MudMenu>
+			</MudTd>
+		</RowTemplate>
+		<PagerContent>
+			<MudTablePager PageSizeOptions="new int[]{25, 50, 100}" />
+		</PagerContent>
+	</MudTable>
+}
+
+
+@code {
+	[Parameter]
+	public EventCallback<long> OnCourseSelected { get; set; }
+
+	[Parameter]
+	public string SelectLabel { get; set; } = "Open";
+
+	[Parameter]
+	public string SelectIcon { get; set; } = Icons.Material.Filled.OpenInBrowser;
+
+	[Parameter]
+	public bool ManagementEnabled { get; set; } = true;
+
+	[Parameter]
+	public IEnumerable<long> WithoutCourseIds { get; set; } = Enumerable.Empty<long>();
+
+	private string searchString = string.Empty;
+
+	private bool Loading => Courses is null;
+
+	private IEnumerable<CourseListItem>? Courses { get; set; }
+
+	protected override void OnInitialized()
+	{
+		BreadcrumbsService.Set(
+			Icons.Material.Filled.List,
+			"Courses",
+			new BreadcrumbItem("Courses", null, true)
+		);
+	}
+
+	protected async Task Initialize()
+	{
+		Courses = (await CourseService.GetUserCoursesList()).ExceptBy(WithoutCourseIds, x => x.Id);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Initialize();
+	}
+
+	private void SelectCourse(CourseListItem course)
+	{
+		OnCourseSelected.InvokeAsync(course.Id);
+	}
+
+	private async Task DeleteCourse(CourseListItem course)
+	{
+		var parameters = new DialogParameters { ["ItemName"] = $"course {course.Name}", ["Confirmation"] = true };
+		var name = "Delete course";
+
+		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
+		if (result.Cancelled) return;
+
+		try
+		{
+			await CourseService.DeleteCourse(course.Id);
+			Snackbar.Add($"Course {course.Name} deleted", Severity.Success);
+			await Initialize();
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to delete course {course.Name}.", Severity.Error);
+		}
+	}
+
+	private void OnRowClick(TableRowClickEventArgs<CourseListItem> rowClick)
+	{
+		SelectCourse(rowClick.Item);
+	}
+
+	private async Task CreateCourse()
+	{
+		var result = await DialogService.Show<CreateCourseDialog>("Create new course").Result;
+		if (result.Cancelled) return;
+		await Initialize();
+	}
+
+	private async Task CloneCourse(CourseListItem course)
+	{
+		var parameters = new DialogParameters { ["CourseToClone"] = course };
+		var name = $"Clone course {course.Name}";
+		var result = await DialogService.Show<CloneCourseDialog>(name, parameters).Result;
+		if (result.Cancelled) return;
+		var clonedCourseId = (long)result.Data;
+		await OnCourseSelected.InvokeAsync(clonedCourseId);
+	}
+
+	private bool CourseFilter(CourseListItem course)
+	{
+		if (string.IsNullOrWhiteSpace(searchString))
+			return true;
+		if (course.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return false;
+	}
+
+}

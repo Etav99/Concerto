@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Concerto.Server.Data.DatabaseContext;
 
@@ -23,6 +24,9 @@ public class AppDataContext : DbContext
     {
         modelBuilder.Ignore<Entity>();
 
+
+
+
         // ConversationUser entity configuration
         modelBuilder.Entity<ConversationUser>()
             .HasKey(cu => new { cu.ConversationId, cu.UserId });
@@ -45,6 +49,21 @@ public class AppDataContext : DbContext
             .WithMany()
             .IsRequired(false)
             .HasForeignKey(c => c.RootFolderId);
+
+        modelBuilder.Entity<Course>()
+            .HasOne(c => c.Conversation)
+            .WithOne(c => c.Course)
+            .HasForeignKey<Course>(c => c.ConversationId)
+            .IsRequired(true)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Session
+        modelBuilder.Entity<Session>()
+            .HasOne(s => s.Conversation)
+            .WithOne(c => c.Session)
+            .HasForeignKey<Session>(c => c.ConversationId)
+            .IsRequired(true)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // CourseUser entity configuration
         modelBuilder.Entity<CourseUser>()

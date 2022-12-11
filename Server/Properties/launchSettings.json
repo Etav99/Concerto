@@ -20,7 +20,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "false",
-        "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS",
+        "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS;Include Error Detail=True;",
         "JWT_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR": "true",
         "OIDC_AUDIENCE": "account",
         "OIDC_AUTHORITY": "http://localhost:7200/Concerto/Keycloak/realms/concerto",

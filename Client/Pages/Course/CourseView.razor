@@ -2,6 +2,7 @@
 @page "/courses/{SelectedCourseId:long}"
 @using Concerto.Client.Components.Dialogs
 @using Concerto.Client.Components
+@using Concerto.Client.Components.Input
 @using Concerto.Client.Components.Lists
 @using Concerto.Client.Services
 @using Concerto.Shared.Extensions
@@ -19,7 +20,11 @@
 
 <PageTitle>Course</PageTitle>
 
-@if (SelectedCourse is not null)
+@if (Loading)
+{
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+}
+else
 {
 	<MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
 		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
@@ -36,10 +41,10 @@
 			<ChatBox ConversationName="Course conversation" SelectedConversationId="SelectedCourse.ConversationId" />
 		</MudTabPanel>
 
-		@if (SelectedCourse.CanManage)
+		@if (SelectedCourse!.CanManage)
 		{
 			<MudTabPanel Text="Settings">
-				<CourseSettingsView CourseId="SelectedCourseId" />
+				<CourseSettingsView CourseId="SelectedCourseId" OnCourseDeleted="OnCourseDeleted" />
 			</MudTabPanel>
 		}
 
@@ -51,6 +56,8 @@
 	[Parameter]
 	public long SelectedCourseId { get; set; }
 	private Course? SelectedCourse { get; set; }
+
+	private bool Loading => SelectedCourse is null;
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -65,7 +72,12 @@
 	}
 	
 	private void OnSessionSelected(long sessionId) {
-		NavigationManager.NavigateTo($"sessions/{sessionId}");
+		NavigationManager.NavigateTo($"courses/{SelectedCourseId}/sessions/{sessionId}");
+	}
+
+	private void OnCourseDeleted()
+	{
+		NavigationManager.NavigateTo($"courses");
 	}
 
 }

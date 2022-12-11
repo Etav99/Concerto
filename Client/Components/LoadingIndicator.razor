@@ -1,0 +1,14 @@
+﻿
+<MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+	<MudProgressCircular Color="Color"  Size="Size" Indeterminate="true" />
+</MudStack>
+
+
+
+@code {
+	[Parameter]
+	public Color Color { get; set; } = Color.Default;
+	
+	[Parameter]
+	public Size Size { get; set; } = Size.Medium;
+}

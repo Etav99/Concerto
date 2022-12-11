@@ -1,0 +1,80 @@
+﻿@using Concerto.Shared.Models.Dto;
+
+<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Baseline">
+	<MudSelect Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense" T="FolderPermission" Value="Value" ValueChanged="ValueChanged" Label="Permission" AnchorOrigin="Origin.BottomCenter" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Security">
+		@if (Inherited.HasValue)
+		{
+			<MudSelectItem Value="@(new FolderPermission(Inherited.Value, true))">@($"Inherited - {ToText(Inherited.Value)}")</MudSelectItem>
+		}
+		<MudSelectItem Value="@(Values[FolderPermissionType.Read])">@ToText(FolderPermissionType.Read)</MudSelectItem>
+		<MudSelectItem Value="@(Values[FolderPermissionType.ReadWriteOwned])">@ToText(FolderPermissionType.ReadWriteOwned)</MudSelectItem>
+		<MudSelectItem Value="@(Values[FolderPermissionType.ReadWrite])">@ToText(FolderPermissionType.ReadWrite)</MudSelectItem>
+	</MudSelect>
+	<MudTooltip Text="" Arrow="true">
+		<ChildContent>
+			<MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
+		</ChildContent>
+		<TooltipContent>
+			<MudText Align="Align.Left">
+				<h2>Folder permissions</h2>
+				<br />
+				<h3>Readers</h3>
+				<ul>
+					<li>• View folder content and download files</li>
+				</ul>
+				<br />
+				<h3>Contributors</h3>
+				<ul>
+					<li>• View folder content and download files</li>
+					<li>• Add files and folders</li>
+					<li>• Remove files and folders owned by them</li>
+					<li>• Edit files and folders owned by them</li>
+				</ul>
+				<br />
+				<h3>Editors</h3>
+				<ul>
+					<li>• View folder content and download files</li>
+					<li>• Add, edit and remove any files</li>
+					<li>• Add folders</li>
+					<li>• Remove and edit folders owned by them</li>
+					<li>• Remove and edit folders in which they have Editor permission</li>
+				</ul>
+			</MudText>
+		</TooltipContent>
+	</MudTooltip>
+</MudStack>
+
+
+
+
+
+@code {
+    [Parameter]
+    public FolderPermission Value { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<FolderPermission> ValueChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<FolderPermission> OnChange { get; set; }
+
+    [Parameter]
+    public FolderPermissionType? Inherited { get; set; }
+	
+    private static Dictionary<FolderPermissionType, FolderPermission> Values = new() {
+        [FolderPermissionType.Read] = new FolderPermission(FolderPermissionType.Read, false),
+        [FolderPermissionType.ReadWriteOwned] = new FolderPermission(FolderPermissionType.ReadWriteOwned, false),
+        [FolderPermissionType.ReadWrite] = new FolderPermission(FolderPermissionType.ReadWrite, false),
+    };
+
+	private static string ToText(FolderPermissionType type)
+	{
+		return type switch
+		{
+			FolderPermissionType.Read => "Reader",
+			FolderPermissionType.ReadWriteOwned => "Contributor",
+			FolderPermissionType.ReadWrite => "Editor",
+			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+		};
+	}
+}

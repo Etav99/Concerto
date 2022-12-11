@@ -113,7 +113,8 @@ namespace Concerto.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("ConversationId")
+                        .IsUnique();
 
                     b.HasIndex("RootFolderId");
 
@@ -201,7 +202,8 @@ namespace Concerto.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("ConversationId")
+                        .IsUnique();
 
                     b.HasIndex("CourseId");
 
@@ -217,6 +219,10 @@ namespace Concerto.Server.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Extension")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -324,8 +330,8 @@ namespace Concerto.Server.Migrations
             modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>
                 {
                     b.HasOne("Concerto.Server.Data.Models.Conversation", "Conversation")
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
+                        .WithOne("Course")
+                        .HasForeignKey("Concerto.Server.Data.Models.Course", "ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -408,8 +414,8 @@ namespace Concerto.Server.Migrations
             modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
                 {
                     b.HasOne("Concerto.Server.Data.Models.Conversation", "Conversation")
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
+                        .WithOne("Session")
+                        .HasForeignKey("Concerto.Server.Data.Models.Session", "ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -484,6 +490,10 @@ namespace Concerto.Server.Migrations
                     b.Navigation("ChatMessages");
 
                     b.Navigation("ConversationUsers");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>

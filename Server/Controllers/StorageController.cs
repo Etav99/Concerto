@@ -49,7 +49,18 @@ public class StorageController : ControllerBase
         }
         return Forbid();
     }
-    
+
+    [HttpGet]
+    public async Task<ActionResult<Dto.FileSettings>> GetFileSettings([FromQuery] long fileId)
+    {
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanManageFile(userId, fileId))
+        {
+            return Ok(await _storageService.GetFileSettings(fileId));
+        }
+        return Forbid();
+    }
+
     [HttpDelete]
     public async Task<ActionResult> DeleteFolder([FromQuery] long folderId)
     {
@@ -98,7 +109,19 @@ public class StorageController : ControllerBase
         return Forbid();
     }
 
-	[HttpDelete]
+    [HttpPost]
+    public async Task<ActionResult> UpdateFile(Dto.UpdateFileRequest request)
+    {
+        long userId = HttpContext.UserId();
+        if (User.IsInRole("admin") || await _storageService.CanManageFile(userId, request.FileId))
+        {
+            if(await _storageService.UpdateFile(request))
+            return Ok();
+        }
+        return Forbid();
+    }
+
+    [HttpDelete]
 	public async Task<ActionResult> DeleteFile([FromQuery] long fileId)
 	{
 		long userId = HttpContext.UserId();
@@ -110,16 +133,99 @@ public class StorageController : ControllerBase
         return Forbid();
 	}
 
+	[HttpDelete]
+	public async Task<ActionResult> DeleteFolderItems([FromBody] Dto.DeleteFolderItemsRequest request)
+	{
+		long userId = HttpContext.UserId();
+		
+		var folderIds = request.FolderIds.ToList();
+		var fileIds = request.FileIds.ToList();
+
+        if (!User.IsInRole("admin"))
+        {
+			foreach (var folderId in folderIds)
+			{
+                if (!await _storageService.CanDeleteFolder(userId, folderId)) return Forbid();
+		    }
+			
+			foreach (var fileId in fileIds)
+			{
+				if (!await _storageService.CanManageFile(userId, fileId)) return Forbid();
+			}
+		}
+
+		await _storageService.DeleteFolders(folderIds);
+		await _storageService.DeleteFiles(fileIds);
+        return Ok();
+	}
+
+	[HttpPost]
+	public async Task<ActionResult> MoveFolderItems([FromBody] Dto.MoveFolderItemsRequest request)
+	{
+		long userId = HttpContext.UserId();
+
+		var folderIds = request.FolderIds.ToList();
+		var fileIds = request.FileIds.ToList();
+
+		if (!User.IsInRole("admin"))
+		{
+			if (!await _storageService.CanWriteInFolder(userId, request.DestinationFolderId)) return Forbid();
+
+			foreach (var folderId in folderIds)
+			{
+				if (!await _storageService.CanMoveFolder(userId, folderId)) return Forbid();
+			}
+
+			foreach (var fileId in fileIds)
+			{
+				if (!await _storageService.CanManageFile(userId, fileId)) return Forbid();
+			}
+		}
+
+		await _storageService.MoveFolders(folderIds, request.DestinationFolderId);
+		await _storageService.MoveFiles(fileIds, request.DestinationFolderId);
+		return Ok();
+	}
+
+	[HttpPost]
+	public async Task<ActionResult> CopyFolderItems([FromBody] Dto.CopyFolderItemsRequest request)
+	{
+		long userId = HttpContext.UserId();
+
+		var folderIds = request.FolderIds.ToList();
+		var fileIds = request.FileIds.ToList();
+
+		if (!User.IsInRole("admin"))
+		{
+			if (!await _storageService.CanWriteInFolder(userId, request.DestinationFolderId)) return Forbid();
+
+			foreach (var folderId in folderIds)
+			{
+				if (!await _storageService.CanReadInFolder(userId, folderId)) return Forbid();
+			}
+
+			foreach (var fileId in fileIds)
+			{
+				if (!await _storageService.CanReadFile(userId, fileId)) return Forbid();
+			}
+		}
+
+		await _storageService.CopyFolders(folderIds, request.DestinationFolderId, userId);
+		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, userId);
+		return Ok();
+	}
+
+
 	[HttpGet]
     public async Task<ActionResult> DownloadFile([FromQuery] long fileId)
     {
         long userId = HttpContext.UserId();
-        if (User.IsInRole("admin") || await _storageService.HasFileReadAccess(userId, fileId))
+        if (User.IsInRole("admin") || await _storageService.CanReadFile(userId, fileId))
         {
             var file = await _storageService.GetFile(fileId);
             if (file == null) return NotFound();
             byte[] fileBytes = System.IO.File.ReadAllBytes(file.Path);
-            string fileName = file.DisplayName;
+            string fileName = file.DisplayName + file.Extension;
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
         }
         return Forbid();

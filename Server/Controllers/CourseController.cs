@@ -76,17 +76,32 @@ public class CourseController : ControllerBase
 
     [Authorize(Roles = "teacher")]
     [HttpPost]
-	public async Task<ActionResult> CreateCourseForCurrentUser([FromBody] Dto.CreateCourseRequest request)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<long>> CreateCourseForCurrentUser([FromBody] Dto.CreateCourseRequest request)
 	{
         long userId = HttpContext.UserId();
 
         if (request.Members.Count() != request.Members.DistinctBy(x => x.UserId).Count()) return BadRequest("Duplicate members");
-        
-        if (await _courseService.CreateCourse(request, userId)) return Ok();
-		return BadRequest();
+
+        var newCourseId = await _courseService.CreateCourse(request, userId);
+        if (newCourseId > 0) return CreatedAtAction("GetCourse", new { courseId = newCourseId }, newCourseId);
+        return BadRequest();
 	}
 
-	[Authorize(Roles = "teacher")]
+    [Authorize(Roles = "teacher")]
+    [HttpPost]
+    public async Task<ActionResult<long>> CloneCourse([FromBody] Dto.CloneCourseRequest request)
+    {
+        long userId = HttpContext.UserId();
+
+        if (!await _courseService.IsUserCourseMember(userId, request.CourseId)) return Forbid();
+        var newCourseId = await _courseService.CloneCourse(request, userId);
+        if (newCourseId <= 0) BadRequest();
+        return Ok(newCourseId);
+    }
+
+    [Authorize(Roles = "teacher")]
 	[HttpPost]
 	public async Task<ActionResult> UpdateCourse([FromBody] Dto.UpdateCourseRequest request)
 	{

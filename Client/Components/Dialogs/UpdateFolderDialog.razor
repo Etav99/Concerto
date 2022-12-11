@@ -1,4 +1,4 @@
-﻿@using Concerto.Client.Components.Pickers
+﻿@using Concerto.Client.Components.Input
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @inject ICourseService CourseService
@@ -23,42 +23,8 @@
 		{
 			<MudStack Spacing="4">
 				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
-				<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Baseline">
-					<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType" />
-					<MudTooltip Text="" Arrow="true">
-						<ChildContent>
-							<MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
-						</ChildContent>
-						<TooltipContent>
-							<MudText Align="Align.Left">
-								<h2>Folder permissions</h2>
-								<br />
-								<h3>Readers</h3>
-								<ul>
-									<li>• View folder content and download files</li>
-								</ul>
-								<br />
-								<h3>Contributors</h3>
-								<ul>
-									<li>• View folder content and download files</li>
-									<li>• Add files and folders</li>
-									<li>• Remove files and folders owned by them</li>
-									<li>• Edit files and folders owned by them</li>
-								</ul>
-								<br />
-								<h3>Editors</h3>
-								<ul>
-									<li>• View folder content and download files</li>
-									<li>• Add, edit and remove any files</li>
-									<li>• Add folders</li>
-									<li>• Remove and edit folders owned by them</li>
-									<li>• Remove and edit folders in which they have Editor permission</li>
-								</ul>
-							</MudText>
-						</TooltipContent>
-					</MudTooltip>
-				</MudStack>
-
+				<FolderTypePicker @bind-Value="_request.Type"></FolderTypePicker>
+				<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType" />
 				<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers" />
 			</MudStack>
 		}
@@ -94,6 +60,7 @@
 		_request = new UpdateFolderRequest(folderSettings.Id)
 			{
 				Name = folderSettings.Name,
+				Type = folderSettings.Type,
 				CoursePermission = folderSettings.CoursePermission,
 				UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
 				forceInherit = false

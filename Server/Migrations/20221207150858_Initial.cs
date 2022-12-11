@@ -215,6 +215,7 @@ namespace Concerto.Server.Migrations
                     FolderId = table.Column<long>(type: "bigint", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: false),
+                    Extension = table.Column<string>(type: "text", nullable: false),
                     StorageName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -272,7 +273,8 @@ namespace Concerto.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Courses_ConversationId",
                 table: "Courses",
-                column: "ConversationId");
+                column: "ConversationId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Courses_RootFolderId",
@@ -302,7 +304,8 @@ namespace Concerto.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_ConversationId",
                 table: "Sessions",
-                column: "ConversationId");
+                column: "ConversationId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_CourseId",

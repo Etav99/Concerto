@@ -16,11 +16,11 @@ public class SessionService
 		_context = context;
 		_fileService = fileService;
 	}
-	public async Task<Dto.Session?> GetSession(long sessionId)
+	public async Task<Dto.Session?> GetSession(long sessionId, long userId, bool isAdmin)
 	{
 		var session = await _context.Sessions
 			.FindAsync(sessionId);
-
+		
 		if (session == null)
 			return null;
 
@@ -28,7 +28,7 @@ public class SessionService
             .Reference(s => s.Course)
             .LoadAsync();
 
-		return session.ToViewModel();
+		return session.ToViewModel(isAdmin || await CanManageSession(sessionId, userId));
 	}
 
 	public async Task<bool> CanAccessSession(long userId, long sessionId)
@@ -44,6 +44,24 @@ public class SessionService
 			.Query()
 			.Include(r => r.CourseUsers)
 			.AnyAsync(r => r.CourseUsers.Any(ru => ru.UserId == userId));
+	}
+
+	internal async Task<bool> CanManageSession(long sessionId, long userId)
+	{
+		var session = _context.Sessions.Find(sessionId);
+		if (session == null) return false;
+
+		var courseRole = (await _context.CourseUsers.FindAsync(session.CourseId, userId))?.Role;
+		return courseRole == CourseUserRole.Admin || courseRole == CourseUserRole.Supervisor;
+	}
+	internal async Task<bool> DeleteSession(long sessionId)
+	{
+		var session = _context.Sessions.Find(sessionId);
+		if (session == null) return false;
+
+		_context.Remove(session);
+		await _context.SaveChangesAsync();
+		return true;
 	}
 
 	public async Task<bool> CreateSession(Dto.CreateSessionRequest request)
@@ -75,4 +93,26 @@ public class SessionService
 			.Select(s => s.ToSessionListItem())
 			.ToListAsync();
 	}
+
+	internal async Task<bool> UpdateSession(Dto.UpdateSessionRequest request)
+	{
+		var session = await _context.Sessions.FindAsync(request.SessionId);
+		if (session == null)
+			return false;
+
+		session.Name = request.Name;
+		session.ScheduledDate = request.ScheduledDateTime.ToUniversalTime();
+		await _context.SaveChangesAsync();
+		
+		return true;
+	}
+
+    public async Task<Dto.SessionSettings?> GetSessionSettings(long sessionId)
+    {
+        var session = await _context.Sessions.FindAsync(sessionId);
+        if (session == null)
+            return null;
+		
+        return session.ToSettingsViewModel();
+    }
 }

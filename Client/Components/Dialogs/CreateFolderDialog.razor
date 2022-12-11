@@ -1,4 +1,4 @@
-﻿@using Concerto.Client.Components.Pickers
+﻿@using Concerto.Client.Components.Input
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @inject ICourseService CourseService
@@ -12,6 +12,7 @@
 	<DialogContent>
 			<MudStack Spacing="4">
 			<MudTextField @bind-Value="_folderRequest.Name" T="string" Label="Folder name"></MudTextField>
+			<FolderTypePicker @bind-Value="_folderRequest.Type"></FolderTypePicker>
 			<FolderPermissionPicker @bind-Value="_folderRequest.CoursePermission" Inherited="ParentFolderPermission" />
 			</MudStack>
 	</DialogContent>
@@ -41,6 +42,7 @@
 		{
 			Name = string.Empty,
 			ParentId = ParentFolderId,
+			Type = FolderType.Other,
 			CoursePermission = ParentFolderPermission != null ? new FolderPermission(ParentFolderPermission.Value, true)
 															  : new FolderPermission(FolderPermissionType.Read, false)
 		};

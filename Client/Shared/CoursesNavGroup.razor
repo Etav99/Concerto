@@ -1,0 +1,42 @@
+﻿@using Concerto.Client.Services;
+@using Concerto.Shared.Models.Dto;
+@implements IDisposable
+@inject ICourseService CourseService
+
+<MudNavGroup Class="hidden" Title="Courses" Icon="@Icons.Material.Filled.MenuBook" ExpandIcon="@Icons.Material.Filled.ArrowDownward"  Expanded="true">
+	@if (_coursesList is null)
+	{
+		<MudNavLink Href="#">
+			<MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true" />
+		</MudNavLink>
+	}
+	else
+	{
+		@foreach (var course in _coursesList.OrderByDescending(c => c.Id).Take(30))
+		{
+			<MudNavLink title="@course.Name" Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Href="@($"courses/{course.Id}")" Match="NavLinkMatch.Prefix">@course.Name</MudNavLink>
+		}
+	}
+
+</MudNavGroup>
+
+@code {
+	IEnumerable<CourseListItem>? _coursesList;
+
+	private void SetCoursesList(object? sender, IEnumerable<CourseListItem> coursesList)
+	{
+		_coursesList = coursesList;
+		StateHasChanged();
+	}
+
+	protected override void OnInitialized()
+	{
+		CourseService.UserCoursesFetchEventHandler += SetCoursesList;
+		CourseService.GetUserCoursesList().AndForget();
+	}
+
+	public void Dispose()
+	{
+		CourseService.UserCoursesFetchEventHandler -= SetCoursesList;
+	}
+}

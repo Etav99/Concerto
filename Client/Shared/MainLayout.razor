@@ -15,7 +15,7 @@
 @inject ISyncLocalStorageService LocalStorage
 
 <MudThemeProvider @bind-IsDarkMode="@DarkMode" />
-<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" />
+<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" CloseButton="true" />
 <MudSnackbarProvider />
 <CustomStyleProvider DarkMode="@DarkMode" />
 
@@ -54,7 +54,6 @@
 			</Authorized>
 			<NotAuthorized>
 				<MudSwitch T="bool" Checked="@DarkMode" CheckedChanged="@(b => toggleDarkMode(b))" ThumbIconColor="Color.Dark" ThumbIcon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Theme</MudSwitch>
-				<MudText Class="mx-4">You are not logged in</MudText>
 				<MudStack Row="true">
 					<MudButton Href="authentication/login" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Login">Sign in</MudButton>
 				</MudStack>

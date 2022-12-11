@@ -1,10 +1,10 @@
 ﻿@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto;
-@using System.Diagnostics.CodeAnalysis;
+@using Concerto.Client.Components.Input;
 @inject IUserService UserService
 
 
-<MudTable T="CourseUser" Comparer="comparer" Items="Items" MultiSelection="!_editing" SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser,bool>(Filter)"
+<MudTable T="CourseUser" Comparer="_comparer" Items="Items" MultiSelection="!_editing" SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser,bool>(Filter)"
           RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
           ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
           IsEditRowSwitchingBlocked="true" RowsPerPage="25" RowClassFunc="RowClassFunc" SelectedItemsChanged="SelectedCourseUsersChanged"
@@ -20,11 +20,11 @@
     </ToolBarContent>
 
     <ColGroup>
-        <col style="padding: 0; width:32px" />
-        <col style="width:20px" />
+        <col style="padding: 0; width:20px" />
+        <col style="width:100px" />
         <col style="" />
         <col style="" />
-        <col style="" />
+        <col style="width: 200px" />
         <col style="width: 100px" />
     </ColGroup>
 
@@ -64,7 +64,7 @@
         <MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
         <MudTd DataLabel="Role">
             <CourseRolePicker @bind-Value="context.Role"/>
-         </MudTd>
+		</MudTd>
     </RowEditingTemplate>
 
     <FooterContent>
@@ -72,7 +72,7 @@
         {
                 <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="AvailableCourseUsers.Count == SelectedCourseUsers.Count" /></MudTd>
         }
-        <MudTd colspan="2">Select All</MudTd>
+        <MudTd colspan="1">Select All</MudTd>
         <MudTd colspan="3">
             Legend:
             <MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-new">New</MudButton>
@@ -91,32 +91,48 @@
 
 @code
 {
+
+    private HashSet<CourseUser> _selectedCourseUsers = null!;
+
     [Parameter]
-    public HashSet<CourseUser> SelectedCourseUsers { get; set; } = null!;
+    public HashSet<CourseUser> SelectedCourseUsers 
+    {
+        get { return _selectedCourseUsers; }
+        set
+        {
+            if (_selectedCourseUsers != value)
+            {
+                _selectedCourseUsers = value;
+                StateHasChanged();
+            }
+        }
+    }
+
     [Parameter]
     public EventCallback<HashSet<CourseUser>> SelectedCourseUsersChanged { get; set; }
+
     [Parameter]
     public HashSet<CourseUser> ExistingCourseUsers { get; set; } = null!;
+    [Parameter]
+    public HashSet<CourseUser> AvailableCourseUsers { get; set; } = null!;
+    [Parameter]
+    public Dictionary<long, User> Users { get; set; } = null!;
 
     bool Loading => AvailableCourseUsers is null || Users is null;
 
-    private HashSet<CourseUser> AvailableCourseUsers { get; set; } = new();
-    private Dictionary<long, User> Users { get; set; } = new();
-
-    private CourseUser? _editedRowBackup;
-    private string _searchString = "";
-
-    bool _editing = false;
-
-    bool _showSelectedOnly = false;
     HashSet<CourseUser> Items => !Loading ? (_showSelectedOnly ? SelectedCourseUsers : AvailableCourseUsers) : new();
 
-    CourseUserIdEqualityComparer comparer = new();
+	
+    private CourseUser? _editedRowBackup;
+    private string _searchString = "";
+    bool _editing = false;
+    bool _showSelectedOnly = false;
+
+    private CourseUserIdEqualityComparer _comparer = new();
+
     protected override async Task OnInitializedAsync()
     {
-        var users = await UserService.GetUsers();
-        AvailableCourseUsers = users.Select(u => new CourseUser(u.Id, CourseUserRole.Member)).ToHashSet(comparer);
-        Users = users.ToDictionary(u => u.Id);
+
     }
 
     private void EditCommited(object commitedCourseUser)
@@ -150,7 +166,6 @@
         {
             SelectedCourseUsers.Remove(courseUser);
         }
-        await SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers);
     }
 
     private void OnRowEdit(object editedCourseUser)
