@@ -102,10 +102,7 @@
 
 	private async Task DeleteSession(SessionListItem session)
 	{
-		var parameters = new DialogParameters { ["ItemName"] = $"session {session.Name}", ["Confirmation"] = true };
-		var name = "Delete session";
-		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
-		if (result.Cancelled) return;
+		if (!await DialogService.ShowDeleteConfirmationDialog("Delete session", "session", session.Name, true)) return;
 		try
 		{
 			await CourseService.DeleteSession(session.Id);

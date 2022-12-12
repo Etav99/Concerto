@@ -4,11 +4,14 @@
 <MudDialog>
     <DialogContent>
         <MudText>@($"Are you sure you want to delete {ItemName}?")</MudText>
-        <MudSwitch @bind-Checked="@userSure" Label="Yes, I'm Sure." Color="Color.Error" />
+        @if (Confirmation)
+        {
+            <MudSwitch @bind-Checked="@userSure" Label="Yes, I'm Sure." Color="Color.Error" />
+        }
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Disabled="!userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
+        <MudButton Variant="Variant.Filled" Disabled="Confirmation && !userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
     </DialogActions>
 </MudDialog>
     @code {

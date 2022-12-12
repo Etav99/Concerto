@@ -1,6 +1,6 @@
-﻿<MudStack Row="true" AlignItems="AlignItems.Stretch" Class="mx-4 mb-2">
-	<MudTextField @bind-Value="MessageContent" Immediate="true" OnKeyPress="Enter" Label="Message" Variant="Variant.Outlined">></MudTextField>
-	<MudButton OnClick="Send" Disabled="!CanSend" StartIcon="@Icons.Material.Filled.Send" Color="Color.Primary" ButtonType="ButtonType.Button">Send</MudButton>
+﻿<MudStack Row="true" AlignItems="AlignItems.End" Class="">
+	<MudTextField Lines="5" Style="height:auto;" Margin="Margin.Dense" @bind-Value="MessageContent" Immediate="true" Label="@Label" Variant="Variant.Outlined">></MudTextField>
+	<MudButton Class="align-self-end" Size="Size.Small"  OnClick="Send" Disabled="!CanSend" StartIcon="@Icons.Material.Filled.Send" Color="Color.Primary" ButtonType="ButtonType.Button">@SendLabel</MudButton>
 </MudStack>
 
 @code {
@@ -9,15 +9,24 @@
 	private bool CanSend => !string.IsNullOrEmpty(MessageContent);
 
 	[Parameter]
+	public string SendLabel { get; set; } = string.Empty;
+
+	[Parameter]
+	public string Label { get; set; } = string.Empty;
+
+
+
+
+	[Parameter]
 	public EventCallback<string> OnSend { get; set; }
 
-	private async Task Enter(KeyboardEventArgs e)
-	{
-		if (e.Code == "Enter" || e.Code == "NumpadEnter")
-		{
-			await Send();
-		}
-	}
+	//private async Task Enter(KeyboardEventArgs e)
+	//{
+	//	if (e.Code == "Enter" || e.Code == "NumpadEnter")
+	//	{
+	//		await Send();
+	//	}
+	//}
 
 	private async Task Send()
 	{

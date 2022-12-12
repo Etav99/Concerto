@@ -36,8 +36,8 @@ else
 			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px); min-width: 70%" InitialFolderId="SelectedSession!.CourseRootFolderId.Value" />
 		</MudTabPanel>
 
-		<MudTabPanel Text="Session forum">
-			<ChatBox ConversationName="Session conversation" SelectedConversationId="SelectedSession!.ConversationId" />
+		<MudTabPanel Text="Course forum">
+			<Forum CourseId="1" Title="Course forum" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Session settings">

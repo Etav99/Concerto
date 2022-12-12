@@ -8,14 +8,10 @@ public record User
 	public string Username { get; init; }
 	public string FirstName { get; init; }
 	public string LastName { get; init; }
+	
+	public string FullName => $"{FirstName} {LastName}";
+	public string Initials => $"{FirstName.FirstOrDefault()}{LastName.FirstOrDefault()}";
 
-	public string FullName
-	{
-		get
-		{
-			return $"{FirstName} {LastName}";
-		}
-	}
 }
 
 public class UserIdEqualityComparer : IEqualityComparer<User>

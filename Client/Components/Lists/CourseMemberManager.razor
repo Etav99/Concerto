@@ -14,7 +14,7 @@
     <ToolBarContent>
         <MudText Typo="Typo.subtitle1">Course members</MudText>
         <MudSpacer />
-        <MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only selected</MudSwitch>
+        <MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only members</MudSwitch>
         <MudSpacer />
         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
     </ToolBarContent>
@@ -126,7 +126,7 @@
     private CourseUser? _editedRowBackup;
     private string _searchString = "";
     bool _editing = false;
-    bool _showSelectedOnly = false;
+    bool _showSelectedOnly = true;
 
     private CourseUserIdEqualityComparer _comparer = new();
 

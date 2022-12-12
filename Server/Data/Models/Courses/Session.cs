@@ -9,8 +9,7 @@ public class Session : Entity
 	public DateTime ScheduledDate { get; set; }
 	public long CourseId { get; set; }
     public Course Course { get; set; } = null!;
-	public long ConversationId { get; set; }
-    public Conversation Conversation { get; set; } = null!;
+
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public Guid MeetingGuid { get; set; }
 }
@@ -26,7 +25,6 @@ public static partial class ViewModelConversions
             CourseName: session.Course.Name,
             ScheduledDateTime: session.ScheduledDate,
             CourseRootFolderId: session.Course.RootFolderId,
-            ConversationId: session.ConversationId,
             MeetingGuid: session.MeetingGuid,
 			CanManage: canManage
 		);

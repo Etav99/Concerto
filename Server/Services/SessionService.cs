@@ -75,10 +75,8 @@ public class SessionService
 			return false;
 
 		var session = new Session();
-		var sessionConversation = course.CourseUsers.Select(ru => ru.User).ToGroupConversation();
 		session.Name = request.Name;
 		session.ScheduledDate = request.ScheduledDateTime.ToUniversalTime();
-		session.Conversation = sessionConversation;
 		session.Course = course;
 
 		await _context.Sessions.AddAsync(session);

@@ -47,10 +47,6 @@ public class CourseService
 		}).ToList();
         course.CourseUsers = courseUsers;
 
-        // Create course conversation
-        var courseConversation = members.ToGroupConversation();
-        course.Conversation = courseConversation;
-
 		await _context.Courses.AddAsync(course);
 		await _context.SaveChangesAsync();
 		
@@ -109,11 +105,10 @@ public class CourseService
         return course.ToSettingsViewModel(userId, courseRole.Value, courseRole == CourseUserRole.Admin);
     }
 
-	internal async Task<IEnumerable<Dto.User>> GetCourseUsers(long courseId, long userId)
+	internal async Task<IEnumerable<Dto.User>> GetCourseUsers(long courseId)
 	{
 		return await _context.CourseUsers
 			.Where(cu => cu.CourseId == courseId)
-			.Where(cu => cu.UserId != userId)
 			.Include(cu => cu.User)
 			.Select(cu => cu.User.ToViewModel())
 			.ToListAsync();

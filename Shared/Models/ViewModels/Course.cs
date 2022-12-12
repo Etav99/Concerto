@@ -6,7 +6,6 @@ public record Course(
     long Id,
     string Name,
     string Description,
-    long ConversationId,
     long RootFolderId,
     bool CanManage
 ) : EntityModel(Id);

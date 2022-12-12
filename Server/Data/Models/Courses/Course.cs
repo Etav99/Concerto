@@ -10,9 +10,8 @@ public class Course : Entity
 
 	public DateTime CreatedDate { get; set; }
 	public virtual ICollection<CourseUser> CourseUsers { get; set; } = null!;
-
-	public long ConversationId { get; set; }
-    public Conversation Conversation { get; set; } = null!;
+	
+    public ICollection<Post> Posts { get; set; } = null!;
 
     public virtual ICollection<Session> Sessions { get; set; } = null!;
 
@@ -30,7 +29,6 @@ public static partial class ViewModelConversions
             Description: course.Description,
             Name: course.Name,
 			RootFolderId: course.RootFolderId!.Value,
-			ConversationId: course.ConversationId,
 			CanManage: canManage
         );
     }

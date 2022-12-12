@@ -8,41 +8,23 @@ public class AppDataContext : DbContext
 {
 
     public DbSet<User> Users { get; set; }
-    public DbSet<Conversation> Conversations { get; set; }
-    public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<Post> ChatMessages { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<CourseUser> CourseUsers { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<UploadedFile> UploadedFiles { get; set; }
     public DbSet<Folder> Folders { get; set; }
     public DbSet<UserFolderPermission> UserFolderPermissions { get; set; }
-    public DbSet<ConversationUser> ConversationUsers { get; set; }
 
-    public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
+	public DbSet<Post> Posts { get; set; }
+	public DbSet<Comment> Comments { get; set; }
+
+	public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Ignore<Entity>();
-
-
-
-
-        // ConversationUser entity configuration
-        modelBuilder.Entity<ConversationUser>()
-            .HasKey(cu => new { cu.ConversationId, cu.UserId });
-
-        modelBuilder.Entity<ConversationUser>()
-            .HasOne(cu => cu.Conversation)
-            .WithMany(c => c.ConversationUsers)
-            .HasForeignKey(cu => cu.ConversationId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ConversationUser>()
-            .HasOne(cu => cu.User)
-            .WithMany(u => u.ConversationsUser)
-            .HasForeignKey(cu => cu.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
+		
         // Course entity configuration
         modelBuilder.Entity<Course>()
             .HasOne(c => c.RootFolder)
@@ -51,17 +33,9 @@ public class AppDataContext : DbContext
             .HasForeignKey(c => c.RootFolderId);
 
         modelBuilder.Entity<Course>()
-            .HasOne(c => c.Conversation)
+            .HasMany(c => c.Posts)
             .WithOne(c => c.Course)
-            .HasForeignKey<Course>(c => c.ConversationId)
-            .IsRequired(true)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Session
-        modelBuilder.Entity<Session>()
-            .HasOne(s => s.Conversation)
-            .WithOne(c => c.Session)
-            .HasForeignKey<Session>(c => c.ConversationId)
+            .HasForeignKey(c => c.CourseId)
             .IsRequired(true)
             .OnDelete(DeleteBehavior.Cascade);
 

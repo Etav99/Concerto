@@ -11,19 +11,6 @@ namespace Concerto.Server.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Conversations",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    IsPrivate = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Conversations", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -40,52 +27,23 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChatMessages",
+                name: "Comments",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SenderId = table.Column<long>(type: "bigint", nullable: false),
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false),
-                    SendTimestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AuthorId = table.Column<long>(type: "bigint", nullable: false),
+                    PostId = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Edited = table.Column<bool>(type: "boolean", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
+                    table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChatMessages_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_Users_SenderId",
-                        column: x => x.SenderId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ConversationUsers",
-                columns: table => new
-                {
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ConversationUsers", x => new { x.ConversationId, x.UserId });
-                    table.ForeignKey(
-                        name: "FK_ConversationUsers_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ConversationUsers_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Comments_Users_AuthorId",
+                        column: x => x.AuthorId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -101,18 +59,11 @@ namespace Concerto.Server.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false),
                     RootFolderId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Courses", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Courses_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,6 +129,36 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Post",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AuthorId = table.Column<long>(type: "bigint", nullable: false),
+                    CourseId = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    Edited = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Post", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Post_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Post_Users_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sessions",
                 columns: table => new
                 {
@@ -186,18 +167,11 @@ namespace Concerto.Server.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
-                    ConversationId = table.Column<long>(type: "bigint", nullable: false),
                     MeetingGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sessions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sessions_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sessions_Courses_CourseId",
                         column: x => x.CourseId,
@@ -256,25 +230,14 @@ namespace Concerto.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_ConversationId",
-                table: "ChatMessages",
-                column: "ConversationId");
+                name: "IX_Comments_AuthorId",
+                table: "Comments",
+                column: "AuthorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_SenderId",
-                table: "ChatMessages",
-                column: "SenderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ConversationUsers_UserId",
-                table: "ConversationUsers",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Courses_ConversationId",
-                table: "Courses",
-                column: "ConversationId",
-                unique: true);
+                name: "IX_Comments_PostId",
+                table: "Comments",
+                column: "PostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Courses_RootFolderId",
@@ -302,10 +265,14 @@ namespace Concerto.Server.Migrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sessions_ConversationId",
-                table: "Sessions",
-                column: "ConversationId",
-                unique: true);
+                name: "IX_Post_AuthorId",
+                table: "Post",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_CourseId",
+                table: "Post",
+                column: "CourseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_CourseId",
@@ -329,6 +296,14 @@ namespace Concerto.Server.Migrations
                 unique: true);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_Comments_Post_PostId",
+                table: "Comments",
+                column: "PostId",
+                principalTable: "Post",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Courses_Folders_RootFolderId",
                 table: "Courses",
                 column: "RootFolderId",
@@ -339,10 +314,6 @@ namespace Concerto.Server.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Courses_Conversations_ConversationId",
-                table: "Courses");
-
-            migrationBuilder.DropForeignKey(
                 name: "FK_Folders_Users_OwnerId",
                 table: "Folders");
 
@@ -351,10 +322,7 @@ namespace Concerto.Server.Migrations
                 table: "Courses");
 
             migrationBuilder.DropTable(
-                name: "ChatMessages");
-
-            migrationBuilder.DropTable(
-                name: "ConversationUsers");
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "CourseUsers");
@@ -369,7 +337,7 @@ namespace Concerto.Server.Migrations
                 name: "UserFolderPermissions");
 
             migrationBuilder.DropTable(
-                name: "Conversations");
+                name: "Post");
 
             migrationBuilder.DropTable(
                 name: "Users");

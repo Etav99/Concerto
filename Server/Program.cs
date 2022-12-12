@@ -26,7 +26,7 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<CourseService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<StorageService>();
@@ -121,7 +121,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
-app.MapHub<ChatHub>("/chat");
+app.MapHub<NotificationHub>("/chat");
 app.MapFallbackToFile("index.html");
 
 

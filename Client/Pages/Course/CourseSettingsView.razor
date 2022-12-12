@@ -33,7 +33,7 @@ else {
 		</MudPaper>
 
 		<MudPaper Elevation="0">
-			<MudTextField Immediate="true" Variant="Variant.Outlined" @bind-Value="Request.Name" T="string" Label="Course name"></MudTextField>
+			<MudTextField Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Title" Immediate="true" Variant="Variant.Outlined" @bind-Value="Request.Name" T="string" Label="Course name"></MudTextField>
 		</MudPaper>
 
 		<CourseMemberManager SelectedCourseUsers="Request.Members" SelectedCourseUsersChanged="() => StateHasChanged()"
@@ -115,12 +115,7 @@ else {
 
 	private async Task Delete()
 	{
-		var parameters = new DialogParameters { ["ItemName"] = $"course {CourseSettings!.Name}", ["Confirmation"] = true };
-		var name = "Delete course";
-
-		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
-		if (result.Cancelled) return;
-
+		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", CourseSettings!.Name, true)) return;
 		try
 		{
 			await CourseService.DeleteCourse(CourseSettings.Id);

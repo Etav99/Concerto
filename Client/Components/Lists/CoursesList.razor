@@ -14,7 +14,6 @@
 @inject ISnackbar Snackbar
 
 @inject IBreadcrumbsService BreadcrumbsService
-@inject IChatService ChatService
 @inject ICourseService CourseService
 
 @if (Loading)
@@ -151,12 +150,7 @@ else
 
 	private async Task DeleteCourse(CourseListItem course)
 	{
-		var parameters = new DialogParameters { ["ItemName"] = $"course {course.Name}", ["Confirmation"] = true };
-		var name = "Delete course";
-
-		DialogResult result = await DialogService.Show<DeleteConfirmationDialog>(name, parameters).Result;
-		if (result.Cancelled) return;
-
+		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", course.Name, true)) return;
 		try
 		{
 			await CourseService.DeleteCourse(course.Id);

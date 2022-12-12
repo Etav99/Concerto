@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Data.Models;
+using Concerto.Server.Extensions;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
@@ -14,6 +15,7 @@ public class CourseController : ControllerBase
 {
 	private readonly ILogger<CourseController> _logger;
 	private readonly CourseService _courseService;
+	private long UserId => HttpContext.UserId();
 
 
 	public CourseController(ILogger<CourseController> logger, CourseService courseService)
@@ -25,22 +27,20 @@ public class CourseController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Dto.CourseListItem>>> GetCurrentUserCourses()
 	{
-        long userId = HttpContext.UserId();
-        if (User.IsInRole("admin"))
+        if (User.IsAdmin())
         {
             return Ok(await _courseService.GetAllCourses());
         }
-        return Ok(await _courseService.GetUserCoursesList(userId));
+        return Ok(await _courseService.GetUserCoursesList(UserId));
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<Dto.Course>> GetCourse(long courseId)
 	{
-        long userId = HttpContext.UserId();
-		bool isAdmin = User.IsInRole("admin");
-		if (isAdmin || await _courseService.IsUserCourseMember(userId, courseId))
+		bool isAdmin = User.IsAdmin();
+		if (isAdmin || await _courseService.IsUserCourseMember(UserId, courseId))
         {
-            var course = await _courseService.GetCourse(courseId, userId, isAdmin);
+            var course = await _courseService.GetCourse(courseId, UserId, isAdmin);
             if (course == null) return NotFound();
             return Ok(course);
         }
@@ -50,11 +50,10 @@ public class CourseController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Dto.CourseSettings>> GetCourseSettings(long courseId)
     {
-        long userId = HttpContext.UserId();
-        bool isAdmin = User.IsInRole("admin");
-        if (isAdmin || await _courseService.CanManageCourse(courseId, userId))
+        bool isAdmin = User.IsAdmin();
+        if (isAdmin || await _courseService.CanManageCourse(courseId, UserId))
         {
-            var courseSettings = await _courseService.GetCourseSettings(courseId, userId, isAdmin);
+            var courseSettings = await _courseService.GetCourseSettings(courseId, UserId, isAdmin);
             if (courseSettings == null) return NotFound();
             return Ok(courseSettings);
         }
@@ -64,11 +63,9 @@ public class CourseController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Dto.User>>> GetCourseUsers(long courseId)
     {
-        long userId = HttpContext.UserId();
-        bool isAdmin = User.IsInRole("admin");
-        if (isAdmin || await _courseService.IsUserCourseMember(userId, courseId))
+        if (User.IsAdmin() || await _courseService.IsUserCourseMember(UserId, courseId))
         {
-            var courseUsers = await _courseService.GetCourseUsers(courseId, userId);
+            var courseUsers = await _courseService.GetCourseUsers(courseId);
             return Ok(courseUsers);
         }
         return Forbid();
@@ -80,11 +77,9 @@ public class CourseController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<long>> CreateCourseForCurrentUser([FromBody] Dto.CreateCourseRequest request)
 	{
-        long userId = HttpContext.UserId();
-
         if (request.Members.Count() != request.Members.DistinctBy(x => x.UserId).Count()) return BadRequest("Duplicate members");
 
-        var newCourseId = await _courseService.CreateCourse(request, userId);
+        var newCourseId = await _courseService.CreateCourse(request, UserId);
         if (newCourseId > 0) return CreatedAtAction("GetCourse", new { courseId = newCourseId }, newCourseId);
         return BadRequest();
 	}
@@ -93,10 +88,8 @@ public class CourseController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<long>> CloneCourse([FromBody] Dto.CloneCourseRequest request)
     {
-        long userId = HttpContext.UserId();
-
-        if (!await _courseService.IsUserCourseMember(userId, request.CourseId)) return Forbid();
-        var newCourseId = await _courseService.CloneCourse(request, userId);
+        if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
+        var newCourseId = await _courseService.CloneCourse(request, UserId);
         if (newCourseId <= 0) BadRequest();
         return Ok(newCourseId);
     }
@@ -105,10 +98,9 @@ public class CourseController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> UpdateCourse([FromBody] Dto.UpdateCourseRequest request)
 	{
-		long userId = HttpContext.UserId();
-		if (!User.IsInRole("admin") && !await _courseService.CanManageCourse(request.CourseId, userId)) return Forbid();
+		if (!User.IsAdmin() && !await _courseService.CanManageCourse(request.CourseId, UserId)) return Forbid();
 
-		if (await _courseService.UpdateCourse(request, userId)) return Ok();
+		if (await _courseService.UpdateCourse(request, UserId)) return Ok();
 		return BadRequest();
 	}
 
@@ -116,11 +108,9 @@ public class CourseController : ControllerBase
     [HttpDelete]
     public async Task<ActionResult> DeleteCourse(long courseId)
 	{
-        long userId = HttpContext.UserId();
-
-		if (!User.IsInRole("admin") && !await _courseService.CanDeleteCourse(courseId, userId)) return Forbid();
+		if (!User.IsAdmin() && !await _courseService.CanDeleteCourse(courseId, UserId)) return Forbid();
         
-        if (await _courseService.DeleteCourse(courseId, userId)) return Ok();
+        if (await _courseService.DeleteCourse(courseId, UserId)) return Ok();
         
         return BadRequest();
     }

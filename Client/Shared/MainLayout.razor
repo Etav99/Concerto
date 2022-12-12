@@ -8,7 +8,6 @@
 
 @inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
-@inject IChatService ChatService
 @inject IBreadcrumbsService BreadcrumbsService
 @inject IUserService UserService
 @inject ISnackbar Snackbar
@@ -68,7 +67,7 @@
 	</MudDrawer>
 	<MudMainContent Class="d-flex flex-column pb-2" Style="height: 100%">
 		<NavigationToolbar />
-		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.Large : MaxWidth.Large)" Style="overflow:auto"Class="flex-grow-1">
+		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.ExtraLarge : MaxWidth.ExtraLarge)" Style="overflow:auto" Class="flex-grow-1">
 			@Body
 		</MudContainer>
 	</MudMainContent>
@@ -121,7 +120,5 @@
 		if (authenticationStateTask == null) return;
 		UserService.SetAuthenticationState(await authenticationStateTask);
 		await UserService.FetchUserId();
-		if (UserService.IsLoggedIn)
-			await ChatService.ConnectToChatAsync();
 	}
 }

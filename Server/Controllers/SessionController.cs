@@ -15,7 +15,7 @@ public class SessionController : ControllerBase
 	private readonly ILogger<SessionController> _logger;
 	private readonly CourseService _courseService;
 	private readonly SessionService _sessionService;
-
+	private long UserId => HttpContext.UserId();
 
 	public SessionController(ILogger<SessionController> logger, CourseService courseService, SessionService sessionService)
 	{
@@ -28,8 +28,7 @@ public class SessionController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> CreateSession([FromBody] Dto.CreateSessionRequest request)
 	{
-		long userId = HttpContext.UserId();
-		if (!await _courseService.IsUserCourseMember(userId, request.CourseId)) return Forbid();
+		if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
 
 		if (await _sessionService.CreateSession(request))
 		{
@@ -41,19 +40,17 @@ public class SessionController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Dto.Session>> GetSession(long sessionId)
 	{
-		long userId = HttpContext.UserId();
-		bool isAdmin = User.IsInRole("admin");
-		if (!isAdmin && !await _sessionService.CanAccessSession(userId, sessionId)) return Forbid();
+		bool isAdmin = User.IsAdmin();
+		if (!isAdmin && !await _sessionService.CanAccessSession(UserId, sessionId)) return Forbid();
 
-		var session = await _sessionService.GetSession(sessionId, userId, isAdmin);
+		var session = await _sessionService.GetSession(sessionId, UserId, isAdmin);
 		return session is null ? NotFound() : Ok(session);
 	}
 
 	[HttpDelete]
 	public async Task<ActionResult> DeleteSession(long sessionId)
 	{
-		long userId = HttpContext.UserId();
-		if (!await _sessionService.CanManageSession(userId, sessionId)) return Forbid();
+		if (!await _sessionService.CanManageSession(UserId, sessionId)) return Forbid();
 		if (!await _sessionService.DeleteSession(sessionId)) return Forbid();
 		return Ok();
 	}
@@ -61,16 +58,14 @@ public class SessionController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Dto.SessionListItem>>> GetCourseSessions(long courseId)
 	{
-		long userId = HttpContext.UserId();
-		if (!User.IsInRole("admin") && !await _courseService.IsUserCourseMember(userId, courseId)) return Forbid();
+		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
 		return Ok(await _sessionService.GetCourseSessions(courseId));
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<Dto.SessionSettings>> GetSessionSettings(long sessionId)
 	{
-		long userId = HttpContext.UserId();
-		if (!User.IsInRole("admin") && !await _sessionService.CanManageSession(sessionId, userId)) return Forbid();
+		if (!User.IsAdmin() && !await _sessionService.CanManageSession(sessionId, UserId)) return Forbid();
 		
 		var sessionSettings = await _sessionService.GetSessionSettings(sessionId);
 		if (sessionSettings == null) return NotFound();
@@ -80,8 +75,7 @@ public class SessionController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> UpdateSession(Dto.UpdateSessionRequest request)
 	{
-		long userId = HttpContext.UserId();
-		if (!User.IsInRole("admin") && !await _sessionService.CanManageSession(request.SessionId, userId)) return Forbid();
+		if (!User.IsAdmin() && !await _sessionService.CanManageSession(request.SessionId, UserId)) return Forbid();
 		if (!await _sessionService.UpdateSession(request)) return Forbid();
 		
 		return Ok();

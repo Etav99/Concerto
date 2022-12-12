@@ -325,6 +325,8 @@
 		};
 		try
 		{
+			var itemsNames = string.Join(", ", SelectedItems.Select(x => x.Name));
+			if (!await DialogService.ShowDeleteConfirmationDialog("Delete file", "folder items", itemsNames)) return;
 			await StorageService.DeleteFolderItems(request);
 			Snackbar.Add("Items deleted", Severity.Success);
 			await Refresh();
@@ -370,6 +372,7 @@
 	{
 		try
 		{
+			if (!await DialogService.ShowDeleteConfirmationDialog("Delete file", "file", file.Name)) return;
 			await StorageService.DeleteFile(file.Id);
 			Snackbar.Add("File deleted", Severity.Success);
 		}

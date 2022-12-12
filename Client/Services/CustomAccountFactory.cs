@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using System.Security.Claims;
-using System.Text.Json.Nodes;
 using System.Text.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Concerto.Client.Services;
 

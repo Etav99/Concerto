@@ -6,7 +6,6 @@ public record Session(
 	long CourseId,
 	string CourseName,
 	long? CourseRootFolderId,
-	long ConversationId,
 	bool CanManage,
 	Guid MeetingGuid
 ) : EntityModel(Id);

@@ -23,7 +23,7 @@ builder.Services.AddHttpClient("WebAPI",
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services
-	.AddHttpClient<IChatClient, ChatClient>(client => client.BaseAddress = baseAddress)
+	.AddHttpClient<IForumClient, ForumClient>(client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services
@@ -45,7 +45,7 @@ builder.Services
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 	.CreateClient("WebAPI"));
 
-builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
