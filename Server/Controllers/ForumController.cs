@@ -1,8 +1,6 @@
-﻿using Concerto.Server.Data.Models;
-using Concerto.Server.Extensions;
+﻿using Concerto.Server.Extensions;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
-using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-
-namespace Concerto.Shared.Models.Dto;
+﻿namespace Concerto.Shared.Models.Dto;
 
 public record Post(
 	long Id,

@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>b147a3d8-5545-408c-8c52-ffed9711fd7c</ProjectGuid>
+    <ProjectGuid>c02bb558-db04-4672-89bf-2b544182607f</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/Concerto</DockerServiceUrl>
     <DockerServiceName>concerto.server</DockerServiceName>
@@ -18,6 +18,10 @@
     <None Include="keycloak.env" />
     <None Include="nginx\Dockerfile" />
     <None Include="nginx\nginx.conf" />
+    <None Include="nginx\obj\Docker\CanonicalServiceNames.cache" />
     <None Include="postgres.env" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="nginx\obj\Docker\empty\" />
   </ItemGroup>
 </Project>

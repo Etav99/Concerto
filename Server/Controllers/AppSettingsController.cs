@@ -1,6 +1,7 @@
 ﻿using Concerto.Server.Extensions;
 using Concerto.Server.Settings;
 using Concerto.Shared.Models;
+using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 

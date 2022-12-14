@@ -1,0 +1,37 @@
+﻿@using Concerto.Shared.Client.Extensions;
+@using Concerto.Shared.Models.Dto
+
+<MudSelect Disabled="IsCourseRoot" T="FolderType" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" Label="Folder type" Adornment="Adornment.Start" AdornmentIcon="@Value.ToIcon()" AnchorOrigin="Origin.BottomCenter">
+    @if (IsCourseRoot)
+    {
+        <MudSelectItem Value="@(FolderType.CourseRoot)">@FolderTypeExtensions.ToDisplayString(FolderType.CourseRoot)</MudSelectItem>
+    }
+    else
+    {
+        <MudSelectItem Value="@(FolderType.Sheets)">@FolderTypeExtensions.ToDisplayString(FolderType.Sheets)</MudSelectItem>
+        <MudSelectItem Value="@(FolderType.Recordings)">@FolderTypeExtensions.ToDisplayString(FolderType.Recordings) </MudSelectItem>
+        <MudSelectItem Value="@(FolderType.Video)">@FolderTypeExtensions.ToDisplayString(FolderType.Video)</MudSelectItem>
+        <MudSelectItem Value="@(FolderType.Audio)">@FolderTypeExtensions.ToDisplayString(FolderType.Audio)</MudSelectItem>
+        <MudSelectItem Value="@(FolderType.Documents)">@FolderTypeExtensions.ToDisplayString(FolderType.Documents)</MudSelectItem>
+        <MudSelectItem Value="@(FolderType.Other)">@FolderTypeExtensions.ToDisplayString(FolderType.Other)</MudSelectItem>
+    }
+
+</MudSelect>
+
+@code {
+    [Parameter]
+    public FolderType Value { get; set; }
+    [Parameter]
+    public EventCallback<FolderType> ValueChanged { get; set; }
+
+    bool IsCourseRoot => Value == FolderType.CourseRoot;
+
+    [Parameter]
+    public EventCallback<FolderType> OnChange { get; set; }
+
+    async Task Selected(FolderType role)
+    {
+        await ValueChanged.InvokeAsync(role);
+        await OnChange.InvokeAsync(role);
+    }
+}

@@ -1,0 +1,94 @@
+﻿@using Concerto.Shared.Client.Components.Input
+@using Concerto.Shared.Client.Services
+@using Concerto.Shared.Models.Dto
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject IStorageService StorageService
+@inject ICourseService CourseService
+
+<MudDialog>
+	 <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
+			Folder settings
+        </MudText>
+    </TitleContent>
+	<DialogContent>
+		@if (Loading)
+		{
+			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+		}
+		else
+		{
+			<MudStack Spacing="4">
+				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
+				<FolderTypePicker @bind-Value="_request.Type"></FolderTypePicker>
+				<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType" />
+				<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers" />
+			</MudStack>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Update</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
+
+	[Parameter]
+	public long EditedFolderId { get; set; }
+
+	private bool Loading { get; set; }
+
+	private FolderPermissionType? _parentPermissionType;
+	public HashSet<UserFolderPermission> ParentUserFolderPermissions { get; set; } = null!;
+	private HashSet<User>? CourseUsers;
+
+	// Form
+	private UpdateFolderRequest _request = null!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Loading = true;
+		var folderSettings = await StorageService.GetFolderSettings(EditedFolderId);
+		CourseUsers = (await CourseService.GetCourseUsers(folderSettings.CourseId)).ToHashSet();
+		_request = new UpdateFolderRequest(folderSettings.Id)
+			{
+				Name = folderSettings.Name,
+				Type = folderSettings.Type,
+				CoursePermission = folderSettings.CoursePermission,
+				UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
+				forceInherit = false
+			};
+		ParentUserFolderPermissions = folderSettings.ParentUserPermissions.ToHashSet();
+		_parentPermissionType = folderSettings.ParentCoursePermission?.Type;
+		Loading = false;
+	}
+
+	void Cancel() => Dialog.Cancel();
+
+	private async Task Submit()
+	{
+		if (String.IsNullOrEmpty(_request.Name))
+		{
+			Snackbar.Add("Folder name cannot be empty", Severity.Error);
+			return;
+		}
+		try
+		{
+			await StorageService.UpdateFolder(_request);
+			Snackbar.Add("Folder updated", Severity.Success);
+			Dialog.Close(DialogResult.Ok(true));
+		}
+		catch
+		{
+			Snackbar.Add("Failed to update folder", Severity.Error);
+		}
+	}
+
+}

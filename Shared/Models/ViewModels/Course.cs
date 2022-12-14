@@ -63,7 +63,7 @@ public record CreateCourseRequest
 {
     public string Name { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
-    public IEnumerable<Dto.CourseUser> Members { get; set; } = null!;
+    public IEnumerable<CourseUser> Members { get; set; } = null!;
 }
 
 public record UpdateCourseRequest
@@ -71,7 +71,7 @@ public record UpdateCourseRequest
 	public long CourseId { get; set; }
 	public string Name { get; set; } = null!;
 	public string Description { get; set; } = string.Empty;
-	public HashSet<Dto.CourseUser> Members { get; set; } = null!;
+	public HashSet<CourseUser> Members { get; set; } = null!;
 }
 public record CloneCourseRequest
 {

@@ -1,5 +1,4 @@
-﻿using Concerto.Client.Services;
-using Concerto.Server.Data.DatabaseContext;
+﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
 using Concerto.Server.Hubs;

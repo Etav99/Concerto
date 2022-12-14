@@ -1,0 +1,94 @@
+﻿@*@using Concerto.Shared.Client.Services
+@inject IUserService UserService
+@inject ICourseService CourseService
+
+<MudPaper Elevation="0" Outlined="true" Class="pa-4">
+	<MudText>@Label</MudText>
+	<MudStack Spacing="4">
+		<MudStack Spacing="4">
+			<MudStack Row="true">
+				<MudAutocomplete T="Course" Label="Select course" @ref="_selectCourseAutocomplete"
+								 ValueChanged="@OnCourseSelected" SearchFunc="@SearchCourses" Variant="Variant.Outlined"
+								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
+								 ToStringFunc="@(r => r == null ? null : $"{r.Name}")" />
+
+				<MudAutocomplete T="Session" Label="Select session" @ref="_selectSessionAutocomplete"
+								 ValueChanged="@AddSession" SearchFunc="@SearchSessions" Variant="Variant.Outlined"
+								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
+								 ToStringFunc="@(s => s == null ? null : $"{s.Name}")" />
+			</MudStack>
+
+			<MudPaper Elevation="0">
+
+				<MudChipSet AllClosable="true" OnClose="Closed">
+					<MudText>
+						Folder will be shared with sessions:
+					</MudText>
+					@foreach (var session in _selectedSessions)
+					{
+						<MudChip Value="@session" Text="@session.Name"></MudChip>
+					}
+				</MudChipSet>
+			</MudPaper>
+		</MudStack>
+	</MudStack>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public ISet<Session> SelectedSessions
+    {
+        get => _selectedSessions;
+        set => _selectedSessions = value.ToHashSet();
+    }
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    private MudAutocomplete<Course>? _selectCourseAutocomplete;
+    private Course? _selectedCourse;
+    private MudAutocomplete<Session>? _selectSessionAutocomplete;
+    private HashSet<Session> _selectedSessions = new HashSet<Session>();
+
+    [Parameter]
+    public EventCallback<ISet<Session>> SelectedSessionsChanged { get; set; }
+
+    public async Task Closed(MudChip chip)
+    {
+        var session = chip.Value as Session;
+        if (session is not null) _selectedSessions.Remove(session);
+        await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
+    }
+
+    private async Task AddSession(Session session)
+    {
+        _selectedSessions.Add(session);
+        _selectSessionAutocomplete?.Reset();
+        _selectCourseAutocomplete?.Reset();
+        await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
+    }
+
+    private async Task OnCourseSelected(Course course)
+    {
+        _selectedCourse = await CourseService.GetCourse(course.Id); ;
+    }
+
+    private async Task<IEnumerable<Course>> SearchCourses(string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return CourseService.Courses;
+        return CourseService.Courses.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private async Task<IEnumerable<Session>> SearchSessions(string searchString)
+    {
+        if (_selectedCourse is null) return Enumerable.Empty<Session>();
+        await CourseService.LoadCourseSessions(_selectedCourse.Id);
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return CourseService.CourseSessions[_selectedCourse.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
+        }
+        return CourseService.CourseSessions[_selectedCourse.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+    }
+}
+*@

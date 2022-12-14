@@ -1,8 +1,12 @@
-﻿@using Concerto.Client.Components
+﻿@using Concerto.Shared.Client.Components
+@using Concerto.Shared.Client.Components.Layout;
 @using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
-	<Router AppAssembly="@typeof(App).Assembly">
+	<Router AppAssembly="@typeof(App).Assembly"
+		AdditionalAssemblies="new[] { typeof(MainLayout).Assembly}">
+
+
 		<Found Context="routeData">
 			<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
 				<NotAuthorized>

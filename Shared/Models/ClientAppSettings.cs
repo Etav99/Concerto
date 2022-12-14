@@ -1,4 +1,4 @@
-﻿namespace Concerto.Shared.Models;
+﻿namespace Concerto.Shared.Models.Dto;
 
 public class ClientAppSettings
 {

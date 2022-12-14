@@ -1,19 +1,16 @@
-global using Dto = Concerto.Shared.Models.Dto;
 using Blazored.LocalStorage;
 using Concerto.Client;
-using Concerto.Client.Services;
+using Concerto.Shared.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
-using static System.Net.WebRequestMethods;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 
+var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 
 IAppSettingsClient appSettingsClient = new AppSettingsClient(new HttpClient() { BaseAddress = baseAddress });
 var clientAppSettings = await appSettingsClient.GetClientAppSettingsAsync();
@@ -42,8 +39,6 @@ builder.Services
 	.AddHttpClient<IUserClient, UserClient>(client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-	.CreateClient("WebAPI"));
 
 builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
@@ -66,9 +61,5 @@ builder.Services.AddOidcAuthentication(options =>
 })
 .AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
 
-var host = builder.Build();
 
-var logger = host.Services.GetRequiredService<ILoggerFactory>()
-	.CreateLogger<Program>();
-
-await host.RunAsync();
+await builder.Build().RunAsync();

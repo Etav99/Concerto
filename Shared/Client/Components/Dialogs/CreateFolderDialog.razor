@@ -1,0 +1,72 @@
+﻿@using Concerto.Shared.Client.Components.Input
+@using Concerto.Shared.Client.Services
+@using Concerto.Shared.Models.Dto
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject IStorageService StorageService
+@inject IStorageClient StorageClient
+@inject ISessionClient SessionClient
+
+<MudDialog>
+	<DialogContent>
+			<MudStack Spacing="4">
+			<MudTextField @bind-Value="_folderRequest.Name" T="string" Label="Folder name"></MudTextField>
+			<FolderTypePicker @bind-Value="_folderRequest.Type"></FolderTypePicker>
+			<FolderPermissionPicker @bind-Value="_folderRequest.CoursePermission" Inherited="ParentFolderPermission" />
+			</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Create</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
+
+	[Parameter]
+	public long ParentFolderId { get; set; }
+
+	[Parameter]
+	public FolderPermissionType? ParentFolderPermission { get; set; }
+
+	// Form
+	CreateFolderRequest _folderRequest = null!;
+
+	protected override void OnInitialized()
+	{
+		_folderRequest = new()
+		{
+			Name = string.Empty,
+			ParentId = ParentFolderId,
+			Type = FolderType.Other,
+			CoursePermission = ParentFolderPermission != null ? new FolderPermission(ParentFolderPermission.Value, true)
+															  : new FolderPermission(FolderPermissionType.Read, false)
+		};
+	}
+
+	private async Task Submit()
+	{
+		if (String.IsNullOrEmpty(_folderRequest.Name))
+		{
+			Snackbar.Add("Folder name cannot be empty", Severity.Error);
+			return;
+		}
+
+		try
+		{
+			await StorageClient.CreateFolderAsync(_folderRequest);
+			Snackbar.Add("Folder created", Severity.Success);
+			Dialog.Close(DialogResult.Ok(true));
+		}
+		catch
+		{
+			Snackbar.Add("Failed to create folder", Severity.Error);
+		}
+	}
+
+	void Cancel() => Dialog.Cancel();
+}
