@@ -1,4 +1,5 @@
 ﻿@using Concerto.Client.Components.Input
+@using Concerto.Client.Components.Lists
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @inject ICourseService CourseService
@@ -164,13 +165,12 @@
 			{
 				await StorageService.MoveFolderItems(_moveRequest);
 			}
+			Snackbar.Add($"{(Copy ? "Copied" : "Moved")} succesfully", Severity.Success);
 		}
 		catch
 		{
 			Snackbar.Add($"Failed to {(Copy ? "copy" : "move")} items", Severity.Error);
 		}
-
-		Snackbar.Add($"{(Copy ? "Copied" : "Moved")} succesfully", Severity.Success);
 		Dialog.Close();
 	}
 

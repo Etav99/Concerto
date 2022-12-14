@@ -11,7 +11,7 @@
 	 <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
-			Folder settings
+			File settings
         </MudText>
     </TitleContent>
 	<DialogContent>
@@ -21,9 +21,7 @@
 		}
 		else
 		{
-			<MudStack Spacing="4">
-				<MudTextField @bind-Value="_request.Name" T="string" Label="File name"></MudTextField>
-			</MudStack>
+			<MudTextField @bind-Value="_request.Name" T="string" Label="File name"></MudTextField>
 		}
 	</DialogContent>
 	<DialogActions>

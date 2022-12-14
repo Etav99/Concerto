@@ -10,7 +10,7 @@
 @inject HttpClient Http;
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="true" Elevation="0" FixedHeader="true" FixedFooter="true"
-		  Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style"
+		  Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style" RowStyle="cursor: pointer;"
 		  OnRowClick="OnRowClick">
 	<ToolBarContent>
 		<MudText Class="mr-2" Typo="Typo.h6">Sessions</MudText>
@@ -26,7 +26,7 @@
 				</ActivatorContent>
 				<ChildContent>
 					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-								 OnClick="CreateSession" Disabled="false">
+								 OnClick="Initialize" Disabled="false">
 						Refresh view
 					</MudMenuItem>
 					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"

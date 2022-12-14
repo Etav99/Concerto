@@ -28,21 +28,21 @@ public class ForumController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<IEnumerable<Dto.Post>>> GetPosts(long courseId, long? beforeId = null)
 	{
-		if (!await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
+		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
 		return Ok(await _forumService.GetPosts(courseId, UserId, User.IsAdmin(), beforeId));
 	}
 
 	[HttpPost]
 	public async Task<ActionResult<IEnumerable<Dto.Comment>>> GetComments(long postId, long? beforeId = null)
 	{
-		if (!await _forumService.CanAccessPost(UserId, postId)) return Forbid();
+		if (!User.IsAdmin() && !await _forumService.CanAccessPost(UserId, postId)) return Forbid();
 		return Ok(await _forumService.GetComments(postId, UserId, User.IsAdmin(), beforeId));
 	}
 
 	[HttpPost]
 	public async Task<ActionResult<Dto.Post>> CreatePost([FromBody] Dto.CreatePostRequest request)
 	{
-		if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
+		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
 		Dto.Post? createdPost = await _forumService.CreatePost(request, UserId);
 		return (createdPost != null) ? Ok(createdPost) : BadRequest();
 	}
@@ -58,7 +58,7 @@ public class ForumController : ControllerBase
 	[HttpDelete]
 	public async Task<ActionResult> DeletePost(long postId)
 	{
-		if (!await _forumService.CanDeletePost(UserId, postId)) return Forbid();
+		if (!User.IsAdmin() && !await _forumService.CanDeletePost(UserId, postId)) return Forbid();
 		await _forumService.DeletePost(postId);
 		return Ok();
 	}
@@ -66,7 +66,7 @@ public class ForumController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Dto.Comment>> CreateComment([FromBody] Dto.CreateCommentRequest request)
 	{
-		if (!await _forumService.CanCommentPost(UserId, request.PostId)) return Forbid();
+		if (!User.IsAdmin() && !await _forumService.CanCommentPost(UserId, request.PostId)) return Forbid();
 		Dto.Comment? createdComment = await _forumService.CreateComment(request, UserId);
 		return (createdComment != null) ? Ok(createdComment) : BadRequest();
 	}
@@ -82,7 +82,7 @@ public class ForumController : ControllerBase
 	[HttpDelete]
 	public async Task<ActionResult> DeleteComment(long commentId)
 	{
-		if (!await _forumService.CanDeleteComment(commentId, UserId)) return Forbid();
+		if (!User.IsAdmin() && !await _forumService.CanDeleteComment(commentId, UserId)) return Forbid();
 		await _forumService.DeleteComment(commentId);
 		return Ok();
 	}

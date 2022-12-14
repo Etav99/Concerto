@@ -19,6 +19,19 @@ public record FolderContentItem(
 	bool CanDelete
 ) : EntityModel(Id);
 
+public class FolderContentItemIdEqualityComparer : IEqualityComparer<FolderContentItem>
+{
+	public bool Equals(FolderContentItem? x, FolderContentItem? y)
+	{
+		return x is FolderItem && y is FolderItem && x?.Id == y?.Id;
+	}
+
+	public int GetHashCode([DisallowNull] FolderContentItem obj)
+	{
+		return obj.Id.GetHashCode() + (obj is FolderItem).GetHashCode();
+	}
+}
+
 public record FolderItem(
 	long Id,
 	string Name,

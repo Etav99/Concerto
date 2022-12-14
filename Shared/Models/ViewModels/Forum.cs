@@ -33,7 +33,7 @@ public record Post(
 	public void deleteComment(Comment comment)
 	{
 		var commentToDeleteIndex = Comments.FindIndex(c => c.Id == comment.Id);
-		if (commentToDeleteIndex > 0)
+		if (commentToDeleteIndex >= 0)
 		{
 			CommentsCount--;
 			Comments.RemoveAt(commentToDeleteIndex);

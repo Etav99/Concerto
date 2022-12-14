@@ -121,7 +121,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
-app.MapHub<NotificationHub>("/chat");
+app.MapHub<NotificationHub>("/notifications");
 app.MapFallbackToFile("index.html");
 
 

@@ -1,7 +1,10 @@
-﻿using Concerto.Server.Data.DatabaseContext;
+﻿using Concerto.Client.Services;
+using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Extensions;
+using Concerto.Server.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Services;
@@ -51,22 +54,14 @@ public class ForumService
 		var posts = await query
 			.OrderByDescending(p => p.Id)
 			.Take(pageSize)
+			.Include(p => p.Author)
 			.ToListAsync();
 
-		IEnumerable<Dto.Post> postsViewModels;
-		if (isAdmin)
-		{
-			postsViewModels = posts.Select(async (p) => p.ToViewModel(await GetPostCommentsCount(p.Id), true, true))
-				.Select(t => t.Result)
-				.ToList();
-		}
-		else
-		{
-			postsViewModels = posts
-				.Select(async (p) => p.ToViewModel(await GetPostCommentsCount(p.Id), await CanEditPost(userId, p.Id), await CanDeletePost(userId, p.Id)))
-				.Select(t => t.Result)
-				.ToList();
-		}
+
+		var postsViewModels = posts
+			.Select(async (p) => p.ToViewModel(await GetPostCommentsCount(p.Id), await CanEditPost(userId, p.Id), isAdmin ? true : await CanDeletePost(userId, p.Id)))
+			.Select(t => t.Result)
+			.ToList();
 
 		foreach (var post in postsViewModels)
 		{
@@ -139,14 +134,11 @@ public class ForumService
 		var comments =  await query
 			.OrderByDescending(c => c.Id)
 			.Take(pageSize)
+			.Include(c => c.Author)
 			.ToListAsync();
 
-		if (isAdmin)
-		{
-			return comments.Select(c => c.ToViewModel(true, true));
-		}
 		return comments
-			.Select(async (c) => c.ToViewModel(await CanEditComment(c.Id, userId), await CanDeleteComment(c.Id, userId)))
+			.Select(async (c) => c.ToViewModel(await CanEditComment(c.Id, userId), isAdmin ? true : await CanDeleteComment(c.Id, userId)))
 			.Select(t => t.Result);
 	}
 

@@ -303,16 +303,7 @@ public class StorageService
 
 	internal async Task<bool> CanMoveFolder(long userId, long folderId)
 	{
-		var folder = await _context.Folders.FindAsync(folderId);
-		if (folder is null) return false;
-		if (folder.IsCourseRoot) return false;
-
-		// True if ReadWrite in folder's parent or ReadWriteOwned in folder's parent and owns folder
-		var parentFolder = await _context.Folders.FindAsync(folder.ParentId);
-		var parentFolderPermission = await UserPermissionInFolder(userId, parentFolder);
-		if (parentFolderPermission == FolderPermissionType.ReadWrite) return true;
-        if (parentFolderPermission == FolderPermissionType.ReadWriteOwned || folder.OwnerId == userId) return true;
-		return false;
+		return await CanDeleteFolder(userId, folderId);
 	}
 
 	public async Task<bool> CanManageFile(long userId, long fileId)

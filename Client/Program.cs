@@ -50,6 +50,7 @@ builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IBreadcrumbsService, BreadcrumbsService>();
+// builder.Services.AddScoped<ClientNotificationService, ClientNotificationService>();
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 

@@ -33,7 +33,8 @@
 		}
 	</MudPaper>
 
-	<MudTable MultiSelection="@SelectionMode" @bind-SelectedItems="SelectedItems" T="FolderContentItem" Items="FolderContentItems" Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
+	<MudTable @ref="_table" T="FolderContentItem" Items="FolderContentItems" @bind-SelectedItems="SelectedItems" MultiSelection="@SelectionMode"
+		    Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
 		  Class="@Class" Style="@Style" Outlined="true" Height="@_height" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
 		  OnRowClick="OnRowClick" RowStyleFunc="RowStyleFunc">
 		<ToolBarContent>
@@ -49,7 +50,7 @@
 
 				@if (ChooseFolderMode)
 				{
-					<MudButton Disabled="@(ExcludeFromChoose.Contains(FolderContent.Self.Id))" DisableElevation="true" Color="Color.Info" Variant="Variant.Filled" OnClick="() => OnSelected.InvokeAsync(FolderContent.Self)">
+					<MudButton Disabled="@(!FolderContent.Self.CanWrite || ExcludeFromChoose.Contains(FolderContent.Self.Id))" DisableElevation="true" Color="Color.Info" Variant="Variant.Filled" OnClick="() => OnSelected.InvokeAsync(FolderContent.Self)">
 						@(ChooseFolderString ?? "Choose")
 					</MudButton>
 				}
@@ -96,17 +97,17 @@
 							</MudMenuItem>
 
 							<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
-								 OnClick="async () => await MoveSelected()" Disabled="@(!SelectedItems.Any() || !FolderContent.Self.CanWrite)">
+								 OnClick="async () => await MoveSelected()" Disabled="@(!CanMoveSelected)">
 								Move selected to
 							</MudMenuItem>
 
 							<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
-								 OnClick="async () => await CopySelected()" Disabled="@(!SelectedItems.Any())">
+								 OnClick="async () => await CopySelected()" Disabled="@(!CanCopySelected)">
 								Copy selected to
 							</MudMenuItem>
 
 							<MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
-								 OnClick="async () => await DeleteSelected()" Disabled="@(!SelectedItems.Any() || !SelectedItems.All(i => i.CanDelete))">
+								 OnClick="async () => await DeleteSelected()" Disabled="@(!CanCopySelected)">
 								Delete selected
 							</MudMenuItem>
 						}
@@ -117,6 +118,10 @@
 		</ToolBarContent>
 
 		<ColGroup>
+			@if (SelectionMode)
+			{
+				<col style="width: 10px" />
+			}
 			<col />
 			<col />
 			<col />
@@ -200,7 +205,7 @@
 		</RowTemplate>
 	</MudTable>
 
-	@code {
+@code {
 	[Parameter]
 	public bool ChooseFolderMode { get; set; } = false;
 
@@ -227,14 +232,19 @@
 		}
 	}
 
+	private MudTable<FolderContentItem>? _table;
+
 	private FolderContent? FolderContent { get; set; }
 	private List<FolderContentItem>? FolderContentItems { get; set; }
+
+
 	private HashSet<FolderContentItem> SelectedItems { get; set; } = new();
-
-	private List<FolderItem> BreadCrumbs { get; } = new();
-
+	private bool CanMoveSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
+	private bool CanCopySelected => SelectionMode && SelectedItems.Any();
+	private bool CanDeleteSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
 	private bool _seletionMode { get; set; } = false;
-	private bool SelectionMode {
+	private bool SelectionMode
+	{
 		get
 		{
 			return _seletionMode;
@@ -242,15 +252,13 @@
 		set
 		{
 			_seletionMode = value;
+			StateHasChanged();
 			SelectedItems.Clear();
 		}
 	}
 
-	private bool _loading = true;
-	private string? _searchString;
 
-	private long? CurrentFolderId => FolderContent?.Self.Id;
-
+	private List<FolderItem> BreadCrumbs { get; } = new();
 	private class FolderBreadcrumbItem : BreadcrumbItem
 	{
 		public FolderItem FolderItem { get; set; }
@@ -261,7 +269,11 @@
 		}
 	}
 
-	protected override async Task OnParametersSetAsync()
+	private bool _loading = true;
+	private string? _searchString;
+	private long? CurrentFolderId => FolderContent?.Self.Id;
+
+	protected override async Task OnInitializedAsync()
 	{
 		if (FolderContent?.Self.Id != InitialFolderId)
 		{
@@ -464,5 +476,6 @@
 			await BreadcrumbBack(BreadCrumbs[^2]);
 		}
 	}
+
 }
 }
