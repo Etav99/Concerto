@@ -2,12 +2,3 @@
 obj
 bin
 .git
-Server/UserFileStorage
-Server/migrate_clean_local.ps1
-Server/migrate_clean_remote.ps1
-keycloak.env
-postgres.env
-concerto.env
-concerto_remote.env
-concerto.backup
-keycloak_backup
