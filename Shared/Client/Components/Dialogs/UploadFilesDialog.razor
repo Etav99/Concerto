@@ -1,7 +1,9 @@
 ﻿@using System.Net.Http.Headers
+@using Concerto.Shared.Client.Extensions;
 @using Concerto.Shared.Models.Dto;
 @inject ISnackbar Snackbar
 @inject HttpClient Http
+@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -56,6 +58,7 @@
         await Task.Delay(100);
         Clearing = false;
     }
+
     private async Task Upload()
     {
         using var content = new MultipartFormDataContent();
@@ -72,16 +75,16 @@
             }
             catch (Exception e)
             {
-				//Logger.LogInformation($"{file.Name} cannot be uploaded: {e.Message}");
-				//uploadResults.Add(new FileUploadResult
-				//	{
-				//		DisplayFileName = file.Name,
-				//		ErrorCode = 6,
-				//		Uploaded = false
-				//	});
-			}
+                uploadResults.Add(new FileUploadResult
+				{
+						DisplayFileName = file.Name,
+						ErrorCode = 6,
+						Uploaded = false,
+						ErrorMessage = e.Message
+				});
+            }
         }
-		
+
         if (upload)
         {
             var response = await Http.PostAsync($"Storage/UploadFiles?folderId={FolderId}", content);
@@ -92,16 +95,19 @@
                 uploadResults = uploadResults.Concat(newUploadResults).ToList();
             }
         }
-		
-		foreach (var uploadResult in uploadResults)
-        {
-			if(!uploadResult.Uploaded)
-            {
-                Snackbar.Add($"{uploadResult.DisplayFileName} Couldn't be uploaded", Severity.Error);
-            }
-        }
 
-        Dialog.Close(DialogResult.Ok(true));
+        var errors = uploadResults.Where(ur => !ur.Uploaded).Select(ur => $"{ur.DisplayFileName}{ur.Extension}: {ur.ErrorMessage} (Error code {ur.ErrorCode})");
+
+        if (errors.Any())
+        {
+            Snackbar.Add($"Upload error", Severity.Error);
+            await DialogService.ShowInfoDialog("Upload error", string.Join("\n", errors));
+        }
+        else
+        {
+            Snackbar.Add($"Files uploaded", Severity.Success);
+        }
+        Dialog.Close();
     }
 
     private void SetDragClass()

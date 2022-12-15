@@ -3,10 +3,12 @@
 
 <MudDialog>
     <DialogContent>
-        <MudText>@($"Are you sure you want to delete {ItemName}?")</MudText>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+            <MudText Style="white-space: pre-wrap; overflow:auto">@Text</MudText>
+        </MudContainer>
         @if (Confirmation)
         {
-            <MudSwitch @bind-Checked="@userSure" Label="Yes, I'm Sure." Color="Color.Error" />
+            <MudSwitch @bind-Checked="@userSure" Label="I'm sure." Color="Color.Error" />
         }
     </DialogContent>
     <DialogActions>
@@ -18,7 +20,7 @@
     [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
     [Parameter]
-    public string ItemName { get; set; } = null!;
+    public string Text { get; set; } = null!;
 	
     [Parameter]
     public bool Confirmation { get; set; } = false;

@@ -44,7 +44,7 @@ else
 		@if(SelectedSession!.CanManage)
 		{
 			<MudTabPanel Text="Session settings">
-				<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" />
+				<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" OnSessionUpdated="OnSessionUpdated" />
 			</MudTabPanel>
 		}
 
@@ -63,7 +63,7 @@ else
 
 	private bool Loading => SelectedSession is null;
 
-	protected override async Task OnInitializedAsync() {
+	protected override async Task OnParametersSetAsync() {
 		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
 		if (SelectedSession == null)
 		{
@@ -83,6 +83,11 @@ else
 	private void OnSessionDeleted()
 	{
 		NavigationManager.NavigateTo($"courses/{SelectedSession!.CourseId}");
+	}
+
+	private async void OnSessionUpdated()
+	{
+		await OnParametersSetAsync();
 	}
 
 }

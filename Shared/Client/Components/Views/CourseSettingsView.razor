@@ -12,7 +12,7 @@
 @inject ISnackbar Snackbar
 
 @if(Loading) {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+	<MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
 }
 else {
 	<MudStack Spacing="4" Class="pa-4" Style="height: 100%; overflow: auto">
@@ -53,6 +53,10 @@ else {
 	[Parameter]
 	public EventCallback OnCourseDeleted { get; set; }
 
+	[Parameter]
+	public EventCallback OnCourseUpdated { get; set; }
+
+
 	CourseSettings? CourseSettings { get; set; }
 
 	// Form
@@ -70,12 +74,19 @@ else {
 
 
 
-
 	bool Loading => CourseSettings is null || Request is null || ExistingCourseUsers is null;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await Initialize();
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (CourseSettings is null || CourseSettings.Id != CourseId)
+		{
+			await Initialize();
+		}
 	}
 
 	private async Task Initialize()
@@ -110,7 +121,17 @@ else {
 
 	private async Task Save()
 	{
-		await CourseService.UpdateCourse(Request);
+		CourseSettings = null;
+		try
+		{
+			await CourseService.UpdateCourse(Request);
+			Snackbar.Add("Course updated", Severity.Success);
+			OnCourseUpdated.InvokeAsync().AndForget();
+		}
+		catch
+		{
+			Snackbar.Add("Failed to update course", Severity.Error);
+		}
 		await Initialize();
 	}
 

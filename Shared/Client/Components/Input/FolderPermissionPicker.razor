@@ -10,7 +10,7 @@
 		<MudSelectItem Value="@(Values[FolderPermissionType.ReadWriteOwned])">@ToText(FolderPermissionType.ReadWriteOwned)</MudSelectItem>
 		<MudSelectItem Value="@(Values[FolderPermissionType.ReadWrite])">@ToText(FolderPermissionType.ReadWrite)</MudSelectItem>
 	</MudSelect>
-	<Multip Text="" Arrow="true">
+	<MudTooltip Text="" Arrow="true">
 		<ChildContent>
 			<MudIcon Icon="@Icons.Material.Filled.Info" Title="Info" />
 		</ChildContent>
@@ -41,7 +41,7 @@
 				</ul>
 			</MudText>
 		</TooltipContent>
-	</Multip>
+	</MudTooltip>
 </MudStack>
 
 

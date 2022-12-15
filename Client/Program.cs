@@ -19,6 +19,9 @@ builder.Services.AddHttpClient("WebAPI",
 		client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+    .CreateClient("WebAPI"));
+
 builder.Services
 	.AddHttpClient<IForumClient, ForumClient>(client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();

@@ -10,7 +10,7 @@
     <DialogContent>
         <MudStack Spacing="8">
             <MudTextField @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
-            <CourseMemberPicker @bind-SelectedUsers="_members" />
+            <CourseMemberPicker Class="flex-grow-1" @bind-SelectedUsers="_members" />
         </MudStack>
     </DialogContent>
     <DialogActions>

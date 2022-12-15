@@ -34,7 +34,7 @@
 
 	<MudTable @ref="_table" T="FolderContentItem" Items="FolderContentItems" @bind-SelectedItems="SelectedItems" MultiSelection="@SelectionMode"
 		    Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
-		  Class="@Class" Style="@Style" Outlined="true" Height="@_height" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
+		  Class="@Class" Style="@Style" Outlined="true" Height="@TableContentHeight" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
 		  OnRowClick="OnRowClick" RowStyleFunc="RowStyleFunc">
 		<ToolBarContent>
 			<MudIcon Class="mr-2" Icon="@Icons.Material.Sharp.Folder" Size="Size.Large" />
@@ -204,7 +204,7 @@
 		</RowTemplate>
 	</MudTable>
 
-@code {
+	@code {
 	[Parameter]
 	public bool ChooseFolderMode { get; set; } = false;
 
@@ -217,19 +217,16 @@
 	[Parameter]
 	public EventCallback<FolderItem> OnSelected { get; set; }
 
+
 	[Parameter]
 	public long InitialFolderId { get; set; }
 
 	private string _height = string.Empty;
+
+	private string TableContentHeight => $"calc({Height} - 64px)";
+
 	[Parameter]
-	public string Height
-	{
-		get => _height;
-		set
-		{
-			_height = $"calc({value} - 64px)";
-		}
-	}
+	public string Height { get; set; } = "100%";
 
 	private MudTable<FolderContentItem>? _table;
 
@@ -272,9 +269,10 @@
 	private string? _searchString;
 	private long? CurrentFolderId => FolderContent?.Self.Id;
 
-	protected override async Task OnInitializedAsync()
+	protected override async Task OnParametersSetAsync()
 	{
-		if (FolderContent?.Self.Id != InitialFolderId)
+		var currentInitialFolderId = BreadCrumbs.FirstOrDefault()?.Id;
+		if (currentInitialFolderId != InitialFolderId)
 		{
 			SelectionMode = false;
 			BreadCrumbs.Clear();
@@ -315,10 +313,7 @@
 	{
 		var parameters = new DialogParameters { ["FolderId"] = FolderContent!.Self.Id };
 		var result = await DialogService.Show<UploadFilesDialog>("Upload files to folder", parameters).Result;
-		if ((bool)(result.Data ?? false))
-		{
-			await Refresh();
-		}
+		await Refresh();
 	}
 
 	public async Task DeleteFolder(FolderItem folder)
@@ -336,15 +331,16 @@
 		};
 		try
 		{
-			var itemsNames = string.Join(", ", SelectedItems.Select(x => x.Name));
-			if (!await DialogService.ShowDeleteConfirmationDialog("Delete file", "folder items", itemsNames)) return;
+			var itemsNames = string.Join(",\n\n", SelectedItems.Select(x => x.Name));
+			if (!await DialogService.ShowDeleteManyConfirmationDialog("Delete folder items", "folder items", itemsNames)) return;
 			await StorageService.DeleteFolderItems(request);
 			Snackbar.Add("Items deleted", Severity.Success);
 			await Refresh();
 		}
 		catch
 		{
-			Snackbar.Add("Failed to delete items", Severity.Error);	
+			Snackbar.Add("Failed to delete items", Severity.Error);
+			await Refresh();
 		}
 
 	}

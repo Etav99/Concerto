@@ -16,9 +16,9 @@ else
 
             <MudStack Row="true">
                 <MudText>User specific permissions</MudText>
-                <Multip Text="Those settings will override folder permissions for specified users" Arrow="true">
+                <MudTooltip Text="Those settings will override folder permissions for specified users" Arrow="true">
                     <MudIcon Icon="@Icons.Material.Filled.Info" />
-                </Multip>
+                </MudTooltip>
             </MudStack>
 
             <MudAutocomplete Margin="Margin.Dense" Dense="true" T="User" Label="Add user" @ref="_addUserAutocomplete"
@@ -64,13 +64,13 @@ else
 
                                 <MudTd Style="text-align: left">
 
-                                    <Multip Text="Restore to default - permission will be the same as parent folder">
+                                    <MudTooltip Text="Restore to default - permission will be the same as parent folder">
                                         <MudIconButton Class="ms-1" Disabled="@(parentMatch is null || context.Permission.Inherited)" OnClick="@(async () => RestoreInherited(context, parentMatch))" Icon="@Icons.Material.Filled.Restore" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" />
-							        </Multip>
+							        </MudTooltip>
 
-                                    <Multip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
+                                    <MudTooltip Text="Remove - folder's default permission will apply for removed user" Arrow="true">
                                         <MudIconButton Class="ms-1"  Disabled="@(parentMatch is not null)" OnClick="@(async () => RemoveUserPermission(context))" Icon="@Icons.Material.Filled.Close" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" />
-                                    </Multip>
+                                    </MudTooltip>
 								
                                 </MudTd>
                             }

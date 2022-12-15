@@ -5,9 +5,10 @@
 @using Concerto.Shared.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.Extensions.Options
 
 @inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
+@inject IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> Options
 @inject IBreadcrumbsService BreadcrumbsService
 @inject IUserService UserService
 @inject ISnackbar Snackbar
@@ -22,6 +23,9 @@
 	<MudAppBar Elevation="0" Dense="true">
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudText Typo="Typo.h4">Concerto</MudText>
+
+		<NavigationToolbar />
+
 		<MudSpacer />
 		<AuthorizeView>
 			<Authorized>
@@ -65,9 +69,8 @@
 		</MudDrawerHeader>
 		<NavMenu />
 	</MudDrawer>
-	<MudMainContent Class="d-flex flex-column pb-2" Style="height: 100%">
-		<NavigationToolbar />
-		<MudContainer MaxWidth="@(Navigation.Uri.Contains("session") || Navigation.Uri.Contains("course") ? MaxWidth.ExtraLarge : MaxWidth.ExtraLarge)" Style="overflow:auto" Class="flex-grow-1">
+	<MudMainContent Class="pb-2 pt-14 d-flex" Style="height: 100%">
+		<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="overflow:auto" Class="flex-grow-1">
 			@Body
 		</MudContainer>
 	</MudMainContent>
@@ -88,13 +91,14 @@
 
 	private async Task BeginLogout(MouseEventArgs args)
 	{
-		await SignOutManager.SetSignOutState();
-		Navigation.NavigateTo("authentication/logout");
+		Navigation.NavigateToLogout("authentication/logout");
 	}
 
 	private void LogIn()
 	{
-		Navigation.NavigateTo("authentication/login");
+		Navigation.NavigateToLogin(Options.Get(
+			Microsoft.Extensions.Options.Options.DefaultName)
+			.AuthenticationPaths.LogInPath);
 	}
 
 	private void toggleDarkMode(bool darkMode)

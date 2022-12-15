@@ -1,7 +1,7 @@
 ﻿@using Concerto.Shared.Client.Services;
 @inject IBreadcrumbsService BreadcrumbsService
 
-<MudToolBar Style="height: 28px; background-color: var(--mud-palette-appbar-background); color: var(--mud-palette-appbar-text)" Class="pl-4 mb-2 pt-0 pb-2 flex-grow-0 flex-shrink-0" DisableGutters="true" Dense="true">
+<MudToolBar Style="height: 28px; overflow:auto; background-color: var(--mud-palette-appbar-background); color: var(--mud-palette-appbar-text)" Class="flex-grow-0 flex-shrink-0" DisableGutters="true" Dense="true">
     <MudBreadcrumbs Class="py-0" Style="color: inherit" Items="_breadcrumbs.BreadcrumbItems" Separator=">">
         <ItemTemplate Context="item">
             <MudLink Color="Color.Inherit" Href="@item.Href">@item.Text</MudLink>
@@ -12,12 +12,6 @@
             </MudText>
         </SeparatorTemplate>
     </MudBreadcrumbs>
-
-    <MudStack Row="true" Elevation="0" AlignItems="AlignItems.Center" Style="z-index: var(--mud-zindex-appbar); position: absolute; margin: auto; min-width: 100px; left: 50%; transform: translate(-50%, -70%);">
-        <MudIcon Size="Size.Medium" Icon="@_breadcrumbs.Icon" />
-        <MudText Style="position: relative; left: -5px;" Typo="Typo.h5">@_breadcrumbs.Title</MudText>
-    </MudStack>
-
 </MudToolBar>
 
 @code {

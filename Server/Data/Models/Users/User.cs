@@ -27,3 +27,26 @@ public class User : Entity
 		LastName = claimsPrincipal.GetLastName();
 	}
 }
+
+
+public static partial class ViewModelConversions
+{
+	public static Dto.User ToViewModel(this User user)
+	{
+		return new Dto.User
+		{
+			Id = user.Id,
+			Username = user.Username,
+			FirstName = user.FirstName,
+			LastName = user.LastName
+		};
+	}
+
+	public static IEnumerable<Dto.User> ToViewModel(this IEnumerable<User>? users)
+	{
+		if (users == null)
+			return Enumerable.Empty<Dto.User>();
+		return users.Select(c => c.ToViewModel());
+	}
+
+}

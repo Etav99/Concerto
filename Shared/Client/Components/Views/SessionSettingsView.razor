@@ -12,7 +12,7 @@
 
 @if (Loading)
 {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+	<MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
 }
 else
 {
@@ -44,6 +44,9 @@ else
 
 	[Parameter]
 	public EventCallback OnSessionDeleted { get; set; }
+
+	[Parameter]
+	public EventCallback OnSessionUpdated { get; set; }
 
 	private bool Loading => _sessionSettings is null || _request is null;
 	private bool Changed => _request is not null && (_request.Name != _sessionSettings?.Name || _request.ScheduledDateTime != _sessionSettings?.ScheduledDate);
@@ -85,6 +88,14 @@ else
 		await Initialize();
 	}
 
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_sessionSettings is null || _sessionSettings.Id != SessionId)
+		{
+			await Initialize();
+		}
+	}
+
 	private async Task Initialize()
 	{
 		_sessionSettings = await CourseService.GetSessionSettings(SessionId);
@@ -104,7 +115,18 @@ else
 
 	private async Task Save()
 	{
-		await CourseService.UpdateSession(_request);
+		_sessionSettings = null;
+
+		try
+		{
+			await CourseService.UpdateSession(_request);
+			Snackbar.Add("Session updated", Severity.Success);
+			OnSessionUpdated.InvokeAsync().AndForget();
+		}
+		catch
+		{
+			Snackbar.Add("Failed to update session", Severity.Error);
+		}
 		await Initialize();
 	}
 

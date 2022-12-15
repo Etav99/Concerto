@@ -162,32 +162,34 @@ public class StorageService
     private async Task<IEnumerable<FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
     {
         var maxAllowedFiles = 5;
-        long maxFileSize = 1024 * 1024 * 15;
+        long maxFileSize = 1024 * 1024 * 15;// (long)16106127360 * 15;
         var filesProcessed = 0;
         List<FileUploadResult> fileUploadResults = new();
 
         foreach (IFormFile file in files)
         {
             var fileUploadResult = new FileUploadResult();
+
+            var sanitizedFilename = WebUtility.HtmlEncode(file.FileName);
+            if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
+
+            var filename = Path.GetFileNameWithoutExtension(sanitizedFilename);
+            var extension = Path.GetExtension(sanitizedFilename).ToLower();
+
+            fileUploadResult.DisplayFileName = filename;
+            fileUploadResult.Extension = extension;
+
             if (filesProcessed < maxAllowedFiles)
             {
                 if (file.Length > maxFileSize)
                 {
                     fileUploadResult.ErrorCode = 2;
-                }
+					fileUploadResult.ErrorMessage = "File too large";
+				}
                 else
                 {
                     try
                     {
-						var sanitizedFilename = WebUtility.HtmlEncode(file.FileName);
-						if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
-					
-						var filename = Path.GetFileNameWithoutExtension(sanitizedFilename);
-                        var extension = Path.GetExtension(sanitizedFilename).ToLower();
-
-						fileUploadResult.DisplayFileName = filename;
-						fileUploadResult.Extension = extension;
-
 						string storageFileName = string.Format(@$"{sanitizedFilename}.{Guid.NewGuid()}");
                         fileUploadResult.StorageFileName = storageFileName;
                         string path = Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}", storageFileName);
@@ -200,11 +202,13 @@ public class StorageService
                     {
                         _logger.LogError($"{file.FileName} error on upload: {ex.Message}");
                         fileUploadResult.ErrorCode = 3;
-                    }
+						fileUploadResult.ErrorMessage = "File upload failed";
+					}
 					catch (FilenameException ex)
                     {
 						_logger.LogError($"{file.FileName} error on upload: {ex.Message}");
 						fileUploadResult.ErrorCode = 4;
+						fileUploadResult.ErrorMessage = "File upload failed";
 					}
 
 				}
@@ -214,7 +218,8 @@ public class StorageService
             {
                 _logger.LogInformation($"{file.FileName} skipped, too many files uploaded at once");
                 fileUploadResult.ErrorCode = 5;
-            }
+				fileUploadResult.ErrorMessage = "Too many files uploaded at once";
+			}
             fileUploadResults.Add(fileUploadResult);
         }
         return fileUploadResults;
@@ -495,7 +500,16 @@ public class StorageService
 	{
 		if(!await _context.UploadedFiles.AnyAsync(f => f.StorageName == file.StorageName))
         {
-            System.IO.File.Delete(file.Path);
+            try
+            {
+                System.IO.File.Delete(file.Path);
+            }
+            catch (DirectoryNotFoundException) { }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error deleting physical file\n{e}");
+            }
+
 		}
 	}
 

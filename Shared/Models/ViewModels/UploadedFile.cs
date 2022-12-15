@@ -8,6 +8,7 @@ public record FileUploadResult
 	public string? DisplayFileName { get; set; }
 	public string? Extension { get; set; }
 	public int ErrorCode { get; set; } = 0;
+	public string ErrorMessage { get; set; } = string.Empty;
 }
 
 public record FileSettings (long Id, string Name);

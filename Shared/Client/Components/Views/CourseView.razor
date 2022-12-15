@@ -22,15 +22,15 @@
 
 @if (Loading)
 {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+	<MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
 }
 else
 {
-	<MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
+	<MudTabs @ref="_tabs" Outlined="true" Position="Position.Top" Rounded="true" Border="true"
 		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
 
 		<MudTabPanel Text="Content">
-			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px); min-width: 70%" InitialFolderId="SelectedCourse.RootFolderId" />
+			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px);" InitialFolderId="SelectedCourse.RootFolderId" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Sessions">
@@ -38,13 +38,13 @@ else
 		</MudTabPanel>
 
 		<MudTabPanel Text="Forum">
-			<Forum CourseId="1" Title="Course forum" />
+			<Forum CourseId="SelectedCourseId" Title="Course forum" />
 		</MudTabPanel>
 
 		@if (SelectedCourse!.CanManage)
 		{
 			<MudTabPanel Text="Settings">
-				<CourseSettingsView CourseId="SelectedCourseId" OnCourseDeleted="OnCourseDeleted" />
+				<CourseSettingsView CourseId="SelectedCourseId" OnCourseDeleted="OnCourseDeleted" OnCourseUpdated="OnCourseUpdated"/>
 			</MudTabPanel>
 		}
 
@@ -55,13 +55,22 @@ else
 @code {
 	[Parameter]
 	public long SelectedCourseId { get; set; }
+
 	private Course? SelectedCourse { get; set; }
 
-	private bool Loading => SelectedCourse is null;
+	MudTabs? _tabs;
+
+
+	bool _loading = false;
+	private bool Loading => _loading || SelectedCourse is null;
+
 
 	protected override async Task OnParametersSetAsync()
 	{
+		if (SelectedCourse is not null && SelectedCourse.Id == SelectedCourseId) return;
+		_loading = true;
 		SelectedCourse = await CourseService.GetCourse(SelectedCourseId);
+		_loading = false;
 		if (SelectedCourse == null) NavigationManager.NavigateTo("courses");
 		BreadcrumbsService.Set(
 			Icons.Material.Filled.MenuBook,
@@ -70,7 +79,7 @@ else
 			new BreadcrumbItem(SelectedCourse?.Name, null, true)
 		);
 	}
-	
+
 	private void OnSessionSelected(long sessionId) {
 		NavigationManager.NavigateTo($"courses/{SelectedCourseId}/sessions/{sessionId}");
 	}
@@ -78,6 +87,12 @@ else
 	private void OnCourseDeleted()
 	{
 		NavigationManager.NavigateTo($"courses");
+	}
+
+	private async void OnCourseUpdated()
+	{
+		await OnParametersSetAsync();
+		CourseService.GetUserCoursesList().AndForget();
 	}
 
 }

@@ -22,6 +22,6 @@
     <None Include="postgres.env" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="nginx\obj\Docker\empty\" />
+    <None Remove="nginx\obj\**" />
   </ItemGroup>
 </Project>
