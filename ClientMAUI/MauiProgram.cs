@@ -1,6 +1,9 @@
 ﻿using ClientMAUI.Data;
 using Microsoft.Extensions.Logging;
 
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebView.Maui;
+
 namespace ClientMAUI
 {
 	public static class MauiProgram
