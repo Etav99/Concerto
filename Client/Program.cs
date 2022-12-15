@@ -15,41 +15,26 @@ var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 IAppSettingsClient appSettingsClient = new AppSettingsClient(new HttpClient() { BaseAddress = baseAddress });
 var clientAppSettings = await appSettingsClient.GetClientAppSettingsAsync();
 
-builder.Services.AddHttpClient("WebAPI",
-		client => client.BaseAddress = baseAddress)
+// Add HTTP Client with base address and authorization handler 
+builder.Services.AddHttpClient("WebAPI", client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-    .CreateClient("WebAPI"));
-
-builder.Services
-	.AddHttpClient<IForumClient, ForumClient>(client => client.BaseAddress = baseAddress)
-	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-
-builder.Services
-	.AddHttpClient<ICourseClient, CourseClient>(client => client.BaseAddress = baseAddress)
-	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-
-builder.Services
-	.AddHttpClient<ISessionClient, SessionClient>(client => client.BaseAddress = baseAddress)
-	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-
-builder.Services
-	.AddHttpClient<IStorageClient, StorageClient>(client => client.BaseAddress = baseAddress)
-	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-
-builder.Services
-	.AddHttpClient<IUserClient, UserClient>(client => client.BaseAddress = baseAddress)
-	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+// Register it as scoped, each service will use the same HTTP client provided by DI
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("WebAPI"));
 
 
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IForumClient, ForumClient>();
+builder.Services.AddScoped<IStorageClient, StorageClient>();
 builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IBreadcrumbsService, BreadcrumbsService>();
 // builder.Services.AddScoped<ClientNotificationService, ClientNotificationService>();
+
+
 builder.Services.AddMudServices();
+
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddOidcAuthentication(options =>

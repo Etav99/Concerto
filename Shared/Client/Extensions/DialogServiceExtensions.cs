@@ -29,7 +29,15 @@ public static class DialogServiceExtensions
     public static async Task ShowInfoDialog(this IDialogService dialogService, string title, string text)
 	{
 		var parameters = new DialogParameters { ["Text"] = text};
-		DialogResult result = await dialogService.Show<InfoDialog>(title, parameters).Result;
+		await dialogService.Show<InfoDialog>(title, parameters).Result;
 	}
+    
+    public static async Task<long> ShowCreateCourseDialog(this IDialogService dialogService)
+    {
+        var result = await dialogService.Show<CreateCourseDialog>("Create new course").Result;
+        if (result.Cancelled) return -1;
+        return (long)result.Data;
+    }
+
 
 }

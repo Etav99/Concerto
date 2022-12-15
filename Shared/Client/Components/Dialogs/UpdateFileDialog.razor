@@ -40,14 +40,12 @@
 
 	private bool Loading => _request == null;
 
-	private HashSet<User>? CourseUsers;
-
 	private FileSettings _settings = null!;
 	private UpdateFileRequest _request = null!;
 
 	protected override async Task OnInitializedAsync()
 	{
-		_settings = await StorageService.GetFileSettings(EditedFileId);
+		_settings = await StorageService.GetFileSettingsAsync(EditedFileId);
 		_request = new UpdateFileRequest()
 			{
 				FileId = _settings.Id,
@@ -66,7 +64,7 @@
 		}
 		try
 		{
-			await StorageService.UpdateFile(_request);
+			await StorageService.UpdateFileAsync(_request);
 			Snackbar.Add($"File {_settings.Name} updated", Severity.Success);
 			Dialog.Close(DialogResult.Ok(true));
 		}

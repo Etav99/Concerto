@@ -105,15 +105,18 @@ else
 
     private MudAutocomplete<User>? _addUserAutocomplete;
 
-    private async Task<IEnumerable<User>> SearchContacts(string searchString)
+    private Task<IEnumerable<User>> SearchContacts(string searchString)
     {
-        if (Users is null) return Enumerable.Empty<User>();
-        var notSelectedUsers = Users.Where(u => !UserFolderPermissions.Select(ufp => ufp.User).Contains(u));
-        if (string.IsNullOrWhiteSpace(searchString)) return notSelectedUsers;
-        return notSelectedUsers.Where(u => u.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+        return Task.Run(() =>
+        {
+            if (Users is null) return Enumerable.Empty<User>();
+            var notSelectedUsers = Users.Where(u => !UserFolderPermissions.Select(ufp => ufp.User).Contains(u));
+            if (string.IsNullOrWhiteSpace(searchString)) return notSelectedUsers;
+            return notSelectedUsers.Where(u => u.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+        });
     }
 
-
+	
     private void AddUser(User user)
     {
         UserFolderPermissions.Add(new UserFolderPermission
@@ -131,8 +134,9 @@ else
         UserFolderPermissionsChanged.InvokeAsync(UserFolderPermissions);
     }
 
-    private void RestoreInherited(UserFolderPermission userPermission, UserFolderPermission parentUserPermission)
+    private void RestoreInherited(UserFolderPermission userPermission, UserFolderPermission? parentUserPermission)
     {
+		if (parentUserPermission is null) return;
         userPermission.Permission = parentUserPermission.Permission with { Inherited = true };
         UserFolderPermissionsChanged.InvokeAsync(UserFolderPermissions);
     }

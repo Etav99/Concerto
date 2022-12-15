@@ -18,6 +18,7 @@ public class AppSettingsController : ControllerBase
         return new ClientAppSettings
         {
             AuthorityUrl = AppSettings.Oidc.ClientAuthority,
+            AccountManagementUrl = AppSettings.IdentityProvider.AccountConsoleUrl,
             PostLogoutUrl = AppSettings.Oidc.ClientPostLogoutRedirectUrl
         };
     }

@@ -32,7 +32,7 @@
 	protected override void OnInitialized()
 	{
 		CourseService.UserCoursesFetchEventHandler += SetCoursesList;
-		CourseService.GetUserCoursesList().AndForget();
+		CourseService.GetCurrentUserCoursesAsync().AndForget();
 	}
 
 	public void Dispose()

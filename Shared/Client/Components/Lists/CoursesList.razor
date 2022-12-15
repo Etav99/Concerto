@@ -135,7 +135,7 @@ else
 
 	protected async Task Initialize()
 	{
-		Courses = (await CourseService.GetUserCoursesList()).ExceptBy(WithoutCourseIds, x => x.Id);
+		Courses = (await CourseService.GetCurrentUserCoursesAsync()).ExceptBy(WithoutCourseIds, x => x.Id);
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -153,7 +153,7 @@ else
 		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", course.Name, true)) return;
 		try
 		{
-			await CourseService.DeleteCourse(course.Id);
+			await CourseService.DeleteCourseAsync(course.Id);
 			Snackbar.Add($"Course {course.Name} deleted", Severity.Success);
 			await Initialize();
 		}
@@ -170,9 +170,12 @@ else
 
 	private async Task CreateCourse()
 	{
-		var result = await DialogService.Show<CreateCourseDialog>("Create new course").Result;
-		if (result.Cancelled) return;
-		await Initialize();
+		var newCourseId = await DialogService.ShowCreateCourseDialog();
+		if(newCourseId > 0)
+		{
+			await OnCourseSelected.InvokeAsync(newCourseId);
+			return;
+		}
 	}
 
 	private async Task CloneCourse(CourseListItem course)

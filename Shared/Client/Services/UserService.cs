@@ -4,45 +4,55 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 namespace Concerto.Shared.Client.Services;
 
-public interface IUserService
+public interface IUserService : IUserClient
 {
-	public bool IsLoggedIn { get; }
-	public long? UserId { get; }
-	public void SetAuthenticationState(AuthenticationState? authenticationState);
-	public Task FetchUserId();
-	public Task<IEnumerable<User>> GetUsers();
-	public Task<User?> GetUser(long userId);
+	public Task<long?> UserId();
 }
 
-public class UserService : IUserService
+public class UserService : UserClient, IUserService, IDisposable
 {
-	private AuthenticationState? _authenticationState;
-	private readonly IUserClient _userClient;
+	private Task<AuthenticationState>? _authenticationStateTask;
 	private readonly IAccessTokenProvider _tokenProvider;
+	private readonly AuthenticationStateProvider _authenticationStateProvider;
 
-	public UserService(IUserClient userClient, IAccessTokenProvider tokenProvider)
+	private long? _userId = null;
+
+	public UserService(HttpClient httpClient, IAccessTokenProvider tokenProvider, AuthenticationStateProvider authenticationStateProvider) : base(httpClient)
 	{
-		_userClient = userClient;
 		_tokenProvider = tokenProvider;
+		_authenticationStateProvider = authenticationStateProvider;
+		_authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
 	}
 
-	public bool IsLoggedIn => _authenticationState?.User.Identity?.IsAuthenticated ?? false;
-	public long? UserId { get; private set; }
-
-	public void SetAuthenticationState(AuthenticationState? authenticationState)
+	private void AuthenticationStateChanged(Task<AuthenticationState> authenticationState)
 	{
-		_authenticationState = authenticationState;
+		_userId = null;
+		_authenticationStateTask = authenticationState;
 	}
 
-	public async Task FetchUserId()
+	public async Task<bool> IsLoggedIn()
 	{
-		if (IsLoggedIn)
+		if (_authenticationStateTask != null)
 		{
-			UserId = await _userClient.GetCurrentUserIdAsync();
+			var authenticationState = await _authenticationStateTask;
+			return authenticationState.User.Identity?.IsAuthenticated ?? false;
 		}
+		return false;
 	}
-    
-    public async Task<IEnumerable<User>> GetUsers() => await _userClient.GetUsersAsync();
 
-    public async Task<User?> GetUser(long userId) => await _userClient.GetUserAsync(userId);
+	public async Task<long?> UserId()
+	{
+		if (await IsLoggedIn())
+		{
+			if (_userId != null) return _userId;
+			_userId = await GetCurrentUserIdAsync();
+			return _userId;
+		}
+		return null;
+	}
+
+	public void Dispose()
+	{
+		_authenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
+	}
 }

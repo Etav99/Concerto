@@ -14,6 +14,12 @@ public static class AppSettings
     {
         public static string StoragePath => EnvironmentHelper.GetVariable("CONCERTO_STORAGE_PATH");
     }
+
+    public static class IdentityProvider
+    {
+		public static string AccountConsoleUrl => EnvironmentHelper.GetVariable("IDENTITY_ACCOUNT_CONSOLE_URL");
+		public static string AdminConsoleUrl => EnvironmentHelper.GetVariable("IDENTITY_ADMIN_CONSOLE_URL");
+	}
     
     public static class Oidc
     {
@@ -27,9 +33,6 @@ public static class AppSettings
         public static string ServerClientId = EnvironmentHelper.GetVariable("SERVER_CLIENT_ID");
         public static string ServerClientSecret = EnvironmentHelper.GetVariable("SERVER_CLIENT_SECRET");
         public static string OidcAdminRestApiBaseUrl = EnvironmentHelper.GetVariable("OIDC_ADMIN_REST_API_BASE");
-
-
-        
     }
 
     public static class Database

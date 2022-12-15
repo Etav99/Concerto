@@ -69,7 +69,7 @@ else
 	{
 		if (SelectedCourse is not null && SelectedCourse.Id == SelectedCourseId) return;
 		_loading = true;
-		SelectedCourse = await CourseService.GetCourse(SelectedCourseId);
+		SelectedCourse = await CourseService.GetCourseAsync(SelectedCourseId);
 		_loading = false;
 		if (SelectedCourse == null) NavigationManager.NavigateTo("courses");
 		BreadcrumbsService.Set(
@@ -92,7 +92,7 @@ else
 	private async void OnCourseUpdated()
 	{
 		await OnParametersSetAsync();
-		CourseService.GetUserCoursesList().AndForget();
+		CourseService.GetCurrentUserCoursesAsync().AndForget();
 	}
 
 }

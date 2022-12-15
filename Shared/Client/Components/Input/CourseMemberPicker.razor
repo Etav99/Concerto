@@ -70,7 +70,6 @@
 
     private HashSet<User> Users { get; set; } = new();
 	
-    private CourseUser? _editedRowBackup;
     private string _searchString = "";
 	
     bool _editing = false;
@@ -80,7 +79,7 @@
     UserIdEqualityComparer comparer = new();
     protected override async Task OnInitializedAsync()
     {
-        Users = (await UserService.GetUsers()).ToHashSet(comparer);
+        Users = (await UserService.GetUsersAsync()).ToHashSet(comparer);
     }
 	
 

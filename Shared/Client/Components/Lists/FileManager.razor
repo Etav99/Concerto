@@ -293,7 +293,7 @@
 	private async Task LoadFolderContent(long folderId)
 	{
 		_loading = true;
-		FolderContent = await StorageService.GetFolderContent(folderId);
+		FolderContent = await StorageService.GetFolderContentAsync(folderId);
 		var files = FolderContent.Files.Cast<FolderContentItem>();
 		var subFolders = FolderContent.SubFolders.Cast<FolderContentItem>();
 		FolderContentItems = files.Concat(subFolders).ToList();
@@ -318,7 +318,7 @@
 
 	public async Task DeleteFolder(FolderItem folder)
 	{
-		await StorageService.DeleteFolder(folder.Id);
+		await StorageService.DeleteFolderAsync(folder.Id);
 		await Refresh();
 	}
 
@@ -333,7 +333,7 @@
 		{
 			var itemsNames = string.Join(",\n\n", SelectedItems.Select(x => x.Name));
 			if (!await DialogService.ShowDeleteManyConfirmationDialog("Delete folder items", "folder items", itemsNames)) return;
-			await StorageService.DeleteFolderItems(request);
+			await StorageService.DeleteFolderItemsAsync(request);
 			Snackbar.Add("Items deleted", Severity.Success);
 			await Refresh();
 		}
@@ -380,7 +380,7 @@
 		try
 		{
 			if (!await DialogService.ShowDeleteConfirmationDialog("Delete file", "file", file.Name)) return;
-			await StorageService.DeleteFile(file.Id);
+			await StorageService.DeleteFileAsync(file.Id);
 			Snackbar.Add("File deleted", Severity.Success);
 		}
 		catch

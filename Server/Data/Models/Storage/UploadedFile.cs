@@ -26,10 +26,10 @@ public class UploadedFile : Entity
 public record FileUploadResult
 {
 	public bool Uploaded { get; set; } = false;
-	public string? DisplayFileName { get; set; }
-	public string? Extension { get; set; }
-	public string? StorageFileName { get; set; }
-	public int ErrorCode { get; set; } = 0;
+	public string DisplayFileName { get; set; }  = string.Empty;
+	public string Extension { get; set; } = string.Empty;
+    public string StorageFileName { get; set; } = string.Empty;
+    public int ErrorCode { get; set; } = 0;
 	public string ErrorMessage { get; set; } = string.Empty;
 }
 

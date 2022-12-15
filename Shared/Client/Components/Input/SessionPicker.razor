@@ -70,25 +70,25 @@
 
     private async Task OnCourseSelected(Course course)
     {
-        _selectedCourse = await CourseService.GetCourse(course.Id); ;
+        _selectedCourse = await CourseService.GetCourseAsync(course.Id); ;
     }
 
     private async Task<IEnumerable<Course>> SearchCourses(string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return CourseService.Courses;
-        return CourseService.Courses.Where(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
+        return CourseService.Courses.WhereAsync(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task<IEnumerable<Session>> SearchSessions(string searchString)
     {
         if (_selectedCourse is null) return Enumerable.Empty<Session>();
-        await CourseService.LoadCourseSessions(_selectedCourse.Id);
+        await CourseService.LoadCourseSessionsAsync(_selectedCourse.Id);
         if (string.IsNullOrWhiteSpace(searchString))
         {
-            return CourseService.CourseSessions[_selectedCourse.Id].Where(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
+            return CourseService.CourseSessions[_selectedCourse.Id].WhereAsync(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
         }
-        return CourseService.CourseSessions[_selectedCourse.Id].Where(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+        return CourseService.CourseSessions[_selectedCourse.Id].WhereAsync(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
     }
 }
 *@

@@ -4,7 +4,7 @@
 @using Concerto.Shared.Client.Services;
 @using Concerto.Shared.Models.Dto
 
-@inject ICourseService CourseService
+@inject ISessionService SessionService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
@@ -98,7 +98,7 @@ else
 
 	private async Task Initialize()
 	{
-		_sessionSettings = await CourseService.GetSessionSettings(SessionId);
+		_sessionSettings = await SessionService.GetSessionSettingsAsync(SessionId);
 		_request = new UpdateSessionRequest
 			{
 				SessionId = _sessionSettings.Id,
@@ -119,7 +119,7 @@ else
 
 		try
 		{
-			await CourseService.UpdateSession(_request);
+			await SessionService.UpdateSessionAsync(_request);
 			Snackbar.Add("Session updated", Severity.Success);
 			OnSessionUpdated.InvokeAsync().AndForget();
 		}
@@ -135,7 +135,7 @@ else
 		if (!await DialogService.ShowDeleteConfirmationDialog("Delete session", "session", _sessionSettings!.Name, true)) return;
 		try
 		{
-			await CourseService.DeleteSession(_sessionSettings.Id);
+			await SessionService.DeleteSessionAsync(_sessionSettings.Id);
 			Snackbar.Add($"Session {_sessionSettings!.Name} deleted", Severity.Success);
 			await OnSessionDeleted.InvokeAsync();
 		}

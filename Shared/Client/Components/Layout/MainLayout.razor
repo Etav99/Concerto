@@ -89,7 +89,7 @@
 		_drawerOpen = !_drawerOpen;
 	}
 
-	private async Task BeginLogout(MouseEventArgs args)
+	private void BeginLogout()
 	{
 		Navigation.NavigateToLogout("authentication/logout");
 	}
@@ -117,12 +117,5 @@
 		{
 			LocalStorage.SetItem("darkMode", DarkMode);
 		}
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		if (authenticationStateTask == null) return;
-		UserService.SetAuthenticationState(await authenticationStateTask);
-		await UserService.FetchUserId();
 	}
 }

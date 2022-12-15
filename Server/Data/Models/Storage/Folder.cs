@@ -19,7 +19,7 @@ public class Folder : Entity
     public virtual ICollection<Folder> SubFolders { get; set; } = null!;
     public virtual ICollection<UploadedFile> Files { get; set; } = null!;
 
-    public FolderPermission CoursePermission { get; set; }
+    public FolderPermission CoursePermission { get; set; } = null!;
     public virtual ICollection<UserFolderPermission> UserPermissions { get; set; } = null!;
 
     public bool IsCourseRoot  => Type == FolderType.CourseRoot;

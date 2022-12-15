@@ -14,13 +14,7 @@
 	[Parameter]
 	public string? Action { get; set; }
 
-	async Task OnLogInSucceeded() {
-		if (authenticationStateTask == null) return;
-		UserService.SetAuthenticationState(await authenticationStateTask);
-		await UserService.FetchUserId();
-	}
-	async Task OnLogOutSucceeded()
-	{
-		UserService.SetAuthenticationState(null);
-	}
+	void OnLogInSucceeded() { }
+	
+	void OnLogOutSucceeded() { }
 }

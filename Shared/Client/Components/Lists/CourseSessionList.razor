@@ -7,7 +7,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IUserService UserService
-@inject ICourseService CourseService
+@inject ISessionService SessionService
 @inject HttpClient Http;
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="true" Elevation="0" FixedHeader="true" FixedFooter="true"
@@ -85,7 +85,7 @@
 
 	private async Task Initialize()
 	{
-		Sessions = await CourseService.GetCourseSessionsList(CourseId);
+		Sessions = await SessionService.GetCourseSessionsAsync(CourseId);
 	}
 
 	protected override async Task OnParametersSetAsync()
@@ -106,7 +106,7 @@
 		if (!await DialogService.ShowDeleteConfirmationDialog("Delete session", "session", session.Name, true)) return;
 		try
 		{
-			await CourseService.DeleteSession(session.Id);
+			await SessionService.DeleteSessionAsync(session.Id);
 			Snackbar.Add($"Session {session.Name} deleted", Severity.Success);
 			await Initialize();
 		}

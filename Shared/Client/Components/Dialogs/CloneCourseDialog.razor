@@ -63,7 +63,7 @@
 
         try
         {
-            var clonedCourseId = await CourseService.CloneCourse(_request);
+            var clonedCourseId = await CourseService.CloneCourseAsync(_request);
             Snackbar.Add($"Cloned course {CourseToClone.Name}.", Severity.Success);
             Dialog.Close(DialogResult.Ok(clonedCourseId));
         }

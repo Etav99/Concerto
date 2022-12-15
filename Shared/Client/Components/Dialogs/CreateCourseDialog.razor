@@ -37,16 +37,17 @@
             Name = _courseName,
             Members = _members.Select(m => new CourseUser(m.Id, CourseUserRole.Member)),
         };
-		
-        if (await CourseService.CreateCourse(request))
-		{
-			Snackbar.Add("Course created", Severity.Success);
-			Dialog.Close(DialogResult.Ok(true));
-		}
-		else
-		{
-			Snackbar.Add("Failed to create course", Severity.Error);
-		}
+
+        try
+        {
+            var newCourseId = await CourseService.CreateCourseForCurrentUserAsync(request);
+            Snackbar.Add("Course created", Severity.Success);
+            Dialog.Close(DialogResult.Ok(newCourseId));
+        }
+        catch
+        {
+            Snackbar.Add("Failed to create course", Severity.Error);
+        }
 	}
 
     void Cancel() => Dialog.Cancel();

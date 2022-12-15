@@ -205,7 +205,7 @@ else
 	private async Task LoadMorePosts()
 	{
 		var oldestPostId = Posts?.LastOrDefault()?.Id;
-		var posts = (await ForumService.GetPosts(CourseId, oldestPostId)).ToList();
+		var posts = (await ForumService.GetPostsAsync(CourseId, oldestPostId)).ToList();
 		_morePostsAvailable = posts.Count == 10;
 		if (Posts is null) Posts = new();
 		Posts.AddRange(posts);
@@ -214,7 +214,7 @@ else
 	private async Task LoadMoreComments(Post post)
 	{
 		var oldestCommentId = post.Comments.LastOrDefault()?.Id;
-		var comments = await ForumService.GetComments(post.Id, oldestCommentId);
+		var comments = await ForumService.GetCommentsAsync(post.Id, oldestCommentId);
 		post.addComments(comments);
 	}
 
@@ -236,7 +236,7 @@ else
 		{
 			try
 			{
-				var comment = await ForumService.CreateComment(_createCommentRequest);
+				var comment = await ForumService.CreateCommentAsync(_createCommentRequest);
 				var post = Posts?.FirstOrDefault(p => p.Id == _createCommentRequest.PostId);
 				post?.Comments.Insert(0, comment);
 				_createCommentRequest = null;
@@ -276,7 +276,7 @@ else
 		{
 			try
 			{
-				await ForumService.EditPost(_editPostRequest);
+				await ForumService.UpdatePostAsync(_editPostRequest);
 				var post = Posts?.Find(p => p.Id == _editPostRequest.PostId);
 				if (post != null)
 				{
@@ -313,7 +313,7 @@ else
 		{
 			try
 			{
-				await ForumService.EditComment(_editCommentRequest);
+				await ForumService.UpdateCommentAsync(_editCommentRequest);
 				var post = Posts?.FirstOrDefault(p => p.Id == _editCommentPostId);
 				var comment = post?.Comments.FirstOrDefault(c => c.Id == _editCommentRequest.CommentId);
 				if (comment != null)
@@ -340,7 +340,7 @@ else
 		{
 			try
 			{
-				var post = await ForumService.CreatePost(_createPostRequest);
+				var post = await ForumService.CreatePostAsync(_createPostRequest);
 				Posts?.Insert(0, post);
 				_createPostRequest = null;
 			}
@@ -357,7 +357,7 @@ else
 		try
 		{
 			if (!await DialogService.ShowDeleteConfirmationDialog("Delete post", "post", post.Title)) return;
-			await ForumService.DeletePost(post.Id);
+			await ForumService.DeletePostAsync(post.Id);
 			var postToDeleteIndex = Posts?.FindIndex(p => p.Id == post.Id);
 			if (postToDeleteIndex != null) Posts?.RemoveAt(postToDeleteIndex.Value);
 			Snackbar.Add("Post deleted.", Severity.Success);
@@ -373,7 +373,7 @@ else
 		try
 		{
 			if (!await DialogService.ShowDeleteConfirmationDialog("Delete comment", "comment", "")) return;
-			await ForumService.DeleteComment(comment.Id);
+			await ForumService.DeleteCommentAsync(comment.Id);
 			var post = Posts?.FirstOrDefault(p => p.Id == comment.PostId);
 			post?.deleteComment(comment);
 			Snackbar.Add("Comment deleted.", Severity.Success);

@@ -55,8 +55,8 @@
 	protected override async Task OnInitializedAsync()
 	{
 		Loading = true;
-		var folderSettings = await StorageService.GetFolderSettings(EditedFolderId);
-		CourseUsers = (await CourseService.GetCourseUsers(folderSettings.CourseId)).ToHashSet();
+		var folderSettings = await StorageService.GetFolderSettingsAsync(EditedFolderId);
+		CourseUsers = (await CourseService.GetCourseUsersAsync(folderSettings.CourseId)).ToHashSet();
 		_request = new UpdateFolderRequest(folderSettings.Id)
 			{
 				Name = folderSettings.Name,
@@ -81,7 +81,7 @@
 		}
 		try
 		{
-			await StorageService.UpdateFolder(_request);
+			await StorageService.UpdateFolderAsync(_request);
 			Snackbar.Add("Folder updated", Severity.Success);
 			Dialog.Close(DialogResult.Ok(true));
 		}

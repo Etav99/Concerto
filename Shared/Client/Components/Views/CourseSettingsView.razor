@@ -92,9 +92,9 @@ else {
 	private async Task Initialize()
 	{
 		CourseSettings = null;
-		CourseSettings = await CourseService.GetCourseSettings(CourseId);
+		CourseSettings = await CourseService.GetCourseSettingsAsync(CourseId);
 
-		var users = await UserService.GetUsers();
+		var users = await UserService.GetUsersAsync();
 		Users = users.ToDictionary(u => u.Id);
 		var _allCourseUsers = Users.Values.Select(u => new CourseUser(u.Id, CourseUserRole.Member)).ToHashSet();
 
@@ -124,7 +124,7 @@ else {
 		CourseSettings = null;
 		try
 		{
-			await CourseService.UpdateCourse(Request);
+			await CourseService.UpdateCourseAsync(Request);
 			Snackbar.Add("Course updated", Severity.Success);
 			OnCourseUpdated.InvokeAsync().AndForget();
 		}
@@ -140,7 +140,7 @@ else {
 		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", CourseSettings!.Name, true)) return;
 		try
 		{
-			await CourseService.DeleteCourse(CourseSettings.Id);
+			await CourseService.DeleteCourseAsync(CourseSettings.Id);
 			Snackbar.Add($"{CourseSettings!.Name} deleted", Severity.Success);
 			await OnCourseDeleted.InvokeAsync();
 		}
