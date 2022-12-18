@@ -8,21 +8,22 @@ public record User
 	public string Username { get; init; }
 	public string FirstName { get; init; }
 	public string LastName { get; init; }
-	
+
 	public string FullName => $"{FirstName} {LastName}";
 	public string Initials => $"{FirstName.FirstOrDefault()}{LastName.FirstOrDefault()}";
-
 }
 
 public class UserIdEqualityComparer : IEqualityComparer<User>
 {
-    public bool Equals(User? x, User? y)
-    {
-        return x?.Id == y?.Id;
-    }
+	public bool Equals(User? x, User? y)
+	{
+		return x?.Id == y?.Id;
+	}
 
-    public int GetHashCode([DisallowNull] User obj)
-    {
-        return obj.Id.GetHashCode();
-    }
+	public int GetHashCode([DisallowNull] User obj)
+	{
+		return obj.Id.GetHashCode();
+	}
 }
+
+

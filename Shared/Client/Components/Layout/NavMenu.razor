@@ -1,16 +1,16 @@
-﻿@using Concerto.Shared.Client.Services;
-@using Concerto.Shared.Models.Dto
+﻿@using Concerto.Shared.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IJSRuntime JSRuntime
 @inject ICourseService CourseService
 @inject IUserService UserService
 
 <MudNavMenu>
+	<MudText Class="px-4" Typo="Typo.h6">Menu</MudText>
 	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 	<AuthorizeView>
 
 		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Courses</MudNavLink>
-		<CoursesNavGroup />
+		<CoursesNavGroup/>
 	</AuthorizeView>
 
 </MudNavMenu>

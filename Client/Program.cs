@@ -12,7 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 
-IAppSettingsClient appSettingsClient = new AppSettingsClient(new HttpClient() { BaseAddress = baseAddress });
+IAppSettingsClient appSettingsClient = new AppSettingsClient(new HttpClient { BaseAddress = baseAddress });
 var clientAppSettings = await appSettingsClient.GetClientAppSettingsAsync();
 
 // Add HTTP Client with base address and authorization handler 
@@ -38,16 +38,16 @@ builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddOidcAuthentication(options =>
-{
-	options.ProviderOptions.Authority = clientAppSettings.AuthorityUrl;
-	options.ProviderOptions.ClientId = "concerto-client";
-	options.ProviderOptions.ResponseType = "code";
-	options.ProviderOptions.PostLogoutRedirectUri = clientAppSettings.PostLogoutUrl;
-	options.ProviderOptions.DefaultScopes.Add("roles");
-	options.AuthenticationPaths.RemoteRegisterPath = $"{clientAppSettings.AuthorityUrl}/login-actions/registration";
-	options.UserOptions.RoleClaim = "role";
-})
-.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
+	{
+		options.ProviderOptions.Authority = clientAppSettings.AuthorityUrl;
+		options.ProviderOptions.ClientId = "concerto-client";
+		options.ProviderOptions.ResponseType = "code";
+		options.ProviderOptions.PostLogoutRedirectUri = clientAppSettings.PostLogoutUrl;
+		options.ProviderOptions.DefaultScopes.Add("roles");
+		options.AuthenticationPaths.RemoteRegisterPath = $"{clientAppSettings.AuthorityUrl}/login-actions/registration";
+		options.UserOptions.RoleClaim = "role";
+	})
+	.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
 
 
 await builder.Build().RunAsync();

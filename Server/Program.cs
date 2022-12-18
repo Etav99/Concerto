@@ -1,14 +1,13 @@
 global using Dto = Concerto.Shared.Models.Dto;
 using Concerto.Server.Data.DatabaseContext;
-using Concerto.Server.Extensions;
 using Concerto.Server.Hubs;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Server.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Concerto.Server Builder");
@@ -35,45 +34,46 @@ builder.Services.AddScoped<IdentityManagerService>();
 //});
 
 builder.Services.AddAuthentication(options =>
-{
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-{
-	options.RequireHttpsMetadata = false;
-	// options.RequireHttpsMetadata = builder.Environment.IsProduction();
-
-	if (AppSettings.Oidc.AcceptAnyServerCertificateValidator)
-	{
-		options.BackchannelHttpHandler = new HttpClientHandler()
 		{
-			ServerCertificateCustomValidationCallback =
-				HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-		};
-	}
-
-	options.MetadataAddress = AppSettings.Oidc.MetadataAddress;
-	options.Authority = AppSettings.Oidc.Authority;
-	options.Audience = AppSettings.Oidc.Audience;
-
-	options.Events = new JwtBearerEvents
-	{
-		OnMessageReceived = context =>
-		{
-			if (string.IsNullOrEmpty(context.Token))
-			{
-				var accessToken = context.Request.Query["access_token"];
-				if (!string.IsNullOrEmpty(accessToken))
-				{
-					logger.LogDebug("Token set from query");
-					context.Token = accessToken;
-				}
-			}
-			return Task.CompletedTask;
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 		}
-	};
+	)
+	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+		{
+			options.RequireHttpsMetadata = false;
+			// options.RequireHttpsMetadata = builder.Environment.IsProduction();
 
-});
+			if (AppSettings.Oidc.AcceptAnyServerCertificateValidator)
+				options.BackchannelHttpHandler = new HttpClientHandler
+				{
+					ServerCertificateCustomValidationCallback =
+						HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+				};
+
+			options.MetadataAddress = AppSettings.Oidc.MetadataAddress;
+			options.Authority = AppSettings.Oidc.Authority;
+			options.Audience = AppSettings.Oidc.Audience;
+
+			options.Events = new JwtBearerEvents
+			{
+				OnMessageReceived = context =>
+				{
+					if (string.IsNullOrEmpty(context.Token))
+					{
+						var accessToken = context.Request.Query["access_token"];
+						if (!string.IsNullOrEmpty(accessToken))
+						{
+							logger.LogDebug("Token set from query");
+							context.Token = accessToken;
+						}
+					}
+
+					return Task.CompletedTask;
+				}
+			};
+		}
+	);
 
 builder.Services.AddAuthorization();
 
@@ -90,10 +90,7 @@ var app = builder.Build();
 app.UsePathBase("/Concerto");
 
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-	c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
-});
+app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1"); });
 
 
 // Configure the HTTP request pipeline.
@@ -125,27 +122,21 @@ app.MapHub<NotificationHub>("/notifications");
 app.MapFallbackToFile("index.html");
 
 await using var scope = app.Services.CreateAsyncScope();
-using (var db = scope.ServiceProvider.GetService<AppDataContext>())
+await using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
-	if (db == null)
-	{
-		throw new NullReferenceException("Error while getting database context.");
-	}
-	bool success = false;
+	if (db == null) throw new NullReferenceException("Error while getting database context.");
+	var success = false;
 	while (!success)
-	{
 		try
 		{
 			db.Database.Migrate();
 			success = true;
 		}
-		catch (Npgsql.NpgsqlException)
+		catch (NpgsqlException)
 		{
 			logger.LogError("Can't connect to database, retrying in 5 seconds");
 			await Task.Delay(5000);
 		}
-	}
-
 }
 
 app.Run();

@@ -1,16 +1,8 @@
 ﻿@attribute [Authorize]
 @page "/courses"
-
-@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Dialogs
-@using Concerto.Shared.Client.Components.Lists
 @using Concerto.Shared.Client.Services
-@using Concerto.Shared.Client.Extensions
-
-@using Concerto.Shared.Models.Dto;
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Concerto.Shared.Client.Components.Lists
 
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
@@ -23,11 +15,13 @@
 
 <PageTitle>Courses</PageTitle>
 
-<CoursesList OnCourseSelected="SelectCourse" />
+<CoursesList OnCourseSelected="SelectCourse"/>
 
 @code {
+
 	private void SelectCourse(long courseId)
 	{
 		NavigationManager.NavigateTo($"courses/{courseId}");
 	}
+
 }

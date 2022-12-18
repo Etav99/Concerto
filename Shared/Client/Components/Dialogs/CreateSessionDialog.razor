@@ -1,56 +1,61 @@
-﻿@using Concerto.Shared.Client.Services
-@using Concerto.Shared.Models.Dto;
+﻿@using Concerto.Shared.Models.Dto
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
 <MudDialog>
-    <DialogContent>
-        <MudTextField @bind-Value="_sessionName" T="string" Label="Name"></MudTextField>
-        <MudDatePicker Label="Date" @bind-Date="_date" />
-		<MudTimePicker Label="Time" @bind-Time="_time" />
-    </DialogContent>
-	
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Create</MudButton>
-    </DialogActions>
+	<DialogContent>
+		<MudTextField @bind-Value="_sessionName" T="string" Label="Name"></MudTextField>
+		<MudDatePicker Label="Date" @bind-Date="_date"/>
+		<MudTimePicker Label="Time" @bind-Time="_time"/>
+	</DialogContent>
+
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Create</MudButton>
+	</DialogActions>
 </MudDialog>
+
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
-    [Parameter] public long CourseId { get; set; }
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
 
-    private string? _sessionName;
-    private DateTime? _date = DateTime.Today.AddDays(1);
-    private TimeSpan? _time = DateTime.Now.TimeOfDay;
+	[Parameter]
+	public long CourseId { get; set; }
 
-    private async Task Submit()
-    {
-        if(String.IsNullOrEmpty(_sessionName)){
-            Snackbar.Add("Course name cannot be empty", Severity.Error);
-            return;
-        }
-        if (!_time.HasValue)
-        {
-            Snackbar.Add("Time not set", Severity.Error);
-            return;
-        }
+	private string? _sessionName;
+	private DateTime? _date = DateTime.Today.AddDays(1);
+	private TimeSpan? _time = DateTime.Now.TimeOfDay;
 
-        if (!_date.HasValue)
-        {
-            Snackbar.Add("Date not set", Severity.Error);
-            return;
-        }
+	private async Task Submit()
+	{
+		if (string.IsNullOrEmpty(_sessionName))
+		{
+			Snackbar.Add("Course name cannot be empty", Severity.Error);
+			return;
+		}
+		if (!_time.HasValue)
+		{
+			Snackbar.Add("Time not set", Severity.Error);
+			return;
+		}
 
-        // Move to course manager
-        var createSessionRequest = new CreateSessionRequest {
-                Name = _sessionName,
-                ScheduledDateTime = _date.Value + _time.Value,
-                CourseId = CourseId
-        };
-		
-        var response = await Http.PostAsJsonAsync("Session/CreateSession", createSessionRequest);
+		if (!_date.HasValue)
+		{
+			Snackbar.Add("Date not set", Severity.Error);
+			return;
+		}
+
+	// Move to course manager
+		var createSessionRequest = new CreateSessionRequest
+		{
+			Name = _sessionName,
+			ScheduledDateTime = _date.Value + _time.Value,
+			CourseId = CourseId
+		};
+
+		var response = await Http.PostAsJsonAsync("Session/CreateSession", createSessionRequest);
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Session created", Severity.Success);
@@ -62,5 +67,9 @@
 		}
 	}
 
-    void Cancel() => Dialog.Cancel();
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
 }

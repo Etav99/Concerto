@@ -1,35 +1,47 @@
-﻿@using Concerto.Shared.Client.Services;
+﻿@using Concerto.Shared.Client.Services
 @inject IBreadcrumbsService BreadcrumbsService
 
-<MudToolBar Style="height: 28px; overflow:auto; background-color: var(--mud-palette-appbar-background); color: var(--mud-palette-appbar-text)" Class="flex-grow-0 flex-shrink-0" DisableGutters="true" Dense="true">
-    <MudBreadcrumbs Class="py-0" Style="color: inherit" Items="_breadcrumbs.BreadcrumbItems" Separator=">">
-        <ItemTemplate Context="item">
-            <MudLink Color="Color.Inherit" Href="@item.Href">@item.Text</MudLink>
-        </ItemTemplate>
-        <SeparatorTemplate>
-            <MudText Style="pointer-events: none;" Color="Color.Default">
-                >
-            </MudText>
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
+<MudToolBar Style="overflow-x: auto; overflow-y: hidden; background-color: var(--mud-palette-appbar-background); color: var(--mud-palette-appbar-text); height: 28px;" Class="flex-grow-1 flex-shrink-1" DisableGutters="true" Dense="true">
+	
+	<MudHidden Invert="true" Breakpoint="Breakpoint.SmAndUp">
+		<MudBreadcrumbs Class="py-0 flex-grow-1 flex-shrink-1" Style="color: inherit; flex-wrap: nowrap;" Items="_breadcrumbs.BreadcrumbItems" Separator=">">
+			<ItemTemplate Context="item">
+				<MudLink Color="Color.Inherit" Href="@item.Href" Class="d-inline-block">@item.Text</MudLink>
+			</ItemTemplate>
+			<SeparatorTemplate>
+				<MudText Style="pointer-events: none;" Class="d-inline-block" Color="Color.Default">
+					>
+				</MudText>
+			</SeparatorTemplate>
+		</MudBreadcrumbs>
+	</MudHidden>
+	<MudHidden Invert="true" Breakpoint="Breakpoint.Xs">
+		@{
+			var lastItem = _breadcrumbs.BreadcrumbItems.Last();
+			<MudText Color="Color.Inherit" Href="@lastItem.Href" Class="d-inline-block">@lastItem.Text</MudText>
+		}
+	</MudHidden>
+
+
 </MudToolBar>
 
 @code {
-    BreadcrumbsPackage _breadcrumbs;
+	BreadcrumbsPackage _breadcrumbs;
 
-    protected override void OnInitialized()
-    {
-        BreadcrumbsService.BreadcrumbsChangeEventHandler += SetBreadcrumbs;
-    }
+	protected override void OnInitialized()
+	{
+		BreadcrumbsService.BreadcrumbsChangeEventHandler += SetBreadcrumbs;
+	}
 
-    private void SetBreadcrumbs(object? sender, BreadcrumbsPackage breadcrumbsPackage)
-    {
-        _breadcrumbs = breadcrumbsPackage;
-        StateHasChanged();
-    }
+	private void SetBreadcrumbs(object? sender, BreadcrumbsPackage breadcrumbsPackage)
+	{
+		_breadcrumbs = breadcrumbsPackage;
+		StateHasChanged();
+	}
 
-    public void Dispose()
-    {
-        BreadcrumbsService.BreadcrumbsChangeEventHandler -= SetBreadcrumbs;
-    }
+	public void Dispose()
+	{
+		BreadcrumbsService.BreadcrumbsChangeEventHandler -= SetBreadcrumbs;
+	}
+
 }

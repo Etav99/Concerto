@@ -1,54 +1,63 @@
 ﻿@using Concerto.Shared.Client.Services
-@using Concerto.Shared.Client.Components.Input
 @using Concerto.Shared.Models.Dto
+@using Concerto.Shared.Client.Components.Input
 @inject IDialogService DialogService
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
 <MudDialog>
-    <DialogContent>
-        <MudStack Spacing="8">
-            <MudTextField @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
-            <CourseMemberPicker Class="flex-grow-1" @bind-SelectedUsers="_members" />
-        </MudStack>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
-    </DialogActions>
+	<DialogContent>
+		<MudStack Spacing="8">
+			<MudTextField @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
+			<CourseMemberPicker Class="flex-grow-1" @bind-SelectedUsers="_members"/>
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+	</DialogActions>
 </MudDialog>
+
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
-    private string? _courseName;
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
 
-    private HashSet<User> _members = new(new UserIdEqualityComparer());
+	private string? _courseName;
 
-    private async Task Submit()
-    {
-        if(String.IsNullOrEmpty(_courseName)){
-            Snackbar.Add("Course name cannot be empty", Severity.Error);
-            return;
-        }
+	private HashSet<User> _members = new(new UserIdEqualityComparer());
 
-        // Move to course manager
-        var request = new CreateCourseRequest {
-            Name = _courseName,
-            Members = _members.Select(m => new CourseUser(m.Id, CourseUserRole.Member)),
-        };
+	private async Task Submit()
+	{
+		if (string.IsNullOrEmpty(_courseName))
+		{
+			Snackbar.Add("Course name cannot be empty", Severity.Error);
+			return;
+		}
 
-        try
-        {
-            var newCourseId = await CourseService.CreateCourseForCurrentUserAsync(request);
-            Snackbar.Add("Course created", Severity.Success);
-            Dialog.Close(DialogResult.Ok(newCourseId));
-        }
-        catch
-        {
-            Snackbar.Add("Failed to create course", Severity.Error);
-        }
+	// Move to course manager
+		var request = new CreateCourseRequest
+		{
+			Name = _courseName,
+			Members = _members.Select(m => new CourseUser(m.Id, CourseUserRole.Member))
+		};
+
+		try
+		{
+			var newCourseId = await CourseService.CreateCourseForCurrentUserAsync(request);
+			Snackbar.Add("Course created", Severity.Success);
+			Dialog.Close(DialogResult.Ok(newCourseId));
+		}
+		catch
+		{
+			Snackbar.Add("Failed to create course", Severity.Error);
+		}
 	}
 
-    void Cancel() => Dialog.Cancel();
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
 }

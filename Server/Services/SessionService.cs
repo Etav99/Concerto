@@ -1,32 +1,36 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
-using Concerto.Server.Extensions;
+using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
+using CourseUserRole = Concerto.Server.Data.Models.CourseUserRole;
+using Session = Concerto.Shared.Models.Dto.Session;
 
 namespace Concerto.Server.Services;
 
 public class SessionService
 {
-	private readonly ILogger<SessionService> _logger;
 	private readonly AppDataContext _context;
 	private readonly StorageService _fileService;
+	private readonly ILogger<SessionService> _logger;
+
 	public SessionService(ILogger<SessionService> logger, AppDataContext context, StorageService fileService)
 	{
 		_logger = logger;
 		_context = context;
 		_fileService = fileService;
 	}
-	public async Task<Dto.Session?> GetSession(long sessionId, long userId, bool isAdmin)
+
+	public async Task<Session?> GetSession(long sessionId, long userId, bool isAdmin)
 	{
 		var session = await _context.Sessions
 			.FindAsync(sessionId);
-		
+
 		if (session == null)
 			return null;
 
-        await _context.Entry(session)
-            .Reference(s => s.Course)
-            .LoadAsync();
+		await _context.Entry(session)
+			.Reference(s => s.Course)
+			.LoadAsync();
 
 		return session.ToViewModel(isAdmin || await CanManageSession(sessionId, userId));
 	}
@@ -37,9 +41,9 @@ public class SessionService
 		if (session == null)
 			return false;
 
-        var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
+		var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
 
-        return await _context.Entry(session)
+		return await _context.Entry(session)
 			.Reference(s => s.Course)
 			.Query()
 			.Include(r => r.CourseUsers)
@@ -48,15 +52,16 @@ public class SessionService
 
 	internal async Task<bool> CanManageSession(long sessionId, long userId)
 	{
-		var session = _context.Sessions.Find(sessionId);
+		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null) return false;
 
 		var courseRole = (await _context.CourseUsers.FindAsync(session.CourseId, userId))?.Role;
-		return courseRole == CourseUserRole.Admin || courseRole == CourseUserRole.Supervisor;
+		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
 	}
+
 	internal async Task<bool> DeleteSession(long sessionId)
 	{
-		var session = _context.Sessions.Find(sessionId);
+		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null) return false;
 
 		_context.Remove(session);
@@ -64,7 +69,7 @@ public class SessionService
 		return true;
 	}
 
-	public async Task<bool> CreateSession(Dto.CreateSessionRequest request)
+	public async Task<bool> CreateSession(CreateSessionRequest request)
 	{
 		var course = await _context.Courses
 			.Include(r => r.CourseUsers)
@@ -74,17 +79,19 @@ public class SessionService
 		if (course == null)
 			return false;
 
-		var session = new Session();
-		session.Name = request.Name;
-		session.ScheduledDate = request.ScheduledDateTime.ToUniversalTime();
-		session.Course = course;
+		var session = new Data.Models.Session
+			{
+				Name = request.Name,
+				ScheduledDate = request.ScheduledDateTime.ToUniversalTime(),
+				Course = course
+			};
 
 		await _context.Sessions.AddAsync(session);
 		await _context.SaveChangesAsync();
 		return true;
 	}
 
-	internal async Task<IEnumerable<Dto.SessionListItem>> GetCourseSessions(long courseId)
+	internal async Task<IEnumerable<SessionListItem>> GetCourseSessions(long courseId)
 	{
 		return await _context.Sessions
 			.Where(s => s.Course.Id == courseId)
@@ -92,7 +99,7 @@ public class SessionService
 			.ToListAsync();
 	}
 
-	internal async Task<bool> UpdateSession(Dto.UpdateSessionRequest request)
+	internal async Task<bool> UpdateSession(UpdateSessionRequest request)
 	{
 		var session = await _context.Sessions.FindAsync(request.SessionId);
 		if (session == null)
@@ -101,16 +108,15 @@ public class SessionService
 		session.Name = request.Name;
 		session.ScheduledDate = request.ScheduledDateTime.ToUniversalTime();
 		await _context.SaveChangesAsync();
-		
+
 		return true;
 	}
 
-    public async Task<Dto.SessionSettings?> GetSessionSettings(long sessionId)
-    {
-        var session = await _context.Sessions.FindAsync(sessionId);
-        if (session == null)
-            return null;
-		
-        return session.ToSettingsViewModel();
-    }
+	public async Task<SessionSettings?> GetSessionSettings(long sessionId)
+	{
+		var session = await _context.Sessions.FindAsync(sessionId);
+
+		return session?.ToSettingsViewModel();
+	}
 }
+

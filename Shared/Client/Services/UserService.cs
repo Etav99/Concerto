@@ -1,5 +1,4 @@
-﻿using Concerto.Shared.Models.Dto;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 namespace Concerto.Shared.Client.Services;
@@ -11,17 +10,35 @@ public interface IUserService : IUserClient
 
 public class UserService : UserClient, IUserService, IDisposable
 {
-	private Task<AuthenticationState>? _authenticationStateTask;
-	private readonly IAccessTokenProvider _tokenProvider;
 	private readonly AuthenticationStateProvider _authenticationStateProvider;
+	private readonly IAccessTokenProvider _tokenProvider;
+	private Task<AuthenticationState>? _authenticationStateTask;
 
-	private long? _userId = null;
+	private long? _userId;
 
-	public UserService(HttpClient httpClient, IAccessTokenProvider tokenProvider, AuthenticationStateProvider authenticationStateProvider) : base(httpClient)
+	public UserService(HttpClient httpClient, IAccessTokenProvider tokenProvider, AuthenticationStateProvider authenticationStateProvider)
+		: base(httpClient)
 	{
 		_tokenProvider = tokenProvider;
 		_authenticationStateProvider = authenticationStateProvider;
 		_authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
+	}
+
+	public void Dispose()
+	{
+		_authenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
+	}
+
+	public async Task<long?> UserId()
+	{
+		if (await IsLoggedIn())
+		{
+			if (_userId != null) return _userId;
+			_userId = await GetCurrentUserIdAsync();
+			return _userId;
+		}
+
+		return null;
 	}
 
 	private void AuthenticationStateChanged(Task<AuthenticationState> authenticationState)
@@ -37,22 +54,9 @@ public class UserService : UserClient, IUserService, IDisposable
 			var authenticationState = await _authenticationStateTask;
 			return authenticationState.User.Identity?.IsAuthenticated ?? false;
 		}
+
 		return false;
 	}
-
-	public async Task<long?> UserId()
-	{
-		if (await IsLoggedIn())
-		{
-			if (_userId != null) return _userId;
-			_userId = await GetCurrentUserIdAsync();
-			return _userId;
-		}
-		return null;
-	}
-
-	public void Dispose()
-	{
-		_authenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
-	}
 }
+
+

@@ -1,6 +1,4 @@
-﻿@using Concerto.Shared.Client
-@using Concerto.Shared.Client.Components.Input
-@using Concerto.Shared.Client.Services;
+﻿@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
 @inject IDialogService DialogService
 @inject ICourseService CourseService
@@ -8,71 +6,78 @@
 @inject HttpClient Http
 
 <MudDialog>
-    <DialogContent>
-        <MudStack Spacing="8">
-            <MudTextField @bind-Value="_request.Name" T="string" Label="Course name"></MudTextField>
-			
-            <MudStack>
-                <MudSwitch @bind-Checked="_request.CopyCourseUsers" Label="Copy course users" Color="Color.Success"></MudSwitch>
-                <MudSwitch Class="ml-2" @bind-Checked="_request.CopyRoles" Label="With roles" Disabled="!_request.CopyCourseUsers" Color="Color.Success"></MudSwitch>
-            </MudStack>
-			
+	<DialogContent>
+		<MudStack Spacing="8">
+			<MudTextField @bind-Value="_request.Name" T="string" Label="Course name"></MudTextField>
+
 			<MudStack>
-                <MudSwitch @bind-Checked="_request.CopyFolders" Label="Copy folders" Color="Color.Success"></MudSwitch>
-                <MudSwitch Class="ml-2" @bind-Checked="_request.CopyFiles" Label="With files" Disabled="!_request.CopyFolders" Color="Color.Success"></MudSwitch>
-                <MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user permissions" Disabled="!(_request.CopyFolders && _request.CopyCourseUsers)" Color="Color.Success"></MudSwitch>
-            </MudStack>
+				<MudSwitch @bind-Checked="_request.CopyCourseUsers" Label="Copy course users" Color="Color.Success"></MudSwitch>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyRoles" Label="With roles" Disabled="!_request.CopyCourseUsers" Color="Color.Success"></MudSwitch>
+			</MudStack>
 
-        </MudStack>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
-    </DialogActions>
+			<MudStack>
+				<MudSwitch @bind-Checked="_request.CopyFolders" Label="Copy folders" Color="Color.Success"></MudSwitch>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFiles" Label="With files" Disabled="!_request.CopyFolders" Color="Color.Success"></MudSwitch>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user permissions" Disabled="!(_request.CopyFolders && _request.CopyCourseUsers)" Color="Color.Success"></MudSwitch>
+			</MudStack>
+
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+	</DialogActions>
 </MudDialog>
+
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
-    [Parameter]
-    public CourseListItem CourseToClone { get; set; } = null!;
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
 
-    private HashSet<User> _members = new(new UserIdEqualityComparer());
+	[Parameter]
+	public CourseListItem CourseToClone { get; set; } = null!;
 
-    private CloneCourseRequest _request = null!;
+	private HashSet<User> _members = new(new UserIdEqualityComparer());
 
-    protected override void OnInitialized()
-    {
-        _request = new CloneCourseRequest()
-            {
-				CourseId = CourseToClone.Id,
-                CopyCourseUsers = true,
-                CopyRoles = true,
-                CopyFolders = false,
-                CopyFiles = false,
-                CopyFoldersPermissions = false
-            };
-    }
+	private CloneCourseRequest _request = null!;
 
-    private async Task Submit()
-    {
-        if (String.IsNullOrEmpty(_request.Name))
-        {
-            Snackbar.Add("Course name cannot be empty", Severity.Error);
-            return;
-        }
+	protected override void OnInitialized()
+	{
+		_request = new CloneCourseRequest
+		{
+			CourseId = CourseToClone.Id,
+			CopyCourseUsers = true,
+			CopyRoles = true,
+			CopyFolders = false,
+			CopyFiles = false,
+			CopyFoldersPermissions = false
+		};
+	}
 
-        try
-        {
-            var clonedCourseId = await CourseService.CloneCourseAsync(_request);
-            Snackbar.Add($"Cloned course {CourseToClone.Name}.", Severity.Success);
-            Dialog.Close(DialogResult.Ok(clonedCourseId));
-        }
-        catch
-        {
-            Snackbar.Add($"Failed to clone course {CourseToClone.Name}", Severity.Error);
-            Dialog.Cancel();
-        }
-    }
+	private async Task Submit()
+	{
+		if (string.IsNullOrEmpty(_request.Name))
+		{
+			Snackbar.Add("Course name cannot be empty", Severity.Error);
+			return;
+		}
 
-    void Cancel() => Dialog.Cancel();
+		try
+		{
+			var clonedCourseId = await CourseService.CloneCourseAsync(_request);
+			Snackbar.Add($"Cloned course {CourseToClone.Name}.", Severity.Success);
+			Dialog.Close(DialogResult.Ok(clonedCourseId));
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to clone course {CourseToClone.Name}", Severity.Error);
+			Dialog.Cancel();
+		}
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
 }

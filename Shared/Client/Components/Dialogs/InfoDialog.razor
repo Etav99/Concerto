@@ -4,18 +4,25 @@
 <MudDialog>
 	<DialogContent>
 		<MudContainer Style="max-height: 80vh; overflow-y: scroll">
-			<MudText Style="white-space: pre-wrap; overflow:auto" >@Text</MudText>
+			<MudText Style="overflow: auto; white-space: pre-wrap;">@Text</MudText>
 		</MudContainer>
 	</DialogContent>
-		<DialogActions>
-			<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok">OK</MudButton>
-		</DialogActions>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok">OK</MudButton>
+	</DialogActions>
 </MudDialog>
-@code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
-    [Parameter]
-    public string Text { get; set; } = null!;
-	
-    private void Ok() => Dialog.Close();
+@code {
+
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
+
+	[Parameter]
+	public string Text { get; set; } = null!;
+
+	private void Ok()
+	{
+		Dialog.Close();
+	}
+
 }

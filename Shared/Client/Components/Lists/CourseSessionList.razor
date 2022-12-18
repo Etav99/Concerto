@@ -1,7 +1,7 @@
-﻿@using Concerto.Shared.Client.Components.Dialogs
-@using Concerto.Shared.Client.Extensions;
+﻿@using Concerto.Shared.Client.Extensions
 @using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
+@using Concerto.Shared.Client.Components.Dialogs
 @inherits MudComponentBase;
 
 @inject ISnackbar Snackbar
@@ -10,30 +10,30 @@
 @inject ISessionService SessionService
 @inject HttpClient Http;
 
-<MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="true" Elevation="0" FixedHeader="true" FixedFooter="true"
-		  Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style" RowStyle="cursor: pointer;"
-		  OnRowClick="OnRowClick">
+<MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="false" Square="true" Elevation="0" FixedHeader="true" FixedFooter="true"
+          Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style" RowStyle="cursor: pointer;"
+          OnRowClick="OnRowClick">
 	<ToolBarContent>
 		<MudText Class="mr-2" Typo="Typo.h6">Sessions</MudText>
-		<MudSpacer />
+		<MudSpacer/>
 		<MudButtonGroup OverrideStyles="false">
 
-			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
-			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateSession" Disabled="false" />
+			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize"/>
+			<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateSession" Disabled="false"/>
 
 			<MudMenu Dense="true">
 				<ActivatorContent>
-					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 				</ActivatorContent>
 				<ChildContent>
-					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-								 OnClick="Initialize" Disabled="false">
+					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
+					             OnClick="Initialize" Disabled="false">
 						Refresh view
-					</MudMenuItem>
-					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
-								 OnClick="CreateSession" Disabled="false">
+					</MudMenuItemW>
+					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
+					             OnClick="CreateSession" Disabled="false">
 						Create session
-					</MudMenuItem>
+					</MudMenuItemW>
 				</ChildContent>
 			</MudMenu>
 		</MudButtonGroup>
@@ -43,19 +43,19 @@
 	<HeaderContent>
 		<MudTh>Name</MudTh>
 		<MudTh>Sheduled on</MudTh>
-		<MudTh />
+		<MudTh/>
 	</HeaderContent>
 	<RowTemplate>
 		<MudTd>@context.Name</MudTd>
 		<MudTd>@context.ScheduledDate.ToLocalTime().ToString()</MudTd>
-		<MudTd Style="text-align:right">
+		<MudTd Style="text-align: right">
 			<MudMenu Dense="true">
 				<ActivatorContent>
-					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 				</ActivatorContent>
 				<ChildContent>
-					<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnClick="() => SelectSession(context)">Open</MudMenuItem>
-					<MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteSession(context)">Delete</MudMenuItem>
+					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnClick="() => SelectSession(context)">Open</MudMenuItemW>
+					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteSession(context)">Delete</MudMenuItemW>
 				</ChildContent>
 			</MudMenu>
 		</MudTd>

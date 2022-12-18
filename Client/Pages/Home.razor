@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Index</PageTitle>
 
@@ -7,6 +6,8 @@
 <MudText Class="mb-8">Welcome to Concerto</MudText>
 
 @code {
+
 	[CascadingParameter]
 	public bool DarkMode { get; set; }
+
 }

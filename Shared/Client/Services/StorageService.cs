@@ -6,3 +6,4 @@ public class StorageService : StorageClient, IStorageService
 {
 	public StorageService(HttpClient httpClient) : base(httpClient) { }
 }
+

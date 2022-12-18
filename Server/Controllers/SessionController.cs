@@ -1,6 +1,7 @@
 ﻿using Concerto.Server.Extensions;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
+using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,9 @@ namespace Concerto.Server.Controllers;
 [Authorize]
 public class SessionController : ControllerBase
 {
-	private readonly ILogger<SessionController> _logger;
 	private readonly CourseService _courseService;
+	private readonly ILogger<SessionController> _logger;
 	private readonly SessionService _sessionService;
-	private long UserId => HttpContext.UserId();
 
 	public SessionController(ILogger<SessionController> logger, CourseService courseService, SessionService sessionService)
 	{
@@ -23,23 +23,22 @@ public class SessionController : ControllerBase
 		_sessionService = sessionService;
 	}
 
+	private long UserId => HttpContext.UserId();
+
 	[Authorize(Roles = "teacher")]
 	[HttpPost]
-	public async Task<ActionResult> CreateSession([FromBody] Dto.CreateSessionRequest request)
+	public async Task<ActionResult> CreateSession([FromBody] CreateSessionRequest request)
 	{
 		if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
 
-		if (await _sessionService.CreateSession(request))
-		{
-			return Ok();
-		}
+		if (await _sessionService.CreateSession(request)) return Ok();
 		return BadRequest();
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<Dto.Session>> GetSession(long sessionId)
+	public async Task<ActionResult<Session>> GetSession(long sessionId)
 	{
-		bool isAdmin = User.IsAdmin();
+		var isAdmin = User.IsAdmin();
 		if (!isAdmin && !await _sessionService.CanAccessSession(UserId, sessionId)) return Forbid();
 
 		var session = await _sessionService.GetSession(sessionId, UserId, isAdmin);
@@ -55,29 +54,29 @@ public class SessionController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Dto.SessionListItem>>> GetCourseSessions(long courseId)
+	public async Task<ActionResult<IEnumerable<SessionListItem>>> GetCourseSessions(long courseId)
 	{
 		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
 		return Ok(await _sessionService.GetCourseSessions(courseId));
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<Dto.SessionSettings>> GetSessionSettings(long sessionId)
+	public async Task<ActionResult<SessionSettings>> GetSessionSettings(long sessionId)
 	{
 		if (!User.IsAdmin() && !await _sessionService.CanManageSession(sessionId, UserId)) return Forbid();
-		
+
 		var sessionSettings = await _sessionService.GetSessionSettings(sessionId);
 		if (sessionSettings == null) return NotFound();
 		return Ok(sessionSettings);
 	}
 
 	[HttpPost]
-	public async Task<ActionResult> UpdateSession(Dto.UpdateSessionRequest request)
+	public async Task<ActionResult> UpdateSession(UpdateSessionRequest request)
 	{
 		if (!User.IsAdmin() && !await _sessionService.CanManageSession(request.SessionId, UserId)) return Forbid();
 		if (!await _sessionService.UpdateSession(request)) return Forbid();
-		
+
 		return Ok();
 	}
-
 }
+

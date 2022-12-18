@@ -1,4 +1,5 @@
 ﻿namespace Concerto.Shared.Models.Dto;
+
 public record Session(
 	long Id,
 	string Name,
@@ -35,3 +36,5 @@ public record UpdateSessionRequest
 	public string Name { get; set; }
 	public DateTime ScheduledDateTime { get; set; }
 }
+
+

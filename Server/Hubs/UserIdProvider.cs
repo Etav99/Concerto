@@ -1,13 +1,12 @@
 ﻿using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Concerto.Server.Hubs
+namespace Concerto.Server.Hubs;
+
+public class UserIdProvider : IUserIdProvider
 {
-	public class UserIdProvider : IUserIdProvider
+	public string? GetUserId(HubConnectionContext connection)
 	{
-		public string? GetUserId(HubConnectionContext connection)
-		{
-			return connection.User?.GetUserIdString();
-		}
+		return connection.User?.GetUserIdString();
 	}
 }

@@ -18,10 +18,12 @@ public record Post(
 	public bool Edited { get; set; } = Edited;
 	public string Title { get; set; } = Title;
 	public string Content { get; set; } = Content;
+
 	public void addComments(Comment comment)
 	{
 		Comments.Add(comment);
 	}
+
 	public void addComments(IEnumerable<Comment> comments)
 	{
 		var commentsList = comments.ToList();
@@ -36,7 +38,6 @@ public record Post(
 			CommentsCount--;
 			Comments.RemoveAt(commentToDeleteIndex);
 		}
-
 	}
 }
 
@@ -60,6 +61,7 @@ public record CreatePostRequest(long CourseId)
 	public string Title { get; set; } = string.Empty;
 	public string Content { get; set; } = string.Empty;
 }
+
 public record CreateCommentRequest(long PostId)
 {
 	public string Content { get; set; } = string.Empty;
@@ -75,3 +77,5 @@ public record EditCommentRequest(long CommentId, string Content)
 {
 	public string Content { get; set; } = Content;
 }
+
+

@@ -1,98 +1,106 @@
-﻿@using Concerto.Shared.Client.Services
+﻿@inject IUserService UserService
+@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
-@using System.Diagnostics.CodeAnalysis;
-@inject IUserService UserService
 @inherits MudComponentBase
 
-<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User,bool>(Filter)"
-		  RowsPerPage="25" Loading="Loading"
+<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User, bool>(Filter)"
+          RowsPerPage="25" Loading="Loading"
           SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
           Style="@Style" Class="@Class" Height="@TableContentHeight">
 
-    <ToolBarContent>
-        <MudText Typo="Typo.subtitle1">Course members</MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
-    </ToolBarContent>
+	<ToolBarContent>
+		<MudText Typo="Typo.subtitle1">Course members</MudText>
+		<MudSpacer/>
+		<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+	</ToolBarContent>
 
-    <ColGroup>
-        <col style="padding: 0; width:32px" />
-        <col style="width:32px;" />
-        <col style="width:100px;" />
-        <col style="width:100px;" />
-    </ColGroup>
+	<ColGroup>
+		<col style="padding: 0; width: 32px"/>
+		<col style="width: 32px;"/>
+		<col style="width: 100px;"/>
+		<col style="width: 100px;"/>
+	</ColGroup>
 
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> SelectedUsers.Contains(x))">Selected</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> x.FirstName)">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=> x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel></MudTh>
-    </HeaderContent>
+	<HeaderContent>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<User, object>(x => SelectedUsers.Contains(x))">Selected</MudTableSortLabel>
+		</MudTh>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<User, object>(x => x.FirstName)">Name</MudTableSortLabel>
+		</MudTh>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<User, object>(x => x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
+		</MudTh>
+	</HeaderContent>
 
-    <RowTemplate>
-        <MudTd DataLabel="Selected">←</MudTd>
-        <MudTd DataLabel="Name">@context.FirstName</MudTd>
-        <MudTd DataLabel="Surname">@context.LastName</MudTd>
-    </RowTemplate>
+	<RowTemplate>
+		<MudTd DataLabel="Selected">←</MudTd>
+		<MudTd DataLabel="Name">@context.FirstName</MudTd>
+		<MudTd DataLabel="Surname">@context.LastName</MudTd>
+	</RowTemplate>
 
-    <FooterContent>
-        @if (_editing)
-        {
-            <MudTd DataLabel=""><MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count" /></MudTd>
-            <MudTd colspan="4">Select All</MudTd>
-        }
-        else
-        {
-            <MudTd colspan="4">Select All</MudTd>
-        }
-    </FooterContent>
+	<FooterContent>
+		@if (_editing)
+		{
+			<MudTd DataLabel="">
+				<MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count"/>
+			</MudTd>
+			<MudTd colspan="4">Select All</MudTd>
+		}
+		else
+		{
+			<MudTd colspan="4">Select All</MudTd>
+		}
+	</FooterContent>
 
-    <PagerContent>
-        <MudTablePager PageSizeOptions="new int[]{2, 50, 100}" />
-    </PagerContent>
+	<PagerContent>
+		<MudTablePager PageSizeOptions="new[] { 2, 50, 100 }"/>
+	</PagerContent>
 
 </MudTable>
 
 
 @code
 {
-    private string TableContentHeight => $"calc({Height} - 64px)";
+	private string TableContentHeight => $"calc({Height} - 64px)";
 
-    [Parameter]
-    public string Height { get; set; } = "100%";
+	[Parameter]
+	public string Height { get; set; } = "100%";
 
-    [Parameter]
-    public HashSet<User> SelectedUsers { get; set; } = null!;
-	
-    [Parameter]
-    public EventCallback<HashSet<User>> SelectedUsersChanged { get; set; }
+	[Parameter]
+	public HashSet<User> SelectedUsers { get; set; } = null!;
 
-    bool Loading => Users is null;
+	[Parameter]
+	public EventCallback<HashSet<User>> SelectedUsersChanged { get; set; }
 
-    private HashSet<User> Users { get; set; } = new();
-	
-    private string _searchString = "";
-	
-    bool _editing = false;
+	bool Loading => Users is null;
 
-    MudTable<User>? table;
+	private HashSet<User> Users { get; set; } = new();
 
-    UserIdEqualityComparer comparer = new();
-    protected override async Task OnInitializedAsync()
-    {
-        Users = (await UserService.GetUsersAsync()).ToHashSet(comparer);
-    }
-	
+	private string _searchString = "";
 
-    private bool Filter(User user)
-    {
-        if (string.IsNullOrWhiteSpace(_searchString))
-            return true;
-        if (user.FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (user.LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (user.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
-    }
+	bool _editing = false;
+
+	MudTable<User>? table;
+
+	UserIdEqualityComparer comparer = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Users = (await UserService.GetUsersAsync()).ToHashSet(comparer);
+	}
+
+
+	private bool Filter(User user)
+	{
+		if (string.IsNullOrWhiteSpace(_searchString))
+			return true;
+		if (user.FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if (user.LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if (user.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return false;
+	}
 }

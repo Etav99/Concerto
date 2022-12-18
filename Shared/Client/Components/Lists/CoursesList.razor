@@ -1,13 +1,8 @@
-﻿@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Dialogs
-@using Concerto.Shared.Client.Extensions
+﻿@using Concerto.Shared.Client.Extensions
 @using Concerto.Shared.Client.Services
-
 @using Concerto.Shared.Models.Dto
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-
+@using Concerto.Shared.Client.Components.Dialogs
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
@@ -18,45 +13,45 @@
 
 @if (Loading)
 {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large"/>
 }
 else
 {
 	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<CourseListItem, bool>(CourseFilter)"
-		  Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
-		  RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;">
+	          Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
+	          RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;">
 		<ToolBarContent>
 			<MudText Typo="Typo.h6">Your courses</MudText>
-			<MudSpacer />
+			<MudSpacer/>
 			<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-			<MudSpacer />
+			<MudSpacer/>
 			<MudButtonGroup OverrideStyles="false">
-				<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
+				<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize"/>
 
 				@if (ManagementEnabled)
 				{
 					<AuthorizeView Roles="teacher">
-						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false" />
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false"/>
 					</AuthorizeView>
 				}
 
 				<MudMenu Dense="true">
 					<ActivatorContent>
-						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 					</ActivatorContent>
 					<ChildContent>
-						<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-								 OnClick="Initialize">
+						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
+						             OnClick="Initialize">
 							Refresh view
-						</MudMenuItem>
+						</MudMenuItemW>
 
 						@if (ManagementEnabled)
 						{
 							<AuthorizeView Roles="teacher">
-								<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
-									 OnClick="CreateCourse" Disabled="false">
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
+								             OnClick="CreateCourse" Disabled="false">
 									Create course
-								</MudMenuItem>
+								</MudMenuItemW>
 							</AuthorizeView>
 						}
 
@@ -65,8 +60,12 @@ else
 			</MudButtonGroup>
 		</ToolBarContent>
 		<HeaderContent>
-			<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.Name)">Course name</MudTableSortLabel></MudTh>
-			<MudTh><MudTableSortLabel SortBy="new Func<CourseListItem, object>(x=> x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel></MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseListItem, object>(x => x.Name)">Course name</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseListItem, object>(x => x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel>
+			</MudTh>
 			<MudTh></MudTh>
 		</HeaderContent>
 		<RowTemplate>
@@ -76,18 +75,18 @@ else
 			<MudTd>
 				<MudText>@context.CreatedDate</MudText>
 			</MudTd>
-			<MudTd Style="text-align:right">
+			<MudTd Style="text-align: right">
 
 				<MudMenu Dense="true">
 					<ActivatorContent>
-						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 					</ActivatorContent>
 					<ChildContent>
-						<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItem>
+						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
 						@if (ManagementEnabled)
 						{
 							<AuthorizeView Roles="teacher" Context="auth">
-								<MudMenuItem IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnClick="() => CloneCourse(context)" >Clone</MudMenuItem>
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}
 
@@ -96,13 +95,14 @@ else
 			</MudTd>
 		</RowTemplate>
 		<PagerContent>
-			<MudTablePager PageSizeOptions="new int[]{25, 50, 100}" />
+			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
 		</PagerContent>
 	</MudTable>
 }
 
 
 @code {
+
 	[Parameter]
 	public EventCallback<long> OnCourseSelected { get; set; }
 
@@ -130,7 +130,7 @@ else
 			Icons.Material.Filled.List,
 			"Courses",
 			new BreadcrumbItem("Courses", null, true)
-		);
+			);
 	}
 
 	protected async Task Initialize()
@@ -171,10 +171,9 @@ else
 	private async Task CreateCourse()
 	{
 		var newCourseId = await DialogService.ShowCreateCourseDialog();
-		if(newCourseId > 0)
+		if (newCourseId > 0)
 		{
 			await OnCourseSelected.InvokeAsync(newCourseId);
-			return;
 		}
 	}
 

@@ -1,0 +1,59 @@
+﻿@inherits MudMenuItem
+
+<div @onclick:stopPropagation="true" @onclick:preventDefault="true" @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
+	<MudListItem @attributes="UserAttributes" @onclick="OnClickHandler" @ontouchend="OnTouchHandler"  Disabled="@Disabled" Class="@Class" Style="@Style" Icon="@Icon" IconColor="@IconColor" IconSize="@IconSize">
+		@ChildContent
+	</MudListItem>
+</div>
+
+
+@code {
+	protected new async Task OnClickHandler(MouseEventArgs ev)
+	{
+		if (Disabled)
+			return;
+		
+		MudMenu.CloseMenu();
+		if (Href != null)
+		{
+			if (string.IsNullOrWhiteSpace(Target))
+				UriHelper.NavigateTo(Href, ForceLoad);
+			else
+				await JsApiService.Open(Href, Target);
+		}
+		else
+		{
+			await OnClick.InvokeAsync(ev);
+			if (Command?.CanExecute(CommandParameter) ?? false)
+			{
+				Command.Execute(CommandParameter);
+			}
+		}
+
+	}
+
+	protected new async Task OnTouchHandler(TouchEventArgs ev)
+	{
+		if (Disabled)
+			return;
+		
+		MudMenu.CloseMenu();
+
+		if (Href != null)
+		{
+			if (string.IsNullOrWhiteSpace(Target))
+				UriHelper.NavigateTo(Href, ForceLoad);
+			else
+				await JsApiService.Open(Href, Target);
+		}
+		else
+		{
+			await OnTouch.InvokeAsync(ev);
+			if (Command?.CanExecute(CommandParameter) ?? false)
+			{
+				Command.Execute(CommandParameter);
+			}
+		}
+	}
+	
+}

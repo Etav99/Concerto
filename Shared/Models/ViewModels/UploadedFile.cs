@@ -11,21 +11,24 @@ public record FileUploadResult
 	public string ErrorMessage { get; set; } = string.Empty;
 }
 
-public record FileSettings (long Id, string Name);
+public record FileSettings(long Id, string Name);
 
 public record UpdateFileRequest
 {
-    public long FileId { get; set; }
-    public string Name { get; set; } = null!;
+	public long FileId { get; set; }
+	public string Name { get; set; } = null!;
 }
 
 public record MoveFileRequest
 {
-    public long FileId { get; set; }
-    public long MoveIntoFolderId { get; set; }
+	public long FileId { get; set; }
+	public long MoveIntoFolderId { get; set; }
 }
+
 public record CopyFileRequest
 {
-    public long FileId { get; set; }
-    public long CopyIntoFolderId { get; set; }
+	public long FileId { get; set; }
+	public long CopyIntoFolderId { get; set; }
 }
+
+

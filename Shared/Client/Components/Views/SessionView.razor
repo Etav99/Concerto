@@ -1,50 +1,43 @@
 ﻿@attribute [Authorize]
 @page "/courses/{CourseId:long}/sessions/{SelectedSessionId:long}"
-
-@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Input
-@using Concerto.Shared.Client.Components.Lists
 @using Concerto.Shared.Client.Services
-@using Concerto.Shared.Client.Extensions
-
-@using Concerto.Shared.Models.Dto;
+@using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using System.Net
+@using Concerto.Shared.Client.Components.Lists
 
 @inject NavigationManager NavigationManager
 @inject IBreadcrumbsService BreadcrumbsService;
-@inject ISessionClient SessionClient;
+@inject ISessionService SessionService;
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
 
 
 @if (Loading)
 {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large"/>
 }
 else
 {
-	<MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
-		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);"
-		 KeepPanelsAlive="true">
+	<MudTabs Outlined="true" Position="Position.Top"
+	         ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);"
+	         KeepPanelsAlive="true">
 
-		<MudTabPanel Text="Meeting" >
-			<Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid" />
+		<MudTabPanel Text="Meeting">
+			<Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid"/>
 		</MudTabPanel>
 
 		<MudTabPanel Text="Course content">
-			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px); min-width: 70%" InitialFolderId="SelectedSession!.CourseRootFolderId!.Value" />
+			<FileManager InitialFolderId="SelectedSession!.CourseRootFolderId!.Value"
+					 Class="flex-grow-1" Style="height: 100%;" Elevation="0" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Course forum">
-			<Forum CourseId="1" Title="Course forum" />
+			<Forum CourseId="1" Title="Course forum"/>
 		</MudTabPanel>
 
-		@if(SelectedSession!.CanManage)
+		@if (SelectedSession!.CanManage)
 		{
 			<MudTabPanel Text="Session settings">
-				<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" OnSessionUpdated="OnSessionUpdated" />
+				<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" OnSessionUpdated="OnSessionUpdated"/>
 			</MudTabPanel>
 		}
 
@@ -53,6 +46,7 @@ else
 }
 
 @code {
+
 	[Parameter]
 	public long SelectedSessionId { get; set; }
 
@@ -63,8 +57,9 @@ else
 
 	private bool Loading => SelectedSession is null;
 
-	protected override async Task OnParametersSetAsync() {
-		SelectedSession = await SessionClient.GetSessionAsync(SelectedSessionId);
+	protected override async Task OnParametersSetAsync()
+	{
+		SelectedSession = await SessionService.GetSessionAsync(SelectedSessionId);
 		if (SelectedSession == null)
 		{
 			NavigationManager.NavigateTo("courses");
@@ -74,7 +69,7 @@ else
 		BreadcrumbsService.Set(
 			Icons.Material.Filled.MeetingRoom,
 			SelectedSession.Name,
-			new BreadcrumbItem("Courses", $"courses"),
+			new BreadcrumbItem("Courses", "courses"),
 			new BreadcrumbItem(SelectedSession.CourseName, $"courses/{SelectedSession.CourseId}"),
 			new BreadcrumbItem(SelectedSession.Name, null, true)
 		);

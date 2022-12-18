@@ -2,32 +2,42 @@
 @inject HttpClient Http
 
 <MudDialog>
-    <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
-            <MudText Style="white-space: pre-wrap; overflow:auto">@Text</MudText>
-        </MudContainer>
-        @if (Confirmation)
-        {
-            <MudSwitch @bind-Checked="@userSure" Label="I'm sure." Color="Color.Error" />
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Disabled="Confirmation && !userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
-    </DialogActions>
+	<DialogContent>
+		<MudContainer Style="max-height: 80vh; overflow-y: scroll">
+			<MudText Style="overflow: auto; white-space: pre-wrap;">@Text</MudText>
+		</MudContainer>
+		@if (Confirmation)
+		{
+			<MudSwitch @bind-Checked="@userSure" Label="I'm sure." Color="Color.Error"/>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Disabled="Confirmation && !userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
+	</DialogActions>
 </MudDialog>
-    @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
 
-    [Parameter]
-    public string Text { get; set; } = null!;
-	
-    [Parameter]
-    public bool Confirmation { get; set; } = false;
+@code {
 
-    bool userSure = false;
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
 
-    private void Delete() => Dialog.Close(DialogResult.Ok(true));
+	[Parameter]
+	public string Text { get; set; } = null!;
 
-    private void Cancel() => Dialog.Cancel();
+	[Parameter]
+	public bool Confirmation { get; set; }
+
+	bool userSure;
+
+	private void Delete()
+	{
+		Dialog.Close(DialogResult.Ok(true));
+	}
+
+	private void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
 }

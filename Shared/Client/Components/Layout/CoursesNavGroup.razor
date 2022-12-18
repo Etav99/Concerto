@@ -1,13 +1,13 @@
-﻿@using Concerto.Shared.Client.Services;
+﻿@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
 @implements IDisposable
 @inject ICourseService CourseService
 
-<MudNavGroup Class="hidden" Title="Courses" Icon="@Icons.Material.Filled.MenuBook" ExpandIcon="@Icons.Material.Filled.ArrowDownward"  Expanded="true">
+<MudNavGroup Class="hidden" Title="Courses" Icon="@Icons.Material.Filled.MenuBook" ExpandIcon="@Icons.Material.Filled.ArrowDownward" Expanded="true">
 	@if (_coursesList is null)
 	{
 		<MudNavLink Href="#">
-			<MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true" />
+			<MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true"/>
 		</MudNavLink>
 	}
 	else
@@ -39,4 +39,5 @@
 	{
 		CourseService.UserCoursesFetchEventHandler -= SetCoursesList;
 	}
+
 }

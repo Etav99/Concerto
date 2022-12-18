@@ -1,16 +1,10 @@
 ﻿@attribute [Authorize]
 @page "/courses/{SelectedCourseId:long}"
-@using Concerto.Shared.Client.Components.Dialogs
-@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Input
-@using Concerto.Shared.Client.Components.Lists
 @using Concerto.Shared.Client.Services
-@using Concerto.Shared.Client.Extensions
-
 @using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Concerto.Shared.Client.Components.Lists
 
 @inject NavigationManager NavigationManager
 @inject HttpClient Http;
@@ -26,19 +20,20 @@
 }
 else
 {
-	<MudTabs @ref="_tabs" Outlined="true" Position="Position.Top" Rounded="true" Border="true"
-		 ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
+	<MudTabs @ref="_tabs" Outlined="true" Position="Position.Top"
+	         ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
 
 		<MudTabPanel Text="Content">
-			<FileManager Class="flex-grow-1" Height="100%" Style="height: calc(100% - 40px);" InitialFolderId="SelectedCourse.RootFolderId" />
+			<FileManager InitialFolderId="SelectedCourse.RootFolderId"
+				Class="flex-grow-1" Style="height: 100%;" Elevation="0" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Sessions">
-			<CourseSessionList Style="width: 100%; height: 100%; flex: 1 1 auto;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected" />
+			<CourseSessionList Style="flex: 1 1 auto; height: 100%; width: 100%;" Class="flex-shrink-1 pa-2" CourseId="SelectedCourseId" OnSessionSelected="OnSessionSelected"/>
 		</MudTabPanel>
 
 		<MudTabPanel Text="Forum">
-			<Forum CourseId="SelectedCourseId" Title="Course forum" />
+			<Forum CourseId="SelectedCourseId" Title="Course forum"/>
 		</MudTabPanel>
 
 		@if (SelectedCourse!.CanManage)
@@ -53,6 +48,7 @@ else
 
 
 @code {
+
 	[Parameter]
 	public long SelectedCourseId { get; set; }
 
@@ -61,7 +57,7 @@ else
 	MudTabs? _tabs;
 
 
-	bool _loading = false;
+	bool _loading;
 	private bool Loading => _loading || SelectedCourse is null;
 
 
@@ -77,16 +73,17 @@ else
 			SelectedCourse?.Name ?? string.Empty,
 			new BreadcrumbItem("Courses", "courses"),
 			new BreadcrumbItem(SelectedCourse?.Name, null, true)
-		);
+			);
 	}
 
-	private void OnSessionSelected(long sessionId) {
+	private void OnSessionSelected(long sessionId)
+	{
 		NavigationManager.NavigateTo($"courses/{SelectedCourseId}/sessions/{sessionId}");
 	}
 
 	private void OnCourseDeleted()
 	{
-		NavigationManager.NavigateTo($"courses");
+		NavigationManager.NavigateTo("courses");
 	}
 
 	private async void OnCourseUpdated()

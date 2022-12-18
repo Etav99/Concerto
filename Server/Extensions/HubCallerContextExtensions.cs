@@ -18,5 +18,4 @@ public static class ClaimsPrincipalExtensions
 	{
 		return user.IsInRole("user");
 	}
-
 }

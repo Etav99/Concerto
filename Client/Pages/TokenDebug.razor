@@ -1,12 +1,11 @@
 ﻿@page "/tokendebug"
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 <PageTitle>Index</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Home</MudText>
 <MudText Class="mb-8">Welcome to Concerto</MudText>
-
-@using System.Security.Claims
 
 <h3>ClaimsPrincipal Data</h3>
 
@@ -16,43 +15,45 @@
 
 @if (claims.Count() > 0)
 {
-    <ul>
-        @foreach (var claim in claims)
-        {
-            <li>@claim.Type: @claim.Value</li>
-        }
-    </ul>
+	<ul>
+		@foreach (var claim in claims)
+		{
+			<li>@claim.Type: @claim.Value</li>
+		}
+	</ul>
 }
 
 <p>@surnameMessage</p>
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
-    private string authMessage = null!;
-    private string surnameMessage = null!;
-    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+	[CascadingParameter]
+	private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
-    private async Task GetClaimsPrincipalData()
-    {
-        var authState = await authenticationStateTask;
-        var user = authState.User;
-        bool test = user.IsInRole("user");
-        var id = user.Identity as ClaimsIdentity;
-        var x = id!.RoleClaimType;
+	private string authMessage = null!;
+	private string surnameMessage = null!;
+	private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+
+	private async Task GetClaimsPrincipalData()
+	{
+		var authState = await authenticationStateTask;
+		var user = authState.User;
+		var test = user.IsInRole("user");
+		var id = user.Identity as ClaimsIdentity;
+		var x = id!.RoleClaimType;
 
 
-        if (user.Identity!.IsAuthenticated)
-        {
-            authMessage = $"{user.Identity.Name} is authenticated.";
-            claims = user.Claims;
-            surnameMessage = 
-                $"Surname: {user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value}";
-        }
-        else
-        {
-            authMessage = "The user is NOT authenticated.";
-        }
-    }
+		if (user.Identity!.IsAuthenticated)
+		{
+			authMessage = $"{user.Identity.Name} is authenticated.";
+			claims = user.Claims;
+			surnameMessage =
+				$"Surname: {user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value}";
+		}
+		else
+		{
+			authMessage = "The user is NOT authenticated.";
+		}
+	}
+
 }

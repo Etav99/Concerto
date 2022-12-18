@@ -5,16 +5,22 @@
 @inject IUserService UserService
 @inject NavigationManager Navigation
 
-<RemoteAuthenticatorView Action="@Action" OnLogOutSucceeded="OnLogOutSucceeded" OnLogInSucceeded="OnLogInSucceeded" />
+<RemoteAuthenticatorView Action="@Action" OnLogOutSucceeded="OnLogOutSucceeded" OnLogInSucceeded="OnLogInSucceeded"/>
 
 @code {
+
 	[CascadingParameter]
 	private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
 	[Parameter]
 	public string? Action { get; set; }
 
-	void OnLogInSucceeded() { }
-	
-	void OnLogOutSucceeded() { }
+	void OnLogInSucceeded()
+	{
+	}
+
+	void OnLogOutSucceeded()
+	{
+	}
+
 }

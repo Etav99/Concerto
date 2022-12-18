@@ -1,6 +1,6 @@
-﻿@using Concerto.Shared.Client.Components.Input
-@using Concerto.Shared.Client.Services
+﻿@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
+@using Concerto.Shared.Client.Components.Input
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
@@ -9,11 +9,11 @@
 
 <MudDialog>
 	<DialogContent>
-			<MudStack Spacing="4">
+		<MudStack Spacing="4">
 			<MudTextField @bind-Value="_folderRequest.Name" T="string" Label="Folder name"></MudTextField>
 			<FolderTypePicker @bind-Value="_folderRequest.Type"></FolderTypePicker>
-			<FolderPermissionPicker @bind-Value="_folderRequest.CoursePermission" Inherited="ParentFolderPermission" />
-			</MudStack>
+			<FolderPermissionPicker @bind-Value="_folderRequest.CoursePermission" Inherited="ParentFolderPermission"/>
+		</MudStack>
 	</DialogContent>
 	<DialogActions>
 		<MudButton OnClick="Cancel">Cancel</MudButton>
@@ -23,6 +23,7 @@
 
 
 @code {
+
 	[CascadingParameter]
 	MudDialogInstance Dialog { get; set; } = null!;
 
@@ -37,19 +38,19 @@
 
 	protected override void OnInitialized()
 	{
-		_folderRequest = new()
+		_folderRequest = new CreateFolderRequest
 		{
 			Name = string.Empty,
 			ParentId = ParentFolderId,
 			Type = FolderType.Other,
 			CoursePermission = ParentFolderPermission != null ? new FolderPermission(ParentFolderPermission.Value, true)
-															  : new FolderPermission(FolderPermissionType.Read, false)
+				: new FolderPermission(FolderPermissionType.Read, false)
 		};
 	}
 
 	private async Task Submit()
 	{
-		if (String.IsNullOrEmpty(_folderRequest.Name))
+		if (string.IsNullOrEmpty(_folderRequest.Name))
 		{
 			Snackbar.Add("Folder name cannot be empty", Severity.Error);
 			return;
@@ -67,5 +68,9 @@
 		}
 	}
 
-	void Cancel() => Dialog.Cancel();
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
 }

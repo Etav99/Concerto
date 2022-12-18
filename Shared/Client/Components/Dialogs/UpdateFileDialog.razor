@@ -1,5 +1,4 @@
-﻿@using Concerto.Shared.Client.Components.Input
-@using Concerto.Shared.Client.Services
+﻿@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
@@ -8,16 +7,16 @@
 @inject ICourseService CourseService
 
 <MudDialog>
-	 <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
+	<TitleContent>
+		<MudText Typo="Typo.h6">
+			<MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
 			File settings
-        </MudText>
-    </TitleContent>
+		</MudText>
+	</TitleContent>
 	<DialogContent>
 		@if (Loading)
 		{
-			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+			<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
 		}
 		else
 		{
@@ -32,6 +31,7 @@
 
 
 @code {
+
 	[CascadingParameter]
 	MudDialogInstance Dialog { get; set; } = null!;
 
@@ -46,18 +46,21 @@
 	protected override async Task OnInitializedAsync()
 	{
 		_settings = await StorageService.GetFileSettingsAsync(EditedFileId);
-		_request = new UpdateFileRequest()
-			{
-				FileId = _settings.Id,
-				Name = _settings.Name,
-			};
+		_request = new UpdateFileRequest
+		{
+			FileId = _settings.Id,
+			Name = _settings.Name
+		};
 	}
 
-	void Cancel() => Dialog.Cancel();
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
 
 	private async Task Submit()
 	{
-		if (String.IsNullOrEmpty(_request.Name))
+		if (string.IsNullOrEmpty(_request.Name))
 		{
 			Snackbar.Add("File name cannot be empty", Severity.Error);
 			return;

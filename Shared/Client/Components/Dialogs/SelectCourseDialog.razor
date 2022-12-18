@@ -1,5 +1,4 @@
 ﻿@using Concerto.Shared.Client.Components.Lists
-@using Concerto.Shared.Client.Services
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
@@ -7,7 +6,7 @@
 <MudDialog Style="">
 	<DialogContent>
 		<MudStack Spacing="4" Style="height: 70vh;">
-			<CoursesList OnCourseSelected="SelectCourse" ManagementEnabled="false" WithoutCourseIds="WithoutCourseIds" />
+			<CoursesList OnCourseSelected="SelectCourse" ManagementEnabled="false" WithoutCourseIds="WithoutCourseIds"/>
 		</MudStack>
 
 	</DialogContent>
@@ -17,13 +16,19 @@
 	</DialogActions>
 
 </MudDialog>
+
 @code {
-	[CascadingParameter] MudDialogInstance Dialog { get; set; } = null!;
+
+	[CascadingParameter]
+	MudDialogInstance Dialog { get; set; } = null!;
 
 	[Parameter]
 	public IEnumerable<long> WithoutCourseIds { get; set; } = Enumerable.Empty<long>();
 
-	void Cancel() => Dialog.Cancel();
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
 
 	protected override void OnInitialized()
 	{
@@ -36,4 +41,5 @@
 	{
 		Dialog.Close(DialogResult.Ok(courseId));
 	}
+
 }

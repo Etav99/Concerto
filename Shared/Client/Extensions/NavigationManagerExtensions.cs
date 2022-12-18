@@ -9,3 +9,6 @@ public static class NavigationManagerExtensions
 		navigation.NavigateTo($"courses/{courseId}/{tab}");
 	}
 }
+
+
+

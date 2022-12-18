@@ -1,6 +1,6 @@
 ﻿<MudStack Row="true" AlignItems="AlignItems.End" Class="">
-	<MudTextField Lines="5" Style="height:auto;" Margin="Margin.Dense" @bind-Value="MessageContent" Immediate="true" Label="@Label" Variant="Variant.Outlined">></MudTextField>
-	<MudButton Class="align-self-end" Size="Size.Small"  OnClick="Send" Disabled="!CanSend" StartIcon="@Icons.Material.Filled.Send" Color="Color.Primary" ButtonType="ButtonType.Button">@SendLabel</MudButton>
+	<MudTextField Lines="5" Style="height: auto;" Margin="Margin.Dense" @bind-Value="MessageContent" Immediate="true" Label="@Label" Variant="Variant.Outlined">></MudTextField>
+	<MudButton Class="align-self-end" Size="Size.Small" OnClick="Send" Disabled="!CanSend" StartIcon="@Icons.Material.Filled.Send" Color="Color.Primary" ButtonType="ButtonType.Button">@SendLabel</MudButton>
 </MudStack>
 
 @code {
@@ -13,8 +13,6 @@
 
 	[Parameter]
 	public string Label { get; set; } = string.Empty;
-
-
 
 
 	[Parameter]
@@ -33,4 +31,5 @@
 		await OnSend.InvokeAsync(MessageContent);
 		MessageContent = string.Empty;
 	}
+
 }

@@ -1,9 +1,6 @@
-﻿@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Dialogs;
-@using Concerto.Shared.Client.Extensions;
-@using Concerto.Shared.Client.Services;
+﻿@using Concerto.Shared.Client.Extensions
+@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Models.Dto
-
 @inject ISessionService SessionService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -29,8 +26,8 @@ else
 		</MudStack>
 
 		<MudTextField Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Title" Immediate="true" @bind-Value="_request.Name" T="string" Label="Name"></MudTextField>
-		<MudDatePicker Adornment="Adornment.Start" Label="Date" @bind-Date="Date" />
-		<MudTimePicker Adornment="Adornment.Start" Label="Time" @bind-Time="Time" />
+		<MudDatePicker Adornment="Adornment.Start" Label="Date" @bind-Date="Date"/>
+		<MudTimePicker Adornment="Adornment.Start" Label="Time" @bind-Time="Time"/>
 
 	</MudStack>
 }
@@ -39,6 +36,7 @@ else
 
 
 @code {
+
 	[Parameter]
 	public long SessionId { get; set; }
 
@@ -55,13 +53,10 @@ else
 
 	private DateTime? Date
 	{
-		get
-		{
-			return _request.ScheduledDateTime.Date;
-		}
+		get => _request.ScheduledDateTime.Date;
 		set
 		{
-			if(value is not null && Time is not null)
+			if (value is not null && Time is not null)
 			{
 				_request.ScheduledDateTime = value.Value + Time.Value;
 			}
@@ -70,10 +65,7 @@ else
 
 	private TimeSpan? Time
 	{
-		get
-		{
-			return _request.ScheduledDateTime.TimeOfDay;
-		}
+		get => _request.ScheduledDateTime.TimeOfDay;
 		set
 		{
 			if (value is not null && Date is not null)
@@ -100,11 +92,11 @@ else
 	{
 		_sessionSettings = await SessionService.GetSessionSettingsAsync(SessionId);
 		_request = new UpdateSessionRequest
-			{
-				SessionId = _sessionSettings.Id,
-				Name = _sessionSettings.Name,
-				ScheduledDateTime = _sessionSettings.ScheduledDate,
-			};
+		{
+			SessionId = _sessionSettings.Id,
+			Name = _sessionSettings.Name,
+			ScheduledDateTime = _sessionSettings.ScheduledDate
+		};
 	}
 
 
@@ -144,5 +136,5 @@ else
 			Snackbar.Add($"Failed to delete session {_sessionSettings!.Name}.", Severity.Error);
 		}
 	}
-	
+
 }

@@ -1,20 +1,18 @@
-﻿@using Concerto.Shared.Client.Components
-@using Concerto.Shared.Client.Components.Dialogs;
-@using Concerto.Shared.Client.Components.Input
+﻿@using Concerto.Shared.Models.Dto
+@using Concerto.Shared.Client.Extensions
+@using Concerto.Shared.Client.Services
 @using Concerto.Shared.Client.Components.Lists
-@using Concerto.Shared.Client.Extensions;
-@using Concerto.Shared.Client.Services;
-@using Concerto.Shared.Models.Dto
-
 @inject ICourseService CourseService
 @inject IUserService UserService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-@if(Loading) {
+@if (Loading)
+{
 	<MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
 }
-else {
+else
+{
 	<MudStack Spacing="4" Class="pa-4" Style="height: 100%; overflow: auto">
 
 		<MudStack Row="true" Style="background-color: var(--mud-palette-default)" Justify="Justify.SpaceBetween">
@@ -29,7 +27,7 @@ else {
 
 
 		<MudPaper Class="d-flex align-center pa-4" Elevation="0" Outlined="true">
-			<MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Person" Title="Role" />
+			<MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Person" Title="Role"/>
 			<MudText>Your role in this course: @CourseSettings?.CurrentUserRole.ToDisplayString()</MudText>
 		</MudPaper>
 
@@ -38,9 +36,9 @@ else {
 		</MudPaper>
 
 		<CourseMemberManager SelectedCourseUsers="Request.Members" SelectedCourseUsersChanged="() => StateHasChanged()"
-			ExistingCourseUsers="ExistingCourseUsers"
-			AvailableCourseUsers="AvailableCourseUsers"
-			Users="Users" />
+		                     ExistingCourseUsers="ExistingCourseUsers"
+		                     AvailableCourseUsers="AvailableCourseUsers"
+		                     Users="Users"/>
 
 	</MudStack>
 }
@@ -48,8 +46,10 @@ else {
 
 
 @code {
+
 	[Parameter]
 	public long CourseId { get; set; }
+
 	[Parameter]
 	public EventCallback OnCourseDeleted { get; set; }
 
@@ -69,9 +69,6 @@ else {
 
 	private Dictionary<long, User> Users { get; set; } = new();
 	private HashSet<CourseUser> AvailableCourseUsers { get; set; } = null!;
-
-
-
 
 
 	bool Loading => CourseSettings is null || Request is null || ExistingCourseUsers is null;
@@ -105,13 +102,13 @@ else {
 		AvailableCourseUsers = _initialSelectedUsers.ToHashSet(new CourseUserIdEqualityComparer());
 		AvailableCourseUsers.UnionWith(_allCourseUsers);
 
-		Request = new UpdateCourseRequest()
-			{
-				CourseId = CourseSettings.Id,
-				Name = CourseSettings.Name,
-				Description = CourseSettings.Description,
-				Members = _initialSelectedUsers,
-			};
+		Request = new UpdateCourseRequest
+		{
+			CourseId = CourseSettings.Id,
+			Name = CourseSettings.Name,
+			Description = CourseSettings.Description,
+			Members = _initialSelectedUsers
+		};
 	}
 
 	private async Task Discard()

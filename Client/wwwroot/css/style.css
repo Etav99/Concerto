@@ -1,20 +1,9 @@
-﻿
-vh100 {
-    height:100vh;
-}
+﻿vh100 { height: 100vh; }
 
-border-box {
-    box-sizing: border-box;
-}
+border-box { box-sizing: border-box; }
 
-    border-box *, border-box *:before, border-box *:after {
-        box-sizing: inherit;
-    }
+border-box *, border-box *:before, border-box *:after { box-sizing: inherit; }
 
-.panel-height-maximum {
-    height: calc(100% - 48px)
-}
+.panel-height-maximum { height: calc(100% - 48px) }
 
-.panel-height-maximum-dense {
-    height: calc(100% - 32px)
-}
+.panel-height-maximum-dense { height: calc(100% - 32px) }

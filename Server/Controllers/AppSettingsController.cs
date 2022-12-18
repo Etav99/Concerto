@@ -1,9 +1,6 @@
-﻿using Concerto.Server.Extensions;
-using Concerto.Server.Settings;
-using Concerto.Shared.Models;
+﻿using Concerto.Server.Settings;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Concerto.Server.Controllers;
 
@@ -11,15 +8,15 @@ namespace Concerto.Server.Controllers;
 [ApiController]
 public class AppSettingsController : ControllerBase
 {
-
-    [HttpGet]
-    public ActionResult<ClientAppSettings> GetClientAppSettings()
-    {
-        return new ClientAppSettings
-        {
-            AuthorityUrl = AppSettings.Oidc.ClientAuthority,
-            AccountManagementUrl = AppSettings.IdentityProvider.AccountConsoleUrl,
-            PostLogoutUrl = AppSettings.Oidc.ClientPostLogoutRedirectUrl
-        };
-    }
+	[HttpGet]
+	public ActionResult<ClientAppSettings> GetClientAppSettings()
+	{
+		return new ClientAppSettings
+		{
+			AuthorityUrl = AppSettings.Oidc.ClientAuthority,
+			AccountManagementUrl = AppSettings.IdentityProvider.AccountConsoleUrl,
+			PostLogoutUrl = AppSettings.Oidc.ClientPostLogoutRedirectUrl
+		};
+	}
 }
+

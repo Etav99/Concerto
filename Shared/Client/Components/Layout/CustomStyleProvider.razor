@@ -1,60 +1,43 @@
-﻿@using Blazored.LocalStorage;
+﻿@using Blazored.LocalStorage
 @inject ISyncLocalStorageService LocalStorage
 
 <style>
 
-    .row-modified {
-        background-color: @Blue;
-    }
+	.row-modified { background-color: @Blue; }
 
 
-    .row-modified:hover {
-        background-color: @BlueAccent !important;
-    }
+	.row-modified:hover { background-color: @BlueAccent !important; }
 
-    .row-new {
-        background-color: @Green;
-    }
+	.row-new { background-color: @Green; }
 
-    .row-new:hover {
-        background-color: @GreenAccent !important;
-    }
+	.row-new:hover { background-color: @GreenAccent !important; }
 
-    .row-deleted {
-        background-color: @Red;
-    }
+	.row-deleted { background-color: @Red; }
 
-    .row-deleted:hover {
-        background-color: @RedAccent !important;
-    }
+	.row-deleted:hover { background-color: @RedAccent !important; }
 
-    .row-edited {
-        background-color: @Orange;
-    }
+	.row-edited { background-color: @Orange; }
 
-    .row-edited:hover {
-        background-color: @OrangeAccent !important;
-    }
+	.row-edited:hover { background-color: @OrangeAccent !important; }
 
-    .mud-nav-group.hidden>.mud-expanded{
-        display: none;
-    }
+	.mud-nav-group.hidden > .mud-expanded { display: none; }
 
 </style>
 
 @code {
-    [Parameter]
-    public bool DarkMode { get; set; }
 
-    string Blue =>  DarkMode ? Colors.Blue.Darken3 : Colors.Blue.Lighten4;
-    string BlueAccent => DarkMode ? Colors.Blue.Darken4 : Colors.Blue.Lighten3;
-	
-    string Green => DarkMode ? Colors.Green.Darken3 : Colors.Green.Lighten4;
-    string GreenAccent => DarkMode ? Colors.Green.Darken4 : Colors.Green.Lighten3;
-	
-    string Red => DarkMode ? Colors.Red.Darken3 : Colors.Red.Lighten4;
-    string RedAccent => DarkMode ? Colors.Red.Darken4 : Colors.Red.Lighten3;
-	
-    string Orange => DarkMode ? Colors.Orange.Darken3 : Colors.Orange.Lighten4;
-    string OrangeAccent => DarkMode ? Colors.Orange.Darken4 : Colors.Orange.Lighten3;
+	[Parameter]
+	public bool DarkMode { get; set; }
+
+	string Blue => DarkMode ? Colors.Blue.Darken3 : Colors.Blue.Lighten4;
+	string BlueAccent => DarkMode ? Colors.Blue.Darken4 : Colors.Blue.Lighten3;
+
+	string Green => DarkMode ? Colors.Green.Darken3 : Colors.Green.Lighten4;
+	string GreenAccent => DarkMode ? Colors.Green.Darken4 : Colors.Green.Lighten3;
+
+	string Red => DarkMode ? Colors.Red.Darken3 : Colors.Red.Lighten4;
+	string RedAccent => DarkMode ? Colors.Red.Darken4 : Colors.Red.Lighten3;
+
+	string Orange => DarkMode ? Colors.Orange.Darken3 : Colors.Orange.Lighten4;
+	string OrangeAccent => DarkMode ? Colors.Orange.Darken4 : Colors.Orange.Lighten3;
 }

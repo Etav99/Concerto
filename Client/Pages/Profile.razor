@@ -1,6 +1,5 @@
 ﻿@page "/profile"
-@using Concerto.Shared.Models
-@using Concerto.Shared.Models.Dto;
+@using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Authorization
 @inject HttpClient Http
 
@@ -12,14 +11,14 @@
 
 @if (userData == null)
 {
-	<MudProgressCircular Color="Color.Default" Indeterminate="true" />
+	<MudProgressCircular Color="Color.Default" Indeterminate="true"/>
 }
 else
 {
 	<MudStack>
 		<MudPaper Class="pa-4">
 			<MudStack Row="true">
-				<MudIcon Icon="@Icons.Material.Filled.TableRows" Title="Details" />
+				<MudIcon Icon="@Icons.Material.Filled.TableRows" Title="Details"/>
 				<MudStack Justify="Justify.Center" Spacing="4">
 					<MudStack Justify="Justify.Center" Spacing="0">
 						<MudText Typo="Typo.body1">User name</MudText>
@@ -51,4 +50,5 @@ else
 	{
 		userData = await Http.GetFromJsonAsync<User?>("User/GetCurrentUser");
 	}
+
 }

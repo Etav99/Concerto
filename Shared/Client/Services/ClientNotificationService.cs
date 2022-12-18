@@ -1,29 +1,14 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+﻿using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.SignalR.Client;
-using Concerto.Shared.Models.Dto;
 
 namespace Concerto.Shared.Client.Services;
 
 public class ClientNotificationService
 {
-	private readonly NavigationManager _navigationManager;
 	private readonly IAccessTokenProvider _accessTokenProvider;
-	private HubConnection Connection { get; set; }
-	public bool Connected => Connection?.State == HubConnectionState.Connected;
-	public bool Disconnected => Connection?.State == HubConnectionState.Disconnected;
-
-
-	public static string ReceiveNewPost => "ReceiveNewPost";
-	public static string ReceivePostUpdate => "ReceivePostUpdate";
-	public static string ReceiveNewComment => "ReceiveNewComment";
-	public static string ReceiveCommentUpdate => "ReceiveCommentUpdate";
-	
-
-	EventHandler<Post>? OnNewPostReceived { get; set; }
-	EventHandler<Post>? OnPostUpdateReceived { get; set; }
-	EventHandler<Comment>? OnNewCommentReceived { get; set; }
-	EventHandler<Comment>? OnCommentUpdateReceived { get; set; }
+	private readonly NavigationManager _navigationManager;
 
 
 	public ClientNotificationService(NavigationManager navigationManager, IAccessTokenProvider accessTokenProvider)
@@ -32,7 +17,7 @@ public class ClientNotificationService
 		_accessTokenProvider = accessTokenProvider;
 
 		Connection = new HubConnectionBuilder()
-				.WithUrl(_navigationManager.ToAbsoluteUri("notifications"), options =>
+			.WithUrl(_navigationManager.ToAbsoluteUri("notifications"), options =>
 				{
 					options.AccessTokenProvider = async () =>
 					{
@@ -40,30 +25,34 @@ public class ClientNotificationService
 						accessTokenResult.TryGetToken(out var accessToken);
 						return accessToken.Value;
 					};
-				})
-				.Build();
+				}
+			)
+			.Build();
 
-		Connection.On(ReceiveNewPost, (Post post) =>
-		{
-			OnNewPostReceived?.Invoke(this, post);
-		});
+		Connection.On(ReceiveNewPost, (Post post) => { OnNewPostReceived?.Invoke(this, post); });
 
-		Connection.On(ReceivePostUpdate, (Post post) =>
-		{
-			OnPostUpdateReceived?.Invoke(this, post);
-		});
+		Connection.On(ReceivePostUpdate, (Post post) => { OnPostUpdateReceived?.Invoke(this, post); });
 
-		Connection.On(ReceiveNewComment, (Comment comment) =>
-		{
-			OnNewCommentReceived?.Invoke(this, comment);
-		});
+		Connection.On(ReceiveNewComment, (Comment comment) => { OnNewCommentReceived?.Invoke(this, comment); });
 
-		Connection.On(ReceiveCommentUpdate, (Comment comment) =>
-		{
-			OnCommentUpdateReceived?.Invoke(this, comment);
-		});
-
+		Connection.On(ReceiveCommentUpdate, (Comment comment) => { OnCommentUpdateReceived?.Invoke(this, comment); });
 	}
+
+	private HubConnection Connection { get; }
+	public bool Connected => Connection?.State == HubConnectionState.Connected;
+	public bool Disconnected => Connection?.State == HubConnectionState.Disconnected;
+
+
+	public static string ReceiveNewPost => "ReceiveNewPost";
+	public static string ReceivePostUpdate => "ReceivePostUpdate";
+	public static string ReceiveNewComment => "ReceiveNewComment";
+	public static string ReceiveCommentUpdate => "ReceiveCommentUpdate";
+
+
+	private EventHandler<Post>? OnNewPostReceived { get; set; }
+	private EventHandler<Post>? OnPostUpdateReceived { get; set; }
+	private EventHandler<Comment>? OnNewCommentReceived { get; set; }
+	private EventHandler<Comment>? OnCommentUpdateReceived { get; set; }
 
 
 	public async Task SubscribeForum(long courseId)
@@ -74,7 +63,7 @@ public class ClientNotificationService
 
 	public async Task UnsubscribeForum(long courseId)
 	{
-		if(Connected) await Connection.InvokeAsync("UnsubscribeForum", courseId);
+		if (Connected) await Connection.InvokeAsync("UnsubscribeForum", courseId);
 	}
 
 	public async Task ConnectAsync()
@@ -89,9 +78,9 @@ public class ClientNotificationService
 
 	public async ValueTask DisposeAsync()
 	{
-		if (Connection is not null)
-		{
-			await Connection.DisposeAsync();
-		}
+		await Connection.DisposeAsync();
 	}
 }
+
+
+

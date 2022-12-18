@@ -1,4 +1,5 @@
 ﻿namespace Concerto.Shared.Extensions;
+
 public static class StringExtensions
 {
 	public static Guid ToGuid(this string str)
@@ -10,8 +11,12 @@ public static class StringExtensions
 	{
 		return long.Parse(str);
 	}
+
 	public static string Truncate(this string value, int maxChars)
 	{
 		return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
 	}
 }
+
+
+

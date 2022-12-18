@@ -1,11 +1,10 @@
 ﻿using Concerto.Shared.Models.Dto;
-using MudBlazor;
 
 namespace Concerto.Shared.Client.Services;
 
 public interface ICourseService : ICourseClient
 {
-    public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
+	public EventHandler<IEnumerable<CourseListItem>>? UserCoursesFetchEventHandler { get; set; }
 }
 
 public class CourseService : CourseClient, ICourseService
@@ -28,3 +27,5 @@ public class SessionService : SessionClient, ISessionService
 {
 	public SessionService(HttpClient httpClient) : base(httpClient) { }
 }
+
+
