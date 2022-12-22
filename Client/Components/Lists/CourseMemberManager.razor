@@ -3,104 +3,114 @@
 @using Concerto.Client.Components.Input
 @inject IUserService UserService
 
+<MudBreakpointProvider Style="all: inherit">
+	<MudTable T="CourseUser" Comparer="_comparer" Items="Items" MultiSelection="!_editing" SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser, bool>(Filter)"
+			  RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
+			  ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
+			  IsEditRowSwitchingBlocked="true" RowsPerPage="25" RowClassFunc="RowClassFunc" SelectedItemsChanged="SelectedCourseUsersChanged"
+			  SortLabel="Sort By" Dense="true" Hover="true" CanCancelEdit="true" Outlined="true" FixedFooter="true" FixedHeader="true" Loading="Loading"
+			  Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 300px;">
 
-<MudTable T="CourseUser" Comparer="_comparer" Items="Items" MultiSelection="!_editing" SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser, bool>(Filter)"
-          RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
-          ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
-          IsEditRowSwitchingBlocked="true" RowsPerPage="25" RowClassFunc="RowClassFunc" SelectedItemsChanged="SelectedCourseUsersChanged"
-          SortLabel="Sort By" Dense="true" Hover="true" CanCancelEdit="true" Outlined="true" FixedFooter="true" FixedHeader="true" Loading="Loading"
-          Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 300px;">
+		<ToolBarContent>
+			<MudText Typo="Typo.subtitle1">Course members</MudText>
+			<MudSpacer/>
+			<MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only members</MudSwitch>
+			<MudSpacer/>
+			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+		</ToolBarContent>
 
-	<ToolBarContent>
-		<MudText Typo="Typo.subtitle1">Course members</MudText>
-		<MudSpacer/>
-		<MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only members</MudSwitch>
-		<MudSpacer/>
-		<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
-	</ToolBarContent>
+		<ColGroup>
+			<MudHidden Breakpoint="Breakpoint.Xs">
+				<col style="padding: 0; width: 20px"/>
+				<col style="width: 50px"/>
+			</MudHidden>
+			<MudHidden Breakpoint="Breakpoint.SmAndUp">
+				<col />
+			</MudHidden>
+			<col style=""/>
+			<col style=""/>
+			<col style="min-width: 0"/>
+			<col style="min-width: 50px"/>
+		</ColGroup>
 
-	<ColGroup>
-		<col style="padding: 0; width: 20px"/>
-		<col style="width: 100px"/>
-		<col style=""/>
-		<col style=""/>
-		<col style="width: 200px"/>
-		<col style="width: 100px"/>
-	</ColGroup>
+		<HeaderContent>
+				@if (_editing)
+				{
+					<MudTh></MudTh>
+				}
 
-	<HeaderContent>
-		@if (_editing)
-		{
-			<MudTh></MudTh>
-		}
-		<MudTh Style="padding-right: 0">
-			<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Selected</MudTableSortLabel>
-		</MudTh>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].FirstName)">Name</MudTableSortLabel>
-		</MudTh>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
-		</MudTh>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel>
-		</MudTh>
-	</HeaderContent>
+			<MudTh Style="padding-right: 0">
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Selected</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].FirstName)">Name</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel>
+			</MudTh>
+		</HeaderContent>
 
-	<RowTemplate>
-		@if (_editing)
-		{
+		<RowTemplate>
+				@if (_editing)
+				{
+					<MudTd DataLabel="">
+						<MudCheckBox Dense="true" Disabled="true" Checked="@SelectedCourseUsers.Contains(context)"/>
+					</MudTd>
+				}
+			<MudHidden Breakpoint="Breakpoint.Xs">
+				<MudTd DataLabel="Selected">←</MudTd>
+			</MudHidden>
+			<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
+			<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
+				@if (SelectedCourseUsers.Contains(context) || ExistingCourseUsers.Contains(context))
+				{
+					<MudTd DataLabel="Role">@context.Role.ToDisplayString()</MudTd>
+				}
+				else
+				{
+					<MudTd DataLabel="Role">-</MudTd>
+				}
+		</RowTemplate>
+
+		<RowEditingTemplate>
 			<MudTd DataLabel="">
-				<MudCheckBox Dense="true" Disabled="true" Checked="@SelectedCourseUsers.Contains(context)"/>
+				<MudCheckBox Dense="true" Disabled="true" Checked="true"/>
 			</MudTd>
-		}
-		<MudTd DataLabel="Selected">←</MudTd>
-		<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
-		<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-		@if (SelectedCourseUsers.Contains(context) || ExistingCourseUsers.Contains(context))
-		{
-			<MudTd DataLabel="Role">@context.Role.ToDisplayString()</MudTd>
-		}
-		else
-		{
-			<MudTd DataLabel="Role">-</MudTd>
-		}
-	</RowTemplate>
-
-	<RowEditingTemplate>
-		<MudTd DataLabel="">
-			<MudCheckBox Dense="true" Disabled="true" Checked="true"/>
-		</MudTd>
-		<MudTd DataLabel="Selected">←</MudTd>
-		<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
-		<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-		<MudTd DataLabel="Role">
-			<CourseRolePicker @bind-Value="context.Role"/>
-		</MudTd>
-	</RowEditingTemplate>
-
-	<FooterContent>
-		@if (_editing)
-		{
-			<MudTd DataLabel="">
-				<MudCheckBox Dense="true" Disabled="true" Checked="AvailableCourseUsers.Count == SelectedCourseUsers.Count"/>
+			<MudTd DataLabel="Selected">←</MudTd>
+			<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
+			<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
+			<MudTd DataLabel="Role">
+				<CourseRolePicker @bind-Value="context.Role"/>
 			</MudTd>
-		}
-		<MudTd colspan="1">Select All</MudTd>
-		<MudTd colspan="3">
-			Legend:
-			<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-new">New</MudButton>
-			<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-modified">Modified</MudButton>
-			<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-deleted">Deleted</MudButton>
-			<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-edited">Editing</MudButton>
-		</MudTd>
-	</FooterContent>
+		</RowEditingTemplate>
 
-	<PagerContent>
-		<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
-	</PagerContent>
+		<FooterContent>
+				@if (_editing)
+				{
+					<MudTd DataLabel="">
+						<MudCheckBox Dense="true" Disabled="true" Checked="AvailableCourseUsers.Count == SelectedCourseUsers.Count"/>
+					</MudTd>
+				}
+			<MudTd colspan="1">Select All</MudTd>
+			<MudTd colspan="3">
+				Legend:
+				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-new">New</MudButton>
+				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-modified">Modified</MudButton>
+				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-deleted">Deleted</MudButton>
+				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-edited">Editing</MudButton>
+			</MudTd>
+		</FooterContent>
 
-</MudTable>
+		<PagerContent>
+			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
+		</PagerContent>
+
+	</MudTable>
+</MudBreakpointProvider>
+
 
 
 @code
@@ -210,7 +220,7 @@
 
 		if (_editedRowBackup?.UserId == courseUser.UserId)
 		{
-			return "row row-edited";
+			return "row-colored row-edited";
 		}
 
 		CourseUser? existingCourseUser;
@@ -219,11 +229,11 @@
 
 		if (selected && existing)
 		{
-			if (existingCourseUser!.Role != courseUser.Role) return "row row-modified"; // Modified
+			if (existingCourseUser!.Role != courseUser.Role) return "row-colored row-modified"; // Modified
 			return string.Empty; // Unchanged
 		}
-		if (selected && !existing) return "row row-new"; // New
-		if (!selected && existing) return "row row-deleted"; // Deleted
+		if (selected && !existing) return "row-colored row-new"; // New
+		if (!selected && existing) return "row-colored row-deleted"; // Deleted
 
 		return string.Empty;
 	}

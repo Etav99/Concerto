@@ -3,22 +3,27 @@
 
 <style>
 
-	.row-modified { background-color: @Blue; }
+	.row-colored {
+		border-color: rgba(0, 0, 0, 0.9) !important;
+	}
+	.row-colored > td {background: inherit;}
+
+	.row-colored.row-modified { background-color: @Blue; }
 
 
-	.row-modified:hover { background-color: @BlueAccent !important; }
+	.row-colored.row-modified:hover { background-color: @BlueAccent !important; }
 
-	.row-new { background-color: @Green; }
+	.row-colored.row-new { background-color: @Green; }
 
-	.row-new:hover { background-color: @GreenAccent !important; }
+	.row-colored.row-new:hover { background-color: @GreenAccent !important; }
 
-	.row-deleted { background-color: @Red; }
+	.row-colored.row-deleted { background-color: @Red; }
 
-	.row-deleted:hover { background-color: @RedAccent !important; }
+	.row-colored.row-deleted:hover { background-color: @RedAccent !important; }
 
-	.row-edited { background-color: @Orange; }
+	.row-colored.row-edited { background-color: @Orange; }
 
-	.row-edited:hover { background-color: @OrangeAccent !important; }
+	.row-colored.row-edited:hover { background-color: @OrangeAccent !important; }
 
 	.mud-nav-group.hidden > .mud-expanded { display: none; }
 

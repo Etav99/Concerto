@@ -142,6 +142,12 @@ public class CourseService
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole == CourseUserRole.Admin;
 	}
+	
+	internal async Task<bool> CanManageCourseSessions(long courseId, long userId)
+	{
+		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
+		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
+	}
 
 	public async Task<bool> UpdateCourse(UpdateCourseRequest request, long userId)
 	{

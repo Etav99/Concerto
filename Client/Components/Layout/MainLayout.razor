@@ -46,8 +46,8 @@
 								</MudStack>
 							</MudLink>
 						</MudMenuItemW>
-						<MudMenuItemW Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnClick="() => toggleDarkMode(!DarkMode)">Toggle theme</MudMenuItemW>
-						<MudMenuItemW Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" OnClick="BeginLogout">Log out</MudMenuItemW>
+						<MudMenuItemW Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnTouch="()=> toggleDarkMode(!DarkMode)" OnClick="() => toggleDarkMode(!DarkMode)">Toggle theme</MudMenuItemW>
+						<MudMenuItemW Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" OnTouch="BeginLogout" OnClick="BeginLogout">Log out</MudMenuItemW>
 					</ChildContent>
 				</MudMenu>
 			</Authorized>

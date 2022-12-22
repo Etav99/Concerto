@@ -47,6 +47,7 @@ public static class DialogServiceExtensions
 
 	public static async Task<long> ShowCreateCourseDialog(this IDialogService dialogService)
 	{
+		// var options = new DialogOptions() { FullScreen = true,  };
 		var result = await dialogService.Show<CreateCourseDialog>("Create new course").Result;
 		if (result.Cancelled) return -1;
 		return (long)result.Data;
@@ -55,7 +56,7 @@ public static class DialogServiceExtensions
 
 	public static async Task<bool> ShowCopyFolderItemsDialog(this IDialogService dialogService, IEnumerable<FolderContentItem> items, long fromFolderId, long initialCourseId)
 	{
-		var options = new DialogOptions() { FullScreen = true };
+		var options = new DialogOptions() { FullScreen = true, MaxWidth=MaxWidth.Large };
 		var parameters = new DialogParameters
 		{
 			["Items"] = items,
@@ -70,7 +71,7 @@ public static class DialogServiceExtensions
 
 	public static async Task<bool> ShowMoveFolderItemsDialog(this IDialogService dialogService, IEnumerable<FolderContentItem> items, long fromFolderId, long initialCourseId)
 	{
-		var options = new DialogOptions() { FullScreen = true };
+		var options = new DialogOptions() { FullScreen = true, MaxWidth=MaxWidth.Large };
 		var parameters = new DialogParameters
 		{
 			["Items"] = items,

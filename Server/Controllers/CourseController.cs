@@ -114,4 +114,11 @@ public class CourseController : ControllerBase
 
 		return BadRequest();
 	}
+
+	[HttpGet]
+	public async Task<ActionResult<bool>> CanManageCourseSessions(long courseId)
+	{
+		return Ok(User.IsAdmin() || await _courseService.CanManageCourseSessions(courseId, UserId));
+	}
+	
 }

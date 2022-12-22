@@ -3,32 +3,43 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "Concerto",
+      "launchUrl": "concerto/app",
       "environmentVariables": {
+        "CONCERTO_STORAGE_PATH": "storage/",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "false",
-        "DB_STRING": "Host=localhost;Port=5432;Database=ConcertoDb;username=admin;Password=admin"
+        "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS;Include Error Detail=True;",
+        "OIDC_AUDIENCE": "account",
+        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/concerto/keycloak/realms/concerto",
+        "OIDC_AUTHORITY": "http://localhost:7200/concerto/keycloak/realms/concerto",
+        "OIDC_METADATA_ADDRESS": "http://localhost:7200/concerto/keycloak/realms/concerto/.well-known/openid-configuration",
+        "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/concerto/keycloak/realms/concerto/",
+        "IDENTITY_ACCOUNT_CONSOLE_URL": "http://localhost:7200/concerto/keycloak/realms/concerto/account/",
+        "SERVER_CLIENT_ID": "concerto-server",
+        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "applicationUrl": "https://localhost:7001;http://localhost:7000",
-      "sslPort": 7001
+      "applicationUrl": "https://localhost:44398;http://localhost:7000",
+      "sslPort": 44398,
+      "use64Bit": true
     },
     "Concerto.Server": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Concerto",
+      "launchUrl": "concerto/app",
       "environmentVariables": {
+        "CONCERTO_STORAGE_PATH": "storage/",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_DOCKER": "false",
         "DB_STRING": "Host=postgres;Port=5432;Database=ConcertoDb;username=postgres;Password=E20zX3yraj6AJlW0jq0Y0d3wQS;Include Error Detail=True;",
-        "JWT_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR": "true",
         "OIDC_AUDIENCE": "account",
-        "OIDC_AUTHORITY": "http://localhost:7200/concerto/ceycloak/realms/concerto",
-        "OIDC_METADATA_ADDRESS": "http://localhost:7200/concerto/ceycloak/realms/concerto/.well-known/openid-configuration",
+        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/concerto/keycloak/concerto/keycloak/realms/concerto",
+        "OIDC_AUTHORITY": "http://localhost:7200/concerto/keycloak/realms/concerto",
+        "OIDC_METADATA_ADDRESS": "http://localhost:7200/concerto/keycloak/realms/concerto/.well-known/openid-configuration",
+        "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/concerto/keycloak/realms/concerto/",
+        "IDENTITY_ACCOUNT_CONSOLE_URL": "http://localhost:7200/concerto/keycloak/realms/concerto/account/",
         "SERVER_CLIENT_ID": "concerto-server",
-        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ",
-        "OIDC_ADMIN_REST_API_BASE": "http://localhost:7200/concerto/ceycloak/admin/realms/concerto",
-        "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/concerto/ceycloak/realms/concerto"
+        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",
@@ -54,7 +65,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:55572/",
+      "applicationUrl": "http://localhost:7000",
       "sslPort": 44398
     }
   }

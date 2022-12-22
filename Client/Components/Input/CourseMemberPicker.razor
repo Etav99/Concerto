@@ -3,66 +3,85 @@
 @using Concerto.Shared.Models.Dto
 @inherits MudComponentBase
 
-<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User, bool>(Filter)"
-          RowsPerPage="25" Loading="Loading"
-          SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
-          Style="@Style" Class="@Class" Height="@TableContentHeight">
+<MudBreakpointProvider Style="all: inherit;" OnBreakpointChanged="(b) => _smallScreen = b <= Breakpoint.Xs">
+	<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User, bool>(Filter)"
+			  RowsPerPage="25" Loading="Loading" RowClassFunc="RowClassFunc"
+			  SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
+			  Style="@($"min-height: 245px; display:grid; grid-template-rows: 1fr; {Style}" )" Class="@Class" Height="@TableContentHeight" RowStyle="text-align: right;">
 
-	<ToolBarContent>
-		<MudText Typo="Typo.subtitle1">Course members</MudText>
-		<MudSpacer/>
-		<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
-	</ToolBarContent>
+		<ToolBarContent>
+			<MudText Typo="Typo.subtitle1">Course members</MudText>
+			<MudSpacer/>
+			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+		</ToolBarContent>
 
-	<ColGroup>
-		<col style="padding: 0; width: 32px"/>
-		<col style="width: 32px;"/>
-		<col style="width: 100px;"/>
-		<col style="width: 100px;"/>
-	</ColGroup>
+		<ColGroup>
 
-	<HeaderContent>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<User, object>(x => SelectedUsers.Contains(x))">Selected</MudTableSortLabel>
-		</MudTh>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<User, object>(x => x.FirstName)">Name</MudTableSortLabel>
-		</MudTh>
-		<MudTh>
-			<MudTableSortLabel SortBy="new Func<User, object>(x => x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
-		</MudTh>
-	</HeaderContent>
 
-	<RowTemplate>
-		<MudTd DataLabel="Selected">←</MudTd>
-		<MudTd DataLabel="Name">@context.FirstName</MudTd>
-		<MudTd DataLabel="Surname">@context.LastName</MudTd>
-	</RowTemplate>
+			<MudHidden Breakpoint="Breakpoint.Xs">
+				<col style="padding: 0; width: 20px" />
+				<col style="min-width: 100px" />
+			</MudHidden>
+			<MudHidden Breakpoint="Breakpoint.SmAndUp">
+				<col style="padding-top: 10px" />
+			</MudHidden>
+			<col style="max-width: 32px;" />
+			<col style="min-width: 100px;" />
+			<col style="min-width: 100px;" />
+		
 
-	<FooterContent>
-		@if (_editing)
-		{
-			<MudTd DataLabel="">
-				<MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count"/>
-			</MudTd>
-			<MudTd colspan="4">Select All</MudTd>
-		}
-		else
-		{
-			<MudTd colspan="4">Select All</MudTd>
-		}
-	</FooterContent>
+		</ColGroup>
 
-	<PagerContent>
-		<MudTablePager PageSizeOptions="new[] { 2, 50, 100 }"/>
-	</PagerContent>
+		<HeaderContent>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<User, object>(x => SelectedUsers.Contains(x))">Selected</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<User, object>(x => x.FirstName)">Name</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<User, object>(x => x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
+			</MudTh>
+		</HeaderContent>
 
-</MudTable>
+		<RowTemplate>
+			<MudHidden Breakpoint="Breakpoint.Xs">
+				<MudTd DataLabel="Selected">←</MudTd>
+			</MudHidden>
+			<MudTd DataLabel="Name">@context.FirstName</MudTd>
+			<MudTd DataLabel="Surname">@context.LastName</MudTd>
+		</RowTemplate>
+
+		<FooterContent>
+			@if (_editing)
+			{
+				<MudTd DataLabel="">
+					<MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count"/>
+				</MudTd>
+				<MudTd colspan="4">Select All</MudTd>
+			}
+			else
+			{
+				<MudTd colspan="4">Select All</MudTd>
+			}
+		</FooterContent>
+
+		<PagerContent>
+			<MudTablePager PageSizeOptions="new[] { 2, 50, 100 }"/>
+		</PagerContent>
+
+	</MudTable>
+</MudBreakpointProvider>
+
+
+
 
 
 @code
 {
-	private string TableContentHeight => $"calc({Height} - 64px)";
+	private bool _smallScreen = false;
+
+	private string TableContentHeight => $"calc({Height})";
 
 	[Parameter]
 	public string Height { get; set; } = "100%";
@@ -102,5 +121,11 @@
 		if (user.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
 		return false;
+	}
+
+	private string RowClassFunc(User user, int rowNumber)
+	{
+		if (SelectedUsers?.Contains(user) ?? false) return "row-colored row-new";
+		return string.Empty;
 	}
 }

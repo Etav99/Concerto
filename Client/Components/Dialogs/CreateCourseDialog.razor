@@ -6,18 +6,27 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
-<MudDialog>
+@*<style>
+	.mud-dialog.flex-dialog > div.outline-none
+	{
+		display: inherit;
+		flex-direction: inherit;ont-size:28%;color:#3498db}
+		flex-grow: 1;
+	}
+</style>*@
+
+
+<MudDialog Class="" Style="max-height: 100vh; overflow:auto;" ContentStyle="" ClassContent="d-flex flex-column">
 	<DialogContent>
-		<MudStack Spacing="8">
-			<MudTextField @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
-			<CourseMemberPicker Class="flex-grow-1" @bind-SelectedUsers="_members"/>
-		</MudStack>
+		<MudTextField Class="mb-2" @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
+		<CourseMemberPicker @bind-SelectedUsers="_members" Style="max-height:calc(100vh - 400px);"/>
 	</DialogContent>
 	<DialogActions>
 		<MudButton OnClick="Cancel">Cancel</MudButton>
 		<MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
 	</DialogActions>
 </MudDialog>
+
 
 @code {
 
@@ -27,6 +36,7 @@
 	private string? _courseName;
 
 	private HashSet<User> _members = new(new UserIdEqualityComparer());
+
 
 	private async Task Submit()
 	{
