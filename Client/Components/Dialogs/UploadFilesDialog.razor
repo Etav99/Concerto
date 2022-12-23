@@ -1,8 +1,10 @@
 ﻿@using Concerto.Client.Extensions
+@using Concerto.Client.Services;
 @using Concerto.Shared.Models.Dto
 @using System.Net.Http.Headers
 @inject ISnackbar Snackbar
 @inject HttpClient Http
+@inject IAppSettingsService AppSettingsService
 @inject IDialogService DialogService
 
 <MudDialog>
@@ -39,7 +41,6 @@
 	private static readonly string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
 	private string DragClass = DefaultDragClass;
 
-		private const long maxFileSize = 1024 * 1024 * 5;
 
 	private readonly List<IBrowserFile> _files = new();
 	private readonly List<string> _fileNames = new();
@@ -70,14 +71,19 @@
 		var upload = false;
 		List<FileUploadResult> uploadResults = new();
 
+		long maxFileSize = AppSettingsService.AppSettings.FileSizeLimit;
+		int filesCount = 0;
+		int maxFiles = AppSettingsService.AppSettings.MaxAllowedFiles;
 		foreach (var file in _files)
 		{
 			try
 			{
+				if (filesCount > maxFiles) throw new Exception($"You can upload only {maxFiles} files at once.");
 				var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
 				fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
 				content.Add(fileContent, "\"files\"", file.Name);
 				upload = true;
+				filesCount++;
 			}
 			catch (Exception e)
 			{
@@ -106,7 +112,10 @@
 
 		if (errors.Any())
 		{
-			Snackbar.Add("Upload error", Severity.Error);
+			if (uploadResults.Any(ur => ur.Uploaded))
+			{
+				Snackbar.Add("Some files were not uploaded", Severity.Warning);
+			}
 			await DialogService.ShowInfoDialog("Upload error", string.Join("\n", errors));
 		}
 		else

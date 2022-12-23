@@ -21,9 +21,9 @@
 
 	.row-colored.row-deleted:hover { background-color: @RedAccent !important; }
 
-	.row-colored.row-edited { background-color: @Orange; }
+	.row-colored.row-edited { background-color: @Purple; }
 
-	.row-colored.row-edited:hover { background-color: @OrangeAccent !important; }
+	.row-colored.row-edited:hover { background-color: @PurpleAccent !important; }
 
 	.mud-nav-group.hidden > .mud-expanded { display: none; }
 
@@ -45,4 +45,7 @@
 
 	string Orange => DarkMode ? Colors.Orange.Darken3 : Colors.Orange.Lighten4;
 	string OrangeAccent => DarkMode ? Colors.Orange.Darken4 : Colors.Orange.Lighten3;
+
+	string Purple => DarkMode ? Colors.Purple.Darken3 : Colors.Purple.Lighten4;
+	string PurpleAccent => DarkMode ? Colors.Purple.Darken4 : Colors.Purple.Lighten3;
 }

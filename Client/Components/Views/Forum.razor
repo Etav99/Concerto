@@ -29,10 +29,10 @@ else
 		{
 			<MudPaper Class="pa-2 mt-2" Elevation="0" Outlined="true">
 				<MudForm @ref="_createPostForm" @bind-IsValid="@_createPostRequestValid">
-					<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SendPost()" Color="Color.Primary">Create post</MudButton>
-					<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error" Disabled="!_createPostRequestValid">Cancel</MudButton>
-					<MudTextField @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(TextValidation)" Label="Title" Variant="Variant.Outlined"/>
-					<MudTextField @bind-Value="_createPostRequest.Content" Validation="new Func<string, string?>(TextValidation)" Label="Post content" Variant="Variant.Outlined" Lines="10"/>
+					<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SendPost()" Disabled="!_createPostRequestValid" Color="Color.Primary">Create post</MudButton>
+					<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error" >Cancel</MudButton>
+					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined"/>
+					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 				</MudForm>
 
 			</MudPaper>
@@ -50,8 +50,8 @@ else
 							<MudForm @ref="_editPostForm" @bind-IsValid="@_editPostRequestValid">
 								<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SavePost()" Disabled="!_editPostRequestValid" Color="Color.Primary">Edit post</MudButton>
 								<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelEditPost" Color="Color.Error">Cancel</MudButton>
-								<MudTextField @bind-Value="_editPostRequest.Title" Validation="new Func<string, string?>(TextValidation)" Label="Title" Variant="Variant.Outlined"/>
-								<MudTextField @bind-Value="_editPostRequest.Content" Validation="new Func<string, string?>(TextValidation)" Label="Post content" Variant="Variant.Outlined" Lines="10"/>
+								<MudTextField @bind-Value="_editPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
+								<MudTextField @bind-Value="_editPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 							</MudForm>
 						</MudPaper>
 					}
@@ -97,7 +97,7 @@ else
 							<MudForm @ref="_createCommentForm" @bind-IsValid="@_createCommentRequestValid">
 								<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SendComment()" Disabled="!_createCommentRequestValid" Color="Color.Primary">Send comment</MudButton>
 								<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelComment" Color="Color.Error">Cancel</MudButton>
-								<MudTextField @bind-Value="_createCommentRequest.Content" Validation="new Func<string, string?>(TextValidation)" Label="Comment" Variant="Variant.Outlined" Lines="3"/>
+								<MudTextField @bind-Value="_createCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3" />
 							</MudForm>
 
 						</MudPaper>
@@ -110,7 +110,7 @@ else
 								<MudForm @ref="_editCommentForm" @bind-IsValid="@_editCommentRequestValid">
 									<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SaveComment()" Disabled="!_editCommentRequestValid" Color="Color.Primary">Send comment</MudButton>
 									<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelEditComment" Color="Color.Error">Cancel</MudButton>
-									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="new Func<string, string?>(TextValidation)" Label="Comment" Variant="Variant.Outlined" Lines="3"/>
+									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3"/>
 								</MudForm>
 							</MudPaper>
 						}
@@ -374,13 +374,5 @@ else
 			Snackbar.Add("Failed to delete comment.", Severity.Error);
 		}
 	}
-
-
-	private string? TextValidation(string text)
-	{
-		if (string.IsNullOrWhiteSpace(text)) return "Cannot be empty";
-		return null;
-	}
-
 
 }

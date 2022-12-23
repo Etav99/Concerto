@@ -162,8 +162,6 @@ public class StorageService
 
 	private async Task<IEnumerable<Data.Models.FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
 	{
-		const int maxAllowedFiles = 25;
-		const long maxFileSize = (long)16106127360 * 15;
 		var filesProcessed = 0;
 		List<Data.Models.FileUploadResult> fileUploadResults = new();
 
@@ -180,9 +178,9 @@ public class StorageService
 			fileUploadResult.DisplayFileName = filename;
 			fileUploadResult.Extension = extension;
 
-			if (filesProcessed < maxAllowedFiles)
+			if (filesProcessed < AppSettings.Storage.MaxAllowedFiles)
 			{
-				if (file.Length > maxFileSize)
+				if (file.Length > AppSettings.Storage.FileSizeLimit)
 				{
 					fileUploadResult.ErrorCode = 2;
 					fileUploadResult.ErrorMessage = "File too large";
@@ -465,8 +463,10 @@ public class StorageService
 		_context.UploadedFiles.RemoveRange(files);
 		await _context.SaveChangesAsync();
 
-		var deleteTasks = files.Select(DeletePhysicalFile);
-		await Task.WhenAll(deleteTasks);
+		foreach (var file in files)
+		{
+			await DeletePhysicalFile(file);
+		}
 	}
 
 	internal async Task<bool> UpdateFile(UpdateFileRequest request)

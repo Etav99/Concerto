@@ -3,20 +3,19 @@
 @using Concerto.Client.Components.Input
 @inject IUserService UserService
 
-<MudBreakpointProvider Style="all: inherit">
-	<MudTable T="CourseUser" Comparer="_comparer" Items="Items" MultiSelection="!_editing" SelectedItems="SelectedCourseUsers" Filter="new Func<CourseUser, bool>(Filter)"
-			  RowEditCommit="EditCommited" OnRowClick="RowClick" RowEditPreview="OnRowEdit" RowEditCancel="EditCanceled"
-			  ApplyButtonPosition="TableApplyButtonPosition.End" EditTrigger="TableEditTrigger.EditButton" EditButtonPosition="TableEditButtonPosition.End"
-			  IsEditRowSwitchingBlocked="true" RowsPerPage="25" RowClassFunc="RowClassFunc" SelectedItemsChanged="SelectedCourseUsersChanged"
-			  SortLabel="Sort By" Dense="true" Hover="true" CanCancelEdit="true" Outlined="true" FixedFooter="true" FixedHeader="true" Loading="Loading"
-			  Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 300px;">
+
+	<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
+			  RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
+			  RowsPerPage="25" 
+			  SortLabel="Sort By" Dense="true" Hover="true"  Outlined="true" FixedFooter="true" FixedHeader="true" 
+			  Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 450px;">
 
 		<ToolBarContent>
 			<MudText Typo="Typo.subtitle1">Course members</MudText>
 			<MudSpacer/>
-			<MudSwitch @bind-Checked="@_showSelectedOnly" Color="Color.Primary">Show only members</MudSwitch>
+  			<MudSwitch Disabled="Editing" @bind-Checked="@_showMembersOnly" Color="Color.Primary">Show only members</MudSwitch>
 			<MudSpacer/>
-			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+			<MudTextField Clearable="true" @bind-Value="_searchString" Immediate="true" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
 		</ToolBarContent>
 
 		<ColGroup>
@@ -27,20 +26,19 @@
 			<MudHidden Breakpoint="Breakpoint.SmAndUp">
 				<col />
 			</MudHidden>
-			<col style=""/>
-			<col style=""/>
-			<col style="min-width: 0"/>
-			<col style="min-width: 50px"/>
+			<col style="min-width: 100px" />
+			<col style="min-width: 100px" />
+			<col style="min-width: 100px" />
+			<col style="width:  230px" />
+			<col style="width: 90px"/>
 		</ColGroup>
 
 		<HeaderContent>
-				@if (_editing)
-				{
-					<MudTh></MudTh>
-				}
-
+			<MudTh>
+				<MudCheckBox T="bool?" Dense="true" Disabled="Editing" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
+			</MudTh>
 			<MudTh Style="padding-right: 0">
-				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Selected</MudTableSortLabel>
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Member</MudTableSortLabel>
 			</MudTh>
 			<MudTh>
 				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].FirstName)">Name</MudTableSortLabel>
@@ -49,53 +47,70 @@
 				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
 			</MudTh>
 			<MudTh>
+				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].Username)">Username</MudTableSortLabel>
+			</MudTh>
+			<MudTh>
 				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel>
 			</MudTh>
+			<MudTh>Actions</MudTh>
 		</HeaderContent>
-
+		
 		<RowTemplate>
-				@if (_editing)
-				{
-					<MudTd DataLabel="">
-						<MudCheckBox Dense="true" Disabled="true" Checked="@SelectedCourseUsers.Contains(context)"/>
-					</MudTd>
-				}
+			<MudTd DataLabel="">
+				<MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Disabled="Editing" Checked="@SelectedCourseUsers.Contains(context)" />
+			</MudTd>
 			<MudHidden Breakpoint="Breakpoint.Xs">
-				<MudTd DataLabel="Selected">←</MudTd>
+				<MudTd DataLabel="Member">←</MudTd>
 			</MudHidden>
 			<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
 			<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-				@if (SelectedCourseUsers.Contains(context) || ExistingCourseUsers.Contains(context))
+			<MudTd DataLabel="Username">@Users[context.UserId].Username</MudTd>
+
+			@if (_editedUser?.UserId == context.UserId)
+			{
+
+				<MudTd DataLabel="Role" Style="min-width: 200px;">
+					<CourseRolePicker @bind-Value="context.Role" />
+				</MudTd>
+
+			<MudTd  DataLabel="Actions">
+					<MudIconButton Size="Size.Small" Icon="@Icons.Filled.Check" OnClick="ApplyEdit" />
+					<MudIconButton Size="Size.Small" Icon="@Icons.Filled.Cancel" OnClick="CancelEdit" />
+			</MudTd>
+			}
+			else
+			{
+				@if (SelectedCourseUsers.Contains(context))
 				{
-					<MudTd DataLabel="Role">@context.Role.ToDisplayString()</MudTd>
+				<MudTd DataLabel="Role" Style="min-width: 200px;">
+							@context.Role.ToDisplayString()
+					</MudTd>
+
+
+					<MudTd Class="d-flex" DataLabel="Actions">
+						<MudIconButton Size="Size.Small" Icon="@Icons.Filled.Edit" OnClick="() => _editedUser = context" />
+						@if (IsModified(context))
+						{
+							<MudIconButton Disabled="Editing" Size="Size.Small" Icon="@Icons.Filled.Restore" OnClick="() => RestoreUser(context)" />
+						}
+					</MudTd>
+
 				}
 				else
 				{
-					<MudTd DataLabel="Role">-</MudTd>
+					<MudTd DataLabel="Role" Style="min-width: 200px;">-</MudTd>
+					<MudTd DataLabel="Actions" />
 				}
+			}
+
 		</RowTemplate>
 
-		<RowEditingTemplate>
-			<MudTd DataLabel="">
-				<MudCheckBox Dense="true" Disabled="true" Checked="true"/>
-			</MudTd>
-			<MudTd DataLabel="Selected">←</MudTd>
-			<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
-			<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
-			<MudTd DataLabel="Role">
-				<CourseRolePicker @bind-Value="context.Role"/>
-			</MudTd>
-		</RowEditingTemplate>
-
 		<FooterContent>
-				@if (_editing)
-				{
-					<MudTd DataLabel="">
-						<MudCheckBox Dense="true" Disabled="true" Checked="AvailableCourseUsers.Count == SelectedCourseUsers.Count"/>
-					</MudTd>
-				}
+			<MudTd DataLabel="">
+				<MudCheckBox T="bool?" Dense="true" Disabled="Editing" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
+			</MudTd>
 			<MudTd colspan="1">Select All</MudTd>
-			<MudTd colspan="3">
+			<MudTd colspan="5">
 				Legend:
 				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-new">New</MudButton>
 				<MudButton Style="pointer-events: none;" DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Class="row-colored row-modified">Modified</MudButton>
@@ -109,9 +124,6 @@
 		</PagerContent>
 
 	</MudTable>
-</MudBreakpointProvider>
-
-
 
 @code
 {
@@ -119,18 +131,7 @@
 	private HashSet<CourseUser> _selectedCourseUsers = null!;
 
 	[Parameter]
-	public HashSet<CourseUser> SelectedCourseUsers
-	{
-		get => _selectedCourseUsers;
-		set
-		{
-			if (_selectedCourseUsers != value)
-			{
-				_selectedCourseUsers = value;
-				StateHasChanged();
-			}
-		}
-	}
+	public HashSet<CourseUser> SelectedCourseUsers { get; set; } = new(new CourseUserIdEqualityComparer());
 
 	[Parameter]
 	public EventCallback<HashSet<CourseUser>> SelectedCourseUsersChanged { get; set; }
@@ -144,58 +145,76 @@
 	[Parameter]
 	public Dictionary<long, User> Users { get; set; } = null!;
 
+	private bool? _selectAllState => SelectedCourseUsers.Count == AvailableCourseUsers.Count ? true : SelectedCourseUsers.Count > 0 ? null : false;
+
 	bool Loading => AvailableCourseUsers is null || Users is null;
 
-	HashSet<CourseUser> Items => !Loading ? _showSelectedOnly ? SelectedCourseUsers : AvailableCourseUsers : new HashSet<CourseUser>();
 
 
-	private CourseUser? _editedRowBackup;
+	IEnumerable<CourseUser> CurrentMembers => AvailableCourseUsers.Where(x => ExistingCourseUsers.Contains(x) || SelectedCourseUsers.Contains(x));
+	IEnumerable<CourseUser> Items => Loading ? new HashSet<CourseUser>() : _showMembersOnly ? CurrentMembers : AvailableCourseUsers;
+
 	private string _searchString = "";
-	bool _editing = false;
-	bool _showSelectedOnly = true;
+	bool _showMembersOnly = true;
+
+	private CourseUser? _editedUser;
+	bool Editing => _editedUser is not null;
 
 	private CourseUserIdEqualityComparer _comparer = new();
 
-
-	private void EditCommited(object commitedCourseUser)
+	private void ApplyEdit()
 	{
-		if (!SelectedCourseUsers.Contains((CourseUser)commitedCourseUser))
-		{
-			SelectedCourseUsers.Add((CourseUser)commitedCourseUser);
-		}
-		SelectedCourseUsersChanged.InvokeAsync(SelectedCourseUsers).AndForget();
-		_editing = false;
-		_editedRowBackup = null;
-	}
-
-	private void EditCanceled(object editedCourseUser)
-	{
-		((CourseUser)editedCourseUser).Role = _editedRowBackup!.Role;
-		_editing = false;
-		_editedRowBackup = null;
+		_editedUser = null;
+		SelectedCourseUsersChanged.InvokeAsync().AndForget();
 		StateHasChanged();
 	}
 
-	private void RowClick(TableRowClickEventArgs<CourseUser> rowClick)
+	private void CancelEdit()
 	{
-		if (_editing) return;
-		var courseUser = rowClick.Item;
-		if (!SelectedCourseUsers.Contains(courseUser))
+		if (_editedUser is not null)
 		{
-			SelectedCourseUsers.Add(courseUser);
+			RestoreUser(_editedUser);
+			_editedUser = null;
 		}
-		else
+
+	}
+
+	private void RestoreUser(CourseUser user)
+	{
+		CourseUser? existingUser;
+		var existing = ExistingCourseUsers.TryGetValue(user, out existingUser);
+		if (existing && existingUser is not null)
 		{
-			SelectedCourseUsers.Remove(courseUser);
+			user.Role = existingUser.Role;
+			SelectedCourseUsersChanged.InvokeAsync().AndForget();
+			StateHasChanged();
 		}
 	}
 
-	private void OnRowEdit(object editedCourseUser)
+
+	private void SelectAllClicked()
 	{
-		_editedRowBackup = (CourseUser)editedCourseUser with { };
-		_editing = true;
+		switch(_selectAllState)
+		{
+			case true:
+			case null:
+				SelectedCourseUsers.ExceptWith(Items);
+				break;
+			case false:
+				SelectedCourseUsers.UnionWith(Items.Where(x => Filter(x)).ToHashSet(new CourseUserIdEqualityComparer()));
+				break;
+		}
+		SelectedCourseUsersChanged.InvokeAsync().AndForget();
 		StateHasChanged();
 	}
+
+	private void CheckedChanged(CourseUser user)
+	{
+		if (SelectedCourseUsers.Contains(user)) SelectedCourseUsers.Remove(user);
+		else SelectedCourseUsers.Add(user);
+		SelectedCourseUsersChanged.InvokeAsync().AndForget();
+	}
+
 
 	private bool Filter(CourseUser user)
 	{
@@ -207,9 +226,22 @@
 			return true;
 		if (Users[user.UserId].FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
+		if (Users[user.UserId].Username.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
 		if (user.Role.ToDisplayString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
 
+		return false;
+	}
+
+	private bool IsModified(CourseUser courseUser)
+	{
+		CourseUser? existingCourseUser;
+		var existing = ExistingCourseUsers.TryGetValue(courseUser, out existingCourseUser);
+		if(existing && existingCourseUser is not null)
+		{
+			return existingCourseUser.Role != courseUser.Role;
+		}
 		return false;
 	}
 
@@ -218,7 +250,7 @@
 		if (ExistingCourseUsers is null)
 			return string.Empty;
 
-		if (_editedRowBackup?.UserId == courseUser.UserId)
+		if (_editedUser?.UserId == courseUser.UserId)
 		{
 			return "row-colored row-edited";
 		}
@@ -230,7 +262,7 @@
 		if (selected && existing)
 		{
 			if (existingCourseUser!.Role != courseUser.Role) return "row-colored row-modified"; // Modified
-			return string.Empty; // Unchanged
+			return string.Empty; // Unchanged}
 		}
 		if (selected && !existing) return "row-colored row-new"; // New
 		if (!selected && existing) return "row-colored row-deleted"; // Deleted

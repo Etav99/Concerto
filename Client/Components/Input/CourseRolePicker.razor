@@ -1,9 +1,12 @@
 ﻿@using Concerto.Shared.Models.Dto
-<MudSelect T="CourseUserRole" Style="min-width: 200px" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" AnchorOrigin="Origin.BottomCenter">
-	<MudSelectItem Value="@(CourseUserRole.Admin)">@CourseUserRole.Admin.ToDisplayString()</MudSelectItem>
-	<MudSelectItem Value="@(CourseUserRole.Supervisor)">@CourseUserRole.Supervisor.ToDisplayString()</MudSelectItem>
-	<MudSelectItem Value="@(CourseUserRole.Member)">@CourseUserRole.Member.ToDisplayString()</MudSelectItem>
-</MudSelect>
+<div>
+	<MudSelect T="CourseUserRole" Style="min-width: 200px;" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" AnchorOrigin="Origin.BottomCenter">
+		<MudSelectItem Value="@(CourseUserRole.Admin)">@CourseUserRole.Admin.ToDisplayString()</MudSelectItem>
+		<MudSelectItem Value="@(CourseUserRole.Supervisor)">@CourseUserRole.Supervisor.ToDisplayString()</MudSelectItem>
+		<MudSelectItem Value="@(CourseUserRole.Member)">@CourseUserRole.Member.ToDisplayString()</MudSelectItem>
+	</MudSelect>
+</div>
+
 
 
 @code {
