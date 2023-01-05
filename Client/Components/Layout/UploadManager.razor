@@ -1,0 +1,47 @@
+﻿@using Concerto.Client.Services;
+@implements IDisposable
+@inject IStorageService StorageService
+
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@ToggleOpen">@(_isOpen ? "Close" : "Open")</MudButton>
+
+<MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Paper="false">
+	<MudPaper Outlined="true" Class="px-4 py-8">
+		@foreach (var item in _items)
+		{
+			<MudChip Color="Color.Dark" Text="@($"{item.File.Name} {item.Progress}")" />
+		}
+	</MudPaper>
+</MudPopover>
+
+@code {
+
+	IReadOnlyCollection<UploadQueueItem> _items = new List<UploadQueueItem>();
+
+	public bool _isOpen = true;
+
+	public void ToggleOpen()
+	{
+		if (_isOpen)
+			_isOpen = false;
+		else
+			_isOpen = true;
+	}
+
+
+	protected override void OnInitialized()
+	{
+		StorageService.QueueChangedEventHandler += OnQueueChanged;
+	}
+
+	private void OnQueueChanged(object? sender, IReadOnlyCollection<UploadQueueItem> items)
+	{
+		_items = items;
+		StateHasChanged();
+	}
+
+	public void Dispose()
+	{
+		StorageService.QueueChangedEventHandler -= OnQueueChanged;
+	}
+}

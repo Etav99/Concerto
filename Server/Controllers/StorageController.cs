@@ -86,11 +86,14 @@ public class StorageController : ControllerBase
 
 		return Forbid();
 	}
-
+	
+	
 	[HttpPost]
+	[RequestSizeLimit(long.MaxValue)]
+	[RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = long.MaxValue)]
 	public async Task<ActionResult<IEnumerable<FileUploadResult>>> UploadFiles(
-		[FromForm] IEnumerable<IFormFile> files,
-		[FromQuery] long folderId
+		[FromQuery] long folderId,
+		[FromForm] IEnumerable<IFormFile> files
 	)
 	{
 		if (User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, folderId))

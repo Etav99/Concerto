@@ -39,7 +39,9 @@
         "OIDC_CLIENT_AUTHORITY": "http://localhost:7200/concerto/keycloak/realms/concerto/",
         "IDENTITY_ACCOUNT_CONSOLE_URL": "http://localhost:7200/concerto/keycloak/realms/concerto/account/",
         "SERVER_CLIENT_ID": "concerto-server",
-        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ"
+        "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ",
+        "CONCERTO_FILE_SIZE_LIMIT_MB": "102400",
+        "CONCERTO_MAX_ALLOWED_FILES": "1000"
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7001;http://localhost:7000",

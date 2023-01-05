@@ -11,7 +11,7 @@ public class AppSettingsController : ControllerBase
 	[HttpGet]
 	public ActionResult<ClientAppSettings> GetClientAppSettings()
 	{
-		return new ClientAppSettings
+		var x = new ClientAppSettings
 		{
 			AuthorityUrl = AppSettings.Oidc.ClientAuthority,
 			AccountManagementUrl = AppSettings.IdentityProvider.AccountConsoleUrl,
@@ -19,6 +19,7 @@ public class AppSettingsController : ControllerBase
 			FileSizeLimit = AppSettings.Storage.FileSizeLimit,
 			MaxAllowedFiles = AppSettings.Storage.MaxAllowedFiles,
 		};
+		return Ok(x);
 	}
 }
 

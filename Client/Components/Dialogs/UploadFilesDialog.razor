@@ -6,6 +6,7 @@
 @inject HttpClient Http
 @inject IAppSettingsService AppSettingsService
 @inject IDialogService DialogService
+@inject IStorageService StorageService
 
 <MudDialog>
 	<DialogContent>
@@ -65,63 +66,9 @@
 		Clearing = false;
 	}
 
-	private async Task Upload()
+	private void Upload()
 	{
-		using var content = new MultipartFormDataContent();
-		var upload = false;
-		List<FileUploadResult> uploadResults = new();
-
-		long maxFileSize = AppSettingsService.AppSettings.FileSizeLimit;
-		int filesCount = 0;
-		int maxFiles = AppSettingsService.AppSettings.MaxAllowedFiles;
-		foreach (var file in _files)
-		{
-			try
-			{
-				if (filesCount > maxFiles) throw new Exception($"You can upload only {maxFiles} files at once.");
-				var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
-				fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-				content.Add(fileContent, "\"files\"", file.Name);
-				upload = true;
-				filesCount++;
-			}
-			catch (Exception e)
-			{
-				uploadResults.Add(new FileUploadResult
-				{
-					DisplayFileName = file.Name,
-					ErrorCode = 6,
-					Uploaded = false,
-					ErrorMessage = e.Message
-				});
-			}
-		}
-
-		if (upload)
-		{
-			var response = await Http.PostAsync($"Storage/UploadFiles?folderId={FolderId}", content);
-			var newUploadResults = await response.Content.ReadFromJsonAsync<IList<FileUploadResult>>();
-
-			if (newUploadResults != null)
-			{
-				uploadResults = uploadResults.Concat(newUploadResults).ToList();
-			}
-		}
-
-		var errors = uploadResults.Where(ur => !ur.Uploaded).Select(ur => $"{ur.DisplayFileName}{ur.Extension}: {ur.ErrorMessage} (Error code {ur.ErrorCode})");
-
-		if (errors.Any())
-		{
-			if (uploadResults.Any(ur => ur.Uploaded))
-			{
-				Snackbar.Add("Some files were not uploaded", Severity.Warning);
-			}
-			await DialogService.ShowInfoDialog("Upload error", string.Join("\n", errors));
-		}
-		else
-		{
-			Snackbar.Add("Files uploaded", Severity.Success);
-		}
+		StorageService.QueueFilesToUpload(FolderId, _files);
 		Dialog.Close();
 	}
 

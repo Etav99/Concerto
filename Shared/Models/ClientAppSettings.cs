@@ -6,8 +6,8 @@ public class ClientAppSettings
 	public string AccountManagementUrl { get; set; } = string.Empty;
 	public string PostLogoutUrl { get; set; } = string.Empty;
 
-	public long FileSizeLimit;
-	public int MaxAllowedFiles;
+	public long FileSizeLimit {get; set; }
+	public int MaxAllowedFiles {get; set; }
 }
 
 
