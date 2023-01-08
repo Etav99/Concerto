@@ -10,17 +10,20 @@
 
 <MudDialog>
 	<DialogContent>
-		<MudPaper @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass" Height="300px" Outlined="true" Class="@DragClass">
-			@if (!Clearing)
-			{
-				<InputFile OnChange="OnInputFileChanged" multiple class="absolute mud-width-full mud-height-full overflow-hidden z-2" style="opacity: 0;"/>
-			}
-			<MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
-			@foreach (var file in _fileNames)
-			{
-				<MudChip Color="Color.Dark" Text="@file"/>
-			}
-		</MudPaper>
+		<MudStack Style="width: 100%">
+			<MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+						   @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+				<ButtonTemplate>
+					<MudPaper Height="300px" Outlined="true" Class="@DragClass">
+						<MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
+						@foreach (var file in _fileNames)
+						{
+							<MudChip Color="Color.Dark" Text="@file" />
+						}
+					</MudPaper>
+				</ButtonTemplate>
+			</MudFileUpload>
+		</MudStack>
 	</DialogContent>
 
 	<DialogActions>
@@ -38,39 +41,25 @@
 	[Parameter]
 	public long FolderId { get; set; }
 
-	private bool Clearing;
-	private static readonly string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
+	private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
 	private string DragClass = DefaultDragClass;
-
-
-	private readonly List<IBrowserFile> _files = new();
-	private readonly List<string> _fileNames = new();
+	private List<string> _fileNames = new();
+	private IReadOnlyList<IBrowserFile> _files = new List<IBrowserFile>();
 
 	private void OnInputFileChanged(InputFileChangeEventArgs e)
 	{
 		ClearDragClass();
-		var files = e.GetMultipleFiles();
-		foreach (var file in files)
-		{
-			_files.Add(file);
-			_fileNames.Add(file.Name);
-		}
+		_files = e.GetMultipleFiles();
+		_fileNames = _files.Select(f => f.Name).ToList();
 	}
 
 	private async Task Clear()
 	{
-		Clearing = true;
 		_fileNames.Clear();
 		ClearDragClass();
 		await Task.Delay(100);
-		Clearing = false;
 	}
 
-	private void Upload()
-	{
-		StorageService.QueueFilesToUpload(FolderId, _files);
-		Dialog.Close();
-	}
 
 	private void SetDragClass()
 	{
@@ -87,4 +76,11 @@
 		Dialog.Cancel();
 	}
 
+	private void Upload()
+	{
+		StorageService.QueueFilesToUpload(FolderId, _files);
+		Dialog.Close();
+	}
 }
+
+

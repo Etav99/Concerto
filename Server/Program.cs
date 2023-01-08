@@ -6,14 +6,12 @@ using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Server.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using MudBlazor;
 using Npgsql;
-using System;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,10 +20,12 @@ var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("C
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
@@ -39,18 +39,6 @@ builder.Services.AddScoped<IdentityManagerService>();
 //     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
 //         new[] { "application/octet-stream" });
 // });
-
-builder.Services.Configure<FormOptions> (opts => {
-	opts.BufferBodyLengthLimit = long.MaxValue;
-	opts.ValueLengthLimit = int.MaxValue;
-	opts.MultipartBodyLengthLimit = long.MaxValue;
-});
-
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-	serverOptions.Limits.MaxRequestBodySize = long.MaxValue;
-});
-
 
 builder.Services.AddAuthentication(options =>
 		{
@@ -166,5 +154,7 @@ await using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 		}
 	}
 }
+
+Directory.CreateDirectory(AppSettings.Storage.TempPath);
 
 app.Run();

@@ -2690,12 +2690,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files);
+        System.Threading.Tasks.Task<FileUploadResult> UploadFileChunkAsync(string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, string chunk);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<FileUploadResult> UploadFileChunkAsync(string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, string chunk, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task AbortFileUploadAsync(FileChunkMetadata body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task AbortFileUploadAsync(FileChunkMetadata body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -2744,12 +2753,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -3236,23 +3254,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files)
+        public virtual System.Threading.Tasks.Task<FileUploadResult> UploadFileChunkAsync(string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, string chunk)
         {
-            return UploadFilesAsync(folderId, files, System.Threading.CancellationToken.None);
+            return UploadFileChunkAsync(contentType, contentDisposition, headers, length, name, fileName, chunk, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<FileUploadResult>> UploadFilesAsync(long? folderId, System.Collections.Generic.IEnumerable<FileParameter> files, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<FileUploadResult> UploadFileChunkAsync(string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, string chunk, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/UploadFiles?");
-            if (folderId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("folderId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(folderId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            urlBuilder_.Length--;
+            urlBuilder_.Append("Storage/UploadFileChunk");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3265,17 +3278,54 @@ namespace Concerto.Client.Services
                     content_.Headers.Remove("Content-Type");
                     content_.Headers.TryAddWithoutValidation("Content-Type", "multipart/form-data; boundary=" + boundary_);
 
-                    if (files == null)
-                        throw new System.ArgumentNullException("files");
+                    if (contentType == null)
+                        throw new System.ArgumentNullException("contentType");
                     else
                     {
-                        foreach (var item_ in files)
-                        {
-                            var content_files_ = new System.Net.Http.StreamContent(item_.Data);
-                            if (!string.IsNullOrEmpty(item_.ContentType))
-                                content_files_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(item_.ContentType);
-                            content_.Add(content_files_, "files", item_.FileName ?? "files");
-                        }
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(contentType, System.Globalization.CultureInfo.InvariantCulture)), "ContentType");
+                    }
+
+                    if (contentDisposition == null)
+                        throw new System.ArgumentNullException("contentDisposition");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(contentDisposition, System.Globalization.CultureInfo.InvariantCulture)), "ContentDisposition");
+                    }
+
+                    if (headers == null)
+                        throw new System.ArgumentNullException("headers");
+                    else
+                    {
+                        var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(headers, _settings.Value);
+                        content_.Add(new System.Net.Http.StringContent(json_), "Headers");
+                    }
+
+                    if (length == null)
+                        throw new System.ArgumentNullException("length");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(length, System.Globalization.CultureInfo.InvariantCulture)), "Length");
+                    }
+
+                    if (name == null)
+                        throw new System.ArgumentNullException("name");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)), "Name");
+                    }
+
+                    if (fileName == null)
+                        throw new System.ArgumentNullException("fileName");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(fileName, System.Globalization.CultureInfo.InvariantCulture)), "FileName");
+                    }
+
+                    if (chunk == null)
+                        throw new System.ArgumentNullException("chunk");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(chunk, System.Globalization.CultureInfo.InvariantCulture)), "chunk");
                     }
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
@@ -3304,12 +3354,84 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<FileUploadResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<FileUploadResult>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task AbortFileUploadAsync(FileChunkMetadata body)
+        {
+            return AbortFileUploadAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task AbortFileUploadAsync(FileChunkMetadata body, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Storage/AbortFileUpload");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
                         }
                         else
                         {
@@ -3694,15 +3816,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId)
+        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body)
         {
-            return DownloadFileAsync(fileId, System.Threading.CancellationToken.None);
+            return DownloadFileAsync(fileId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/DownloadFile?");
@@ -3718,6 +3840,10 @@ namespace Concerto.Client.Services
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
+                    var content_ = new System.Net.Http.StringContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("GET");
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -3744,6 +3870,85 @@ namespace Concerto.Client.Services
                         if (status_ == 200)
                         {
                             return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new StorageException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId)
+        {
+            return GetOneTimeTokenAsync(fileId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="StorageException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Storage/GetOneTimeToken?");
+            if (fileId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("fileId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(fileId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Guid>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
                         }
                         else
                         {
@@ -4513,33 +4718,6 @@ namespace Concerto.Client.Services
     }
 
     
-
-    [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.18.0.0 (NJsonSchema v10.8.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class FileParameter
-    {
-        public FileParameter(System.IO.Stream data)
-            : this (data, null, null)
-        {
-        }
-
-        public FileParameter(System.IO.Stream data, string fileName)
-            : this (data, fileName, null)
-        {
-        }
-
-        public FileParameter(System.IO.Stream data, string fileName, string contentType)
-        {
-            Data = data;
-            FileName = fileName;
-            ContentType = contentType;
-        }
-
-        public System.IO.Stream Data { get; private set; }
-
-        public string FileName { get; private set; }
-
-        public string ContentType { get; private set; }
-    }
 
 
 

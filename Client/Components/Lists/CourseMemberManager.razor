@@ -3,7 +3,7 @@
 @using Concerto.Client.Components.Input
 @inject IUserService UserService
 
-
+<MudBreakpointProvider Style="all: inherit;" OnBreakpointChanged="(b) => {_smallScreen = b <= Breakpoint.Xs; ShouldRender();}">
 	<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
 			  RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
 			  RowsPerPage="25" 
@@ -19,24 +19,30 @@
 		</ToolBarContent>
 
 		<ColGroup>
-			<MudHidden Breakpoint="Breakpoint.Xs">
-				<col style="padding: 0; width: 20px"/>
-				<col style="width: 50px"/>
-			</MudHidden>
-			<MudHidden Breakpoint="Breakpoint.SmAndUp">
+			@if (_smallScreen)
+			{
 				<col />
-			</MudHidden>
+			}
+			else
+			{
+				<col style="padding: 0; width: 20px" />
+				<col style="width: 50px" />
+			}
 			<col style="min-width: 100px" />
 			<col style="min-width: 100px" />
 			<col style="min-width: 100px" />
-			<col style="width:  230px" />
-			<col style="width: 90px"/>
+			<col style="min-width: 230px" />
+			<col style="min-width: 90px" />
 		</ColGroup>
 
 		<HeaderContent>
-			<MudTh>
-				<MudCheckBox T="bool?" Dense="true" Disabled="Editing" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
-			</MudTh>
+			@if (!_smallScreen)
+			{
+				<MudTh>
+					<MudCheckBox T="bool?" Dense="true" Disabled="Editing" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
+				</MudTh>
+			}
+
 			<MudTh Style="padding-right: 0">
 				<MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Member</MudTableSortLabel>
 			</MudTh>
@@ -56,12 +62,13 @@
 		</HeaderContent>
 		
 		<RowTemplate>
-			<MudTd DataLabel="">
+			<MudTd DataLabel="Member">
 				<MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Disabled="Editing" Checked="@SelectedCourseUsers.Contains(context)" />
 			</MudTd>
-			<MudHidden Breakpoint="Breakpoint.Xs">
+			@if(!_smallScreen)
+			{
 				<MudTd DataLabel="Member">←</MudTd>
-			</MudHidden>
+			}
 			<MudTd DataLabel="Name">@Users[context.UserId].FirstName</MudTd>
 			<MudTd DataLabel="Surname">@Users[context.UserId].LastName</MudTd>
 			<MudTd DataLabel="Username">@Users[context.UserId].Username</MudTd>
@@ -124,9 +131,11 @@
 		</PagerContent>
 
 	</MudTable>
+</MudBreakpointProvider>
 
 @code
 {
+	private bool _smallScreen = false;
 
 	private HashSet<CourseUser> _selectedCourseUsers = null!;
 

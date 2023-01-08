@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Data.Models;
+using Concerto.Server.Data.Models.Storage;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.DatabaseContext;
@@ -15,7 +16,6 @@ public class AppDataContext : DbContext
 	public DbSet<UploadedFile> UploadedFiles { get; set; }
 	public DbSet<Folder> Folders { get; set; }
 	public DbSet<UserFolderPermission> UserFolderPermissions { get; set; }
-
 	public DbSet<Post> Posts { get; set; }
 	public DbSet<Comment> Comments { get; set; }
 

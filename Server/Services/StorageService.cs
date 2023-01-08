@@ -2,14 +2,8 @@
 using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Server.Settings;
-using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
-using CourseUserRole = Concerto.Server.Data.Models.CourseUserRole;
-using FileUploadResult = Concerto.Shared.Models.Dto.FileUploadResult;
-using FolderPermissionType = Concerto.Server.Data.Models.FolderPermissionType;
-using FolderType = Concerto.Shared.Models.Dto.FolderType;
-using UploadedFile = Concerto.Server.Data.Models.UploadedFile;
-using UserFolderPermission = Concerto.Server.Data.Models.UserFolderPermission;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Concerto.Server.Services;
 
@@ -17,15 +11,19 @@ public class StorageService
 {
 	private readonly AppDataContext _context;
 	private readonly ILogger<StorageService> _logger;
+	private readonly IMemoryCache _memoryCache;
+	private readonly OneTimeTokenStore _oneTimeTokenStore;
 
-	public StorageService(ILogger<StorageService> logger, AppDataContext context)
+	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache, OneTimeTokenStore oneTimeTokenStore)
 	{
 		_logger = logger;
 		_context = context;
+		_memoryCache = memoryCache;
+		_oneTimeTokenStore = oneTimeTokenStore;
 	}
 
 	// Create
-	internal async Task<bool> CreateFolder(CreateFolderRequest request, long ownerId)
+	internal async Task<bool> CreateFolder(Dto.CreateFolderRequest request, long ownerId)
 	{
 		var parent = await _context.Folders.FindAsync(request.ParentId);
 		if (parent == null) return false;
@@ -43,9 +41,9 @@ public class StorageService
 			ParentId = parent.Id,
 			CourseId = parent.CourseId,
 			CoursePermission = coursePermission,
-			Type = request.Type == FolderType.CourseRoot ? Data.Models.FolderType.Other : request.Type.ToEntity()
+			Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity()
 		};
-
+		
 		// Inherit permissions from parent;
 		await _context.Folders.AddAsync(newFolder);
 		await _context.Entry(parent).Collection(p => p.UserPermissions).LoadAsync();
@@ -55,7 +53,7 @@ public class StorageService
 	}
 
 	// Read
-	internal async Task<FolderContent?> GetFolderContent(long folderId, long userId, bool isAdmin = false)
+	internal async Task<Dto.FolderContent?> GetFolderContent(long folderId, long userId, bool isAdmin = false)
 	{
 		var folder = await _context.Folders.FindAsync(folderId);
 		if (folder == null) return null;
@@ -63,7 +61,7 @@ public class StorageService
 		await _context.Entry(folder).Collection(c => c.SubFolders).LoadAsync();
 		await _context.Entry(folder).Collection(c => c.Files).LoadAsync();
 
-		var subFolders = new List<FolderItem>();
+		var subFolders = new List<Dto.FolderItem>();
 		foreach (var subFolder in folder.SubFolders)
 			if (isAdmin)
 			{
@@ -77,14 +75,14 @@ public class StorageService
 				subFolders.Add(subFolder.ToFolderItem(canWrite.Result, canEdit.Result, canDelete.Result));
 			}
 
-		var files = new List<FileItem>();
+		var files = new List<Dto.FileItem>();
 		foreach (var file in folder.Files)
 		{
 			var canManageFile = isAdmin || await CanManageFile(userId, file.Id);
 			files.Add(file.ToFileItem(canManageFile));
 		}
 
-		FolderItem selfFolderItem;
+		Dto.FolderItem selfFolderItem;
 		if (isAdmin)
 		{
 			selfFolderItem = folder.ToFolderItem(true, true, true);
@@ -97,7 +95,7 @@ public class StorageService
 			selfFolderItem = folder.ToFolderItem(canWrite.Result, canEdit.Result, canDelete.Result);
 		}
 
-		return new FolderContent
+		return new Dto.FolderContent
 		{
 			Self = selfFolderItem,
 			SubFolders = subFolders,
@@ -107,7 +105,7 @@ public class StorageService
 		};
 	}
 
-	internal async Task<FolderSettings?> GetFolderSettings(long id)
+	internal async Task<Dto.FolderSettings?> GetFolderSettings(long id)
 	{
 		var folder = await _context.Folders.FindAsync(id);
 		if (folder == null) return null;
@@ -118,7 +116,7 @@ public class StorageService
 		// Join UserPermission with parent UserPermissions
 		var parentUserPermissions = _context.UserFolderPermissions.Where(ufp => ufp.FolderId == folder.ParentId);
 
-		return new FolderSettings(folder.Id,
+		return new Dto.FolderSettings(folder.Id,
 			folder.Name,
 			CoursePermission: folder.CoursePermission.ToViewModel(),
 			OwnerId: folder.OwnerId,
@@ -130,100 +128,12 @@ public class StorageService
 		);
 	}
 
-	internal async Task<FileSettings?> GetFileSettings(long id)
+	internal async Task<Dto.FileSettings?> GetFileSettings(long id)
 	{
 		var file = await _context.UploadedFiles.FindAsync(id);
 		if (file == null) return null;
 
-		return new FileSettings(file.Id, file.DisplayName);
-	}
-
-
-	public async Task<IEnumerable<FileUploadResult>> AddFilesToFolder(IEnumerable<IFormFile> files, long folderId)
-	{
-		var fileUploadResults = await SaveUploadedFiles(files, folderId);
-
-		foreach (var fileUploadResult in fileUploadResults)
-			if (fileUploadResult.Uploaded)
-			{
-				var uploadedFile = new UploadedFile
-				{
-					DisplayName = fileUploadResult.DisplayFileName,
-					Extension = fileUploadResult.Extension,
-					StorageName = fileUploadResult.StorageFileName,
-					FolderId = folderId
-				};
-				_context.Add(uploadedFile);
-			}
-
-		await _context.SaveChangesAsync();
-		return fileUploadResults.ToViewModel();
-	}
-
-	private async Task<IEnumerable<Data.Models.FileUploadResult>> SaveUploadedFiles(IEnumerable<IFormFile> files, long folderId)
-	{
-		var filesProcessed = 0;
-		List<Data.Models.FileUploadResult> fileUploadResults = new();
-
-		foreach (var file in files)
-		{
-			var fileUploadResult = new Data.Models.FileUploadResult();
-
-			var sanitizedFilename = WebUtility.HtmlEncode(file.FileName);
-			if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
-
-			var filename = Path.GetFileNameWithoutExtension(sanitizedFilename);
-			var extension = Path.GetExtension(sanitizedFilename).ToLower();
-
-			fileUploadResult.DisplayFileName = filename;
-			fileUploadResult.Extension = extension;
-
-			if (filesProcessed < AppSettings.Storage.MaxAllowedFiles)
-			{
-				if (file.Length > AppSettings.Storage.FileSizeLimit)
-				{
-					fileUploadResult.ErrorCode = 2;
-					fileUploadResult.ErrorMessage = "File too large";
-				}
-				else
-				{
-					try
-					{
-						var storageFileName = string.Format(@$"{sanitizedFilename}.{Guid.NewGuid()}");
-						fileUploadResult.StorageFileName = storageFileName;
-						var path = Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}", storageFileName);
-						Directory.CreateDirectory(Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}"));
-						await using FileStream fs = new(path, FileMode.Create);
-						await file.CopyToAsync(fs);
-						fileUploadResult.Uploaded = true;
-					}
-					catch (IOException ex)
-					{
-						_logger.LogError($"{file.FileName} error on upload: {ex.Message}");
-						fileUploadResult.ErrorCode = 3;
-						fileUploadResult.ErrorMessage = "File upload failed";
-					}
-					catch (FilenameException ex)
-					{
-						_logger.LogError($"{file.FileName} error on upload: {ex.Message}");
-						fileUploadResult.ErrorCode = 4;
-						fileUploadResult.ErrorMessage = "File upload failed";
-					}
-				}
-
-				filesProcessed++;
-			}
-			else
-			{
-				_logger.LogInformation($"{file.FileName} skipped, too many files uploaded at once");
-				fileUploadResult.ErrorCode = 5;
-				fileUploadResult.ErrorMessage = "Too many files uploaded at once";
-			}
-
-			fileUploadResults.Add(fileUploadResult);
-		}
-
-		return fileUploadResults;
+		return new Dto.FileSettings(file.Id, file.DisplayName);
 	}
 
 	internal async Task<bool> CanReadFile(long userId, long fileId)
@@ -328,13 +238,13 @@ public class StorageService
 		return await _context.UploadedFiles.FindAsync(fileId);
 	}
 
-	internal async Task UpdateFolder(UpdateFolderRequest request)
+	internal async Task UpdateFolder(Dto.UpdateFolderRequest request)
 	{
 		var folder = await _context.Folders.FindAsync(request.Id);
 		if (folder == null) return;
 
 		folder.Name = request.Name;
-		folder.Type = request.Type == FolderType.CourseRoot ? Data.Models.FolderType.Other : request.Type.ToEntity();
+		folder.Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity();
 
 		if (request.CoursePermission.Inherited)
 			folder.CoursePermission = folder.CoursePermission with { Inherited = true };
@@ -469,7 +379,7 @@ public class StorageService
 		}
 	}
 
-	internal async Task<bool> UpdateFile(UpdateFileRequest request)
+	internal async Task<bool> UpdateFile(Dto.UpdateFileRequest request)
 	{
 		var file = await _context.UploadedFiles.FindAsync(request.FileId);
 		if (file == null) return false;
@@ -491,6 +401,102 @@ public class StorageService
 			{
 				_logger.LogError($"Error deleting physical file\n{e}");
 			}
+	}
+
+	internal bool IsFirstChunk(Dto.FileChunkMetadata fileChunk) => File.Exists(GetChunkFilePath(fileChunk));
+	private string GetChunkFilePath(Dto.FileChunkMetadata fileChunk) => Path.Combine(AppSettings.Storage.TempPath, fileChunk.Guid.ToString());
+
+	internal void AbortFileUpload(Dto.FileChunkMetadata fileChunk)
+	{
+		try
+		{
+			File.Delete(GetChunkFilePath(fileChunk));
+		}
+		catch (DirectoryNotFoundException) { }
+		catch (Exception e)
+		{
+			_logger.LogError($"Error deleting temp file\n{e}");
+		}
+	}
+	
+	internal async Task<bool> SaveChunk(Dto.FileChunkMetadata fileChunk, IFormFile file)
+	{
+		await using (var stream = File.OpenWrite(GetChunkFilePath(fileChunk)))
+        {
+			stream.Seek(fileChunk.Offset, SeekOrigin.Begin);
+			await file.CopyToAsync(stream);
+        };
+
+		// Return true if last chunk
+		return fileChunk.Offset + file.Length == fileChunk.FileSize;
+	}
+
+	internal async Task<Dto.FileUploadResult> SaveUploadedFile(Dto.FileChunkMetadata lastChunk, string fileName, long userId)
+	{
+		FileUploadResult fileUploadResult = new();
+		var folderId = lastChunk.FolderId;
+		var tempFilePath = GetChunkFilePath(lastChunk);
+		var tempFileInfo = new FileInfo(tempFilePath);
+		
+		try
+		{
+			if (tempFileInfo.Length != lastChunk.FileSize) throw new IOException("File size mismatch");
+
+			var sanitizedFilename = WebUtility.HtmlEncode(fileName);
+			if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
+
+			var filename = Path.GetFileNameWithoutExtension(sanitizedFilename);
+			var extension = Path.GetExtension(sanitizedFilename).ToLower();
+			
+			fileUploadResult.DisplayFileName = filename;
+			fileUploadResult.Extension = extension;
+		
+			var storageFileName = string.Format(@$"{sanitizedFilename}.{Guid.NewGuid()}");
+			fileUploadResult.StorageFileName = storageFileName;
+			
+			var path = Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}", storageFileName);
+			Directory.CreateDirectory(Path.Combine($"{AppSettings.Storage.StoragePath}", $"{folderId}"));
+
+			await using (var fileStream = File.Open(path, FileMode.CreateNew))
+			await using (var tempFileStream = File.Open(tempFilePath, FileMode.Open))
+			{
+				await tempFileStream.CopyToAsync(fileStream);
+			}
+			File.Delete(tempFilePath);
+		
+			fileUploadResult.Uploaded = true;
+		}
+		catch (IOException ex)
+		{
+			_logger.LogError($"{fileName} error on upload: {ex.Message}");
+			fileUploadResult.ErrorCode = 3;
+			fileUploadResult.ErrorMessage = "File upload failed";
+		}
+		catch (FilenameException ex)
+		{
+			_logger.LogError($"{fileName} error on upload: {ex.Message}");
+			fileUploadResult.ErrorCode = 4;
+			fileUploadResult.ErrorMessage = "File upload failed";
+		}
+		
+		if (fileUploadResult.Uploaded)
+		{
+			var uploadedFile = new UploadedFile
+			{
+					OwnerId = userId,
+					DisplayName = fileUploadResult.DisplayFileName,
+					Extension = fileUploadResult.Extension,
+					StorageName = fileUploadResult.StorageFileName,
+					FolderId = folderId
+			};
+			await _context.AddAsync(uploadedFile);
+			await _context.SaveChangesAsync();
+		}
+		else
+		{
+			AbortFileUpload(lastChunk);
+		}
+		return fileUploadResult.ToViewModel();
 	}
 
 	internal async Task CopyFiles(IEnumerable<long> fileIds, long destinationFolderId, long userId)
@@ -653,5 +659,29 @@ public class StorageService
 
 		foreach (var subFolder in subFolders) await UpdateFolderCourseRecursively(subFolder, courseId, updatedFoldersIds);
 	}
-}
+	
+	internal Guid GenerateOneTimeToken(long fileId)
+	{
+		var token = Guid.NewGuid();
+		var options = new MemoryCacheEntryOptions()
+		{
+			Size = 1,
+			AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)
+		};
+		_oneTimeTokenStore.Tokens.Set(token, fileId, options);
+		return token;
+	}
+	
+	internal bool ValidateToken(long fileId, Guid token)
+	{
+		_oneTimeTokenStore.Tokens.TryGetValue(token, out long cacheFileId);
 
+		if (cacheFileId == fileId)
+		{
+			_oneTimeTokenStore.Tokens.Remove(token);
+			return true;
+		}
+
+		return false;
+	}
+}

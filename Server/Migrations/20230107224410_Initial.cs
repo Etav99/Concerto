@@ -6,10 +6,24 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Concerto.Server.Migrations
 {
+    /// <inheritdoc />
     public partial class Initial : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "OneTimeTokens",
+                columns: table => new
+                {
+                    Token = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OneTimeTokens", x => x.Token);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
@@ -102,8 +116,8 @@ namespace Concerto.Server.Migrations
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     ParentId = table.Column<long>(type: "bigint", nullable: true),
-                    CoursePermission_Type = table.Column<int>(type: "integer", nullable: false),
-                    CoursePermission_Inherited = table.Column<bool>(type: "boolean", nullable: false)
+                    CoursePermissionType = table.Column<int>(name: "CoursePermission_Type", type: "integer", nullable: false),
+                    CoursePermissionInherited = table.Column<bool>(name: "CoursePermission_Inherited", type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -209,8 +223,8 @@ namespace Concerto.Server.Migrations
                 {
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     FolderId = table.Column<long>(type: "bigint", nullable: false),
-                    Permission_Type = table.Column<int>(type: "integer", nullable: false),
-                    Permission_Inherited = table.Column<bool>(type: "boolean", nullable: false)
+                    PermissionType = table.Column<int>(name: "Permission_Type", type: "integer", nullable: false),
+                    PermissionInherited = table.Column<bool>(name: "Permission_Inherited", type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -265,6 +279,11 @@ namespace Concerto.Server.Migrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OneTimeTokens_FileId",
+                table: "OneTimeTokens",
+                column: "FileId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Post_AuthorId",
                 table: "Post",
                 column: "AuthorId");
@@ -311,6 +330,7 @@ namespace Concerto.Server.Migrations
                 principalColumn: "Id");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
@@ -326,6 +346,9 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "CourseUsers");
+
+            migrationBuilder.DropTable(
+                name: "OneTimeTokens");
 
             migrationBuilder.DropTable(
                 name: "Sessions");

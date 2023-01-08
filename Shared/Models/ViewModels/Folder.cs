@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Concerto.Shared.Models.Dto;
 
@@ -22,12 +23,12 @@ public class FolderContentItemIdEqualityComparer : IEqualityComparer<FolderConte
 {
 	public bool Equals(FolderContentItem? x, FolderContentItem? y)
 	{
-		return x is FolderItem && y is FolderItem && x?.Id == y?.Id;
+		return x?.GetType() == y?.GetType() && x?.Id == y?.Id;
 	}
 
 	public int GetHashCode([DisallowNull] FolderContentItem obj)
 	{
-		return obj.Id.GetHashCode() + (obj is FolderItem).GetHashCode();
+		return obj.Id.GetHashCode() + (obj.GetType()).GetHashCode();
 	}
 }
 
@@ -154,6 +155,18 @@ public record DeleteFolderItemsRequest
 {
 	public IEnumerable<long> FolderIds { get; set; }
 	public IEnumerable<long> FileIds { get; set; }
+}
+
+public class FileChunkMetadata
+{
+	[JsonProperty("Offset")]
+	public long Offset { get; set; }
+	[JsonProperty("FileSize")]
+	public long FileSize {get; set; }
+	[JsonProperty("FolderId")]
+	public long FolderId {get; set;}
+	[JsonProperty("Guid")]
+	public Guid Guid { get; set; }
 }
 
 

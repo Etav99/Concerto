@@ -14,10 +14,11 @@
 @inject ISnackbar Snackbar
 @inject ISyncLocalStorageService LocalStorage
 
+<CustomStyleProvider DarkMode="@DarkMode" />
 <MudThemeProvider @bind-IsDarkMode="@DarkMode"/>
 <MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" CloseButton="true"/>
 <MudSnackbarProvider/>
-<CustomStyleProvider DarkMode="@DarkMode"/>
+
 
 <MudLayout Style="height: 100vh;">
 	<MudAppBar Elevation="0" Dense="true">
@@ -28,10 +29,10 @@
 				<UploadManager />
 				<MudMenu Dense="true" AnchorOrigin="Origin.BottomRight">
 					<ActivatorContent>
-						<MudButton>
+						<MudButton title="Account">
 							<ChildContent>
 								<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Sharp.Person" Size="Size.Large"/>
-								<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Large"/>
+								<MudIcon Style="color: var(--mud-palette-appbar-text); margin-left: -10px" Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Large" />
 							</ChildContent>
 						</MudButton>
 					</ActivatorContent>

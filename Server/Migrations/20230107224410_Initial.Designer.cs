@@ -12,14 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20221213181915_Initial")]
+    [Migration("20230107224410_Initial")]
     partial class Initial
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.10")
+                .HasAnnotation("ProductVersion", "7.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -207,6 +208,21 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Storage.OneTimeToken", b =>
+                {
+                    b.Property<Guid>("Token")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("FileId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("OneTimeTokens");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.UploadedFile", b =>

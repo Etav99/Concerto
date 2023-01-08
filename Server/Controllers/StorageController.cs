@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using System.Text.Json;
 using Concerto.Server.Extensions;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
@@ -89,21 +90,33 @@ public class StorageController : ControllerBase
 	
 	
 	[HttpPost]
-	[RequestSizeLimit(long.MaxValue)]
-	[RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = long.MaxValue)]
-	public async Task<ActionResult<IEnumerable<FileUploadResult>>> UploadFiles(
-		[FromQuery] long folderId,
-		[FromForm] IEnumerable<IFormFile> files
-	)
+	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
+	public async Task<ActionResult<FileUploadResult?>> UploadFileChunk([FromForm] IFormFile file, [FromForm] string chunk)
 	{
-		if (User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, folderId))
+		var chunkMetadata = JsonSerializer.Deserialize<FileChunkMetadata>(chunk);
+		if (chunkMetadata is null) return BadRequest();
+		if (_storageService.IsFirstChunk(chunkMetadata) && !(User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId)))
+			return Forbid();
+		
+		if(await _storageService.SaveChunk(chunkMetadata, file))
 		{
-			var fileUploadResults = await _storageService.AddFilesToFolder(files, folderId);
-			return Ok(fileUploadResults);
+			if (!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId))
+			{
+				_storageService.AbortFileUpload(chunkMetadata);
+				return Forbid();
+			}
+			return Ok(await _storageService.SaveUploadedFile(chunkMetadata, file.FileName, UserId));
 		}
-
-		return Forbid();
+		return Ok();
 	}
+
+	[HttpPost]
+	public ActionResult AbortFileUpload(FileChunkMetadata chunkMetadata)
+	{
+		_storageService.AbortFileUpload(chunkMetadata);
+		return Ok();
+	}
+
 
 	[HttpPost]
 	public async Task<ActionResult> UpdateFile(UpdateFileRequest request)
@@ -195,21 +208,27 @@ public class StorageController : ControllerBase
 		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, UserId);
 		return Ok();
 	}
-
+	
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token)
+	{
+		if (!_storageService.ValidateToken(fileId, token)) return Forbid();
+		
+		var file = await _storageService.GetFile(fileId);
+		if (file == null) return NotFound();
+		var fileBytes = System.IO.File.OpenRead(file.Path);
+		var fileName = file.DisplayName + file.Extension;
+		return File(fileBytes, MediaTypeNames.Application.Octet, fileName);
+	}
 
 	[HttpGet]
-	public async Task<ActionResult> DownloadFile([FromQuery] long fileId)
+	public async Task<ActionResult<Guid>> GetOneTimeToken([FromQuery] long fileId)
 	{
-		if (User.IsAdmin() || await _storageService.CanReadFile(UserId, fileId))
-		{
-			var file = await _storageService.GetFile(fileId);
-			if (file == null) return NotFound();
-			var fileBytes = System.IO.File.ReadAllBytes(file.Path);
-			var fileName = file.DisplayName + file.Extension;
-			return File(fileBytes, MediaTypeNames.Application.Octet, fileName);
-		}
+		if (!(User.IsAdmin() || await _storageService.CanReadFile(UserId, fileId))) return Forbid();
 
-		return Forbid();
+		var token = _storageService.GenerateOneTimeToken(fileId);
+		return Ok(token);
 	}
 }
 

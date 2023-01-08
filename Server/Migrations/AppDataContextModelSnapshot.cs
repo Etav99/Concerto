@@ -17,7 +17,7 @@ namespace Concerto.Server.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.10")
+                .HasAnnotation("ProductVersion", "7.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -205,6 +205,21 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Storage.OneTimeToken", b =>
+                {
+                    b.Property<Guid>("Token")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("FileId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("OneTimeTokens");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.UploadedFile", b =>

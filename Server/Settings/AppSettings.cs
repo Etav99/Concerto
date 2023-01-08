@@ -9,10 +9,11 @@ public static class AppSettings
 		public static bool Docker = EnvironmentHelper.GetVariable("DOTNET_RUNNING_IN_CONTAINER").Equals("true");
 		public static bool Remote = EnvironmentHelper.GetVariable("ASPNETCORE_REMOTE").Equals("true");
 	}
-
+	
 	public static class Storage
 	{
 		public static string StoragePath = EnvironmentHelper.GetVariable("CONCERTO_STORAGE_PATH");
+		public static string TempPath = Path.Combine(StoragePath, "tmp");
 		public static long FileSizeLimit = long.Parse(EnvironmentHelper.GetVariable("CONCERTO_FILE_SIZE_LIMIT_MB")) * 1024 * 1024;
 		public static int MaxAllowedFiles = int.Parse(EnvironmentHelper.GetVariable("CONCERTO_MAX_ALLOWED_FILES"));
 	}
