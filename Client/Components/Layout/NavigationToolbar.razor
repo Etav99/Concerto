@@ -3,8 +3,9 @@
 
 <MudToolBar Style="overflow-x: auto; overflow-y: hidden; background-color: var(--mud-palette-appbar-background); color: var(--mud-palette-appbar-text); height: 28px;" Class="flex-grow-1 flex-shrink-1" DisableGutters="true" Dense="true">
 	
-	<MudHidden Invert="true" Breakpoint="Breakpoint.SmAndUp">
-		@if (_breadcrumbs.HasValue)
+	@if (_breadcrumbs.HasValue && _breadcrumbs.Value.BreadcrumbItems.Any())
+	{
+		@if (LayoutState.SmAndUp)
 		{
 			<MudBreadcrumbs Class="py-0 flex-grow-1 flex-shrink-1" Style="color: inherit; flex-wrap: nowrap;" Items="_breadcrumbs.Value.BreadcrumbItems" Separator=">">
 				<ItemTemplate Context="item">
@@ -17,16 +18,17 @@
 				</SeparatorTemplate>
 			</MudBreadcrumbs>
 		}
-	</MudHidden>
-	<MudHidden Invert="true" Breakpoint="Breakpoint.Xs">
-		@if (_breadcrumbs.HasValue && _breadcrumbs.Value.BreadcrumbItems.Any()){
+		else
+		{
 			var lastItem = _breadcrumbs.Value.BreadcrumbItems.Last();
-			<MudText Color="Color.Inherit" Href="@lastItem.Href" Class="d-inline-block">@lastItem.Text</MudText>
+			<MudText Color="Color.Inherit" Href="@lastItem.Href" Class="text-ellipsis">@lastItem.Text</MudText>
 		}
-	</MudHidden>
+	}
 </MudToolBar>
 
 @code {
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+
 	BreadcrumbsPackage? _breadcrumbs = null;
 
 	protected override void OnInitialized()

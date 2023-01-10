@@ -6,7 +6,7 @@ namespace Concerto.Server.Middlewares;
 public class UserIdMapperMiddleware
 {
 	private readonly RequestDelegate _next;
-	private readonly AsyncLock mutex = new();
+	private readonly AsyncLock _mutex = new();
 
 	public UserIdMapperMiddleware(RequestDelegate next)
 	{
@@ -16,11 +16,13 @@ public class UserIdMapperMiddleware
 	public async Task InvokeAsync(HttpContext httpContext, UserService userService)
 	{
 		if (httpContext.User.Identity?.IsAuthenticated ?? false)
-			using (await mutex.LockAsync())
+		{
+			using (await _mutex.LockAsync())
 			{
-				var UserId = await userService.GetUserIdAndUpdate(httpContext.User);
-				httpContext.Items["AppUserId"] = UserId;
-			}
+				var userId = await userService.GetUserIdAndUpdate(httpContext.User);
+				httpContext.Items["AppUserId"] = userId;
+			}	
+		}
 
 		await _next(httpContext);
 	}

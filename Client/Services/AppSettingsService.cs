@@ -23,12 +23,9 @@ public class AppSettingsService : AppSettingsClient, IAppSettingsService
 
 	public AppSettingsService(HttpClient httpClient) : base(httpClient) { }
 
-	public async Task FetchAppSetings()
+	public async Task FetchAppSettings()
 	{
-		if (_appSettings is null)
-		{
-			_appSettings = await GetClientAppSettingsAsync();
-		}
+		_appSettings ??= await GetClientAppSettingsAsync();
 	}
 
 }

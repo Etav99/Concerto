@@ -1,4 +1,5 @@
-﻿@using Concerto.Client.Extensions
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @using Concerto.Client.Components.Dialogs
@@ -11,7 +12,8 @@
 @inject HttpClient Http;
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="false" Square="true" Elevation="0" FixedHeader="true" FixedFooter="true"
-          Height="calc(100% - 64px)" Loading="@Loading" Class="@Class" Style="@Style" RowStyle="cursor: pointer;"
+          Height="100%" Loading="@Loading" Class="@Class" RowStyle="cursor: pointer;"
+		  Style="@TableStyle"
 			AllowUnsorted="false"
           OnRowClick="OnRowClick">
 	<ToolBarContent>
@@ -27,11 +29,11 @@
 				</ActivatorContent>
 				<ChildContent>
 					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-					             OnClick="Initialize" Disabled="false">
+								  OnClick="Initialize" OnTouch="Initialize" Disabled="false">
 						Refresh view
 					</MudMenuItemW>
 					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
-					             OnClick="CreateSession" Disabled="_canManageSessions">
+								  OnClick="CreateSession" OnTouch="CreateSession" Disabled="_canManageSessions">
 						Create session
 					</MudMenuItemW>
 				</ChildContent>
@@ -63,8 +65,8 @@
 					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 				</ActivatorContent>
 				<ChildContent>
-					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnClick="() => SelectSession(context)">Open</MudMenuItemW>
-					<MudMenuItemW Disabled="_canManageSessions" IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteSession(context)">Delete</MudMenuItemW>
+					<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.OpenInBrowser" OnTouch="() => SelectSession(context)" OnClick="() => SelectSession(context)">Open</MudMenuItemW>
+					<MudMenuItemW Disabled="!_canManageSessions" IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnTouch="() => DeleteSession(context)" OnClick="() => DeleteSession(context)">Delete</MudMenuItemW>
 				</ChildContent>
 			</MudMenu>
 		</MudTd>
@@ -78,6 +80,12 @@
 
 	[Parameter]
 	public EventCallback<long> OnSessionSelected { get; set; }
+
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+
+	private string TableStyle => LayoutState.Xs
+	? $"min-height: 245px; display:grid; grid-template-rows: 0fr 0fr 1fr; {Style}"
+	: $"min-height: 245px; display:grid; grid-template-rows: 0fr 1fr; {Style}";
 
 	private IEnumerable<SessionListItem>? Sessions;
 	private bool _canManageSessions = false;

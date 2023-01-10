@@ -26,7 +26,7 @@ public class IdentityManagerService
 	//    // Add token to header
 	//    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!["access_token"]!.ToString());
 
-	//    // Logout user to force updated tokene generation
+	//    // Logout user to force updated token generation
 	//    url = $"{AppSettings.Oidc.OidcAdminRestApiBaseUrl}/users/{subjectId}/logout";
 	//    var logoutResponse = await _httpClient.PostAsync(url, null);
 
@@ -43,7 +43,7 @@ public class IdentityManagerService
 	//    user!["attributes"]!.AsArray().Add(new JsonObject { ["UserId"] = userId });
 	//    var addAttributeStringContent = new StringContent(user.ToJsonString(), Encoding.UTF8, "application/json");
 	//    url = $"{AppSettings.Oidc.OidcAdminRestApiBaseUrl}/users/{subjectId}";
-	//    var addAtributeResponse = await _httpClient.PutAsync(url, addAttributeStringContent);
+	//    var addAttributeResponse = await _httpClient.PutAsync(url, addAttributeStringContent);
 	//}
 }
 

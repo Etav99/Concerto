@@ -1,9 +1,9 @@
-﻿@using Concerto.Shared.Models.Dto
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Shared.Models.Dto
 @using Concerto.Client.Services
 @using Concerto.Client.Components.Input
 @inject IUserService UserService
 
-<MudBreakpointProvider Style="all: inherit;" OnBreakpointChanged="(b) => {_smallScreen = b <= Breakpoint.Xs; ShouldRender();}">
 	<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
 			  RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
 			  RowsPerPage="25" 
@@ -11,15 +11,15 @@
 			  Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 450px;">
 
 		<ToolBarContent>
-			<MudText Typo="Typo.subtitle1">Course members</MudText>
+			<MudText Typo="Typo.subtitle1">Users</MudText>
 			<MudSpacer/>
-  			<MudSwitch Disabled="Editing" @bind-Checked="@_showMembersOnly" Color="Color.Primary">Show only members</MudSwitch>
+			<MudSwitch Disabled="Editing" Class="ml-2" @bind-Checked="@_showMembersOnly" Color="Color.Primary">Show only members</MudSwitch>
 			<MudSpacer/>
 			<MudTextField Clearable="true" @bind-Value="_searchString" Immediate="true" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
 		</ToolBarContent>
 
 		<ColGroup>
-			@if (_smallScreen)
+			@if (LayoutState.Xs)
 			{
 				<col />
 			}
@@ -36,7 +36,7 @@
 		</ColGroup>
 
 		<HeaderContent>
-			@if (!_smallScreen)
+			@if (!LayoutState.Xs)
 			{
 				<MudTh>
 					<MudCheckBox T="bool?" Dense="true" Disabled="Editing" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
@@ -65,7 +65,7 @@
 			<MudTd DataLabel="Member">
 				<MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Disabled="Editing" Checked="@SelectedCourseUsers.Contains(context)" />
 			</MudTd>
-			@if(!_smallScreen)
+			@if(!LayoutState.Xs)
 			{
 				<MudTd DataLabel="Member">←</MudTd>
 			}
@@ -131,11 +131,10 @@
 		</PagerContent>
 
 	</MudTable>
-</MudBreakpointProvider>
 
 @code
 {
-	private bool _smallScreen = false;
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
 	private HashSet<CourseUser> _selectedCourseUsers = null!;
 
@@ -154,11 +153,13 @@
 	[Parameter]
 	public Dictionary<long, User> Users { get; set; } = null!;
 
-	private bool? _selectAllState => SelectedCourseUsers.Count == AvailableCourseUsers.Count ? true : SelectedCourseUsers.Count > 0 ? null : false;
+
+	Size Size => LayoutState.Xs ? Size.Small : Size.Medium;
+
+
+	private bool? _selectAllState => SelectedCourseUsers.Count == Items.Count() ? true : SelectedCourseUsers.Count > 0 ? null : false;
 
 	bool Loading => AvailableCourseUsers is null || Users is null;
-
-
 
 	IEnumerable<CourseUser> CurrentMembers => AvailableCourseUsers.Where(x => ExistingCourseUsers.Contains(x) || SelectedCourseUsers.Contains(x));
 	IEnumerable<CourseUser> Items => Loading ? new HashSet<CourseUser>() : _showMembersOnly ? CurrentMembers : AvailableCourseUsers;

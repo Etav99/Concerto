@@ -14,78 +14,82 @@
 @inject ISnackbar Snackbar
 @inject ISyncLocalStorageService LocalStorage
 
-<CustomStyleProvider DarkMode="@DarkMode" />
-<MudThemeProvider @bind-IsDarkMode="@DarkMode"/>
-<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" CloseButton="true"/>
-<MudSnackbarProvider/>
+<CustomStyleProvider DarkMode="@_darkMode" />
+<MudThemeProvider @bind-IsDarkMode="@_darkMode" />
+<CascadingValue Value="@_layoutState">
+	<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" CloseButton="true" />
+</CascadingValue>
+<MudSnackbarProvider />
+<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
-
-<MudLayout Style="height: 100vh;">
-	<MudAppBar Elevation="0" Dense="true">
-		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())"/>
-		<NavigationToolbar/>
-		<AuthorizeView>
-			<Authorized>
-				<UploadManager />
-				<MudMenu Dense="true" AnchorOrigin="Origin.BottomRight">
-					<ActivatorContent>
-						<MudButton title="Account">
-							<ChildContent>
-								<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Sharp.Person" Size="Size.Large"/>
-								<MudIcon Style="color: var(--mud-palette-appbar-text); margin-left: -10px" Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Large" />
-							</ChildContent>
-						</MudButton>
-					</ActivatorContent>
-					<ChildContent>
-						<MudMenuItemW Style="pointer-events: none;" Icon="@Icons.Material.Filled.PermIdentity">
-							@context.User.Identity?.Name
-						</MudMenuItemW>
-						<MudMenuItemW Icon="@Icons.Material.Filled.ManageAccounts">
+<CascadingValue Value="@_layoutState">
+	<MudLayout Style="height: 100vh;">
+		<MudAppBar Elevation="0" Dense="true">
+			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())" />
+			<NavigationToolbar />
+			<AuthorizeView>
+				<Authorized>
+					<UploadManager />
+					<MudMenu Dense="true" AnchorOrigin="Origin.BottomRight">
+						<ActivatorContent>
+							<MudButton title="Account">
+								<ChildContent>
+									<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Sharp.Person" Size="AppbarIconSize" />
+									<MudIcon Style="color: var(--mud-palette-appbar-text); margin-left: -10px" Icon="@Icons.Material.Filled.ArrowDropDown" Size="AppbarIconSize" />
+								</ChildContent>
+							</MudButton>
+						</ActivatorContent>
+						<ChildContent>
+							<MudMenuItemW Style="pointer-events: none;" Icon="@Icons.Material.Filled.PermIdentity">
+								@context.User.Identity?.Name
+							</MudMenuItemW>
 							<MudLink Color="Color.Default" Underline="Underline.None" Target="_blank" Href="@_appSettings?.AccountManagementUrl">
-								<MudStack Row="true" Class="">
-									<MudText Typo="Typo.body2">Manage account</MudText>
-									<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.OpenInNew"/>
-								</MudStack>
+							<MudMenuItemW Icon="@Icons.Material.Filled.ManageAccounts">
+									<MudStack Row="true" Class="">
+										<MudText Typo="Typo.body2">Manage account</MudText>
+										<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.OpenInNew" />
+									</MudStack>
+							</MudMenuItemW>
 							</MudLink>
-						</MudMenuItemW>
-						<MudMenuItemW Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnTouch="()=> toggleDarkMode(!DarkMode)" OnClick="() => toggleDarkMode(!DarkMode)">Toggle theme</MudMenuItemW>
-						<MudMenuItemW Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" OnTouch="BeginLogout" OnClick="BeginLogout">Log out</MudMenuItemW>
-					</ChildContent>
-				</MudMenu>
-			</Authorized>
-			<NotAuthorized>
-				<MudSwitch T="bool" Checked="@DarkMode" CheckedChanged="@(b => toggleDarkMode(b))" ThumbIconColor="Color.Dark" ThumbIcon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Theme</MudSwitch>
-				<MudStack Row="true">
-					<MudButton Href="authentication/login" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Login">Sign in</MudButton>
+							<MudMenuItemW Icon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnTouch="()=> toggleDarkMode(!_darkMode)" OnClick="() => toggleDarkMode(!_darkMode)">Toggle theme</MudMenuItemW>
+							<MudMenuItemW Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" OnTouch="BeginLogout" OnClick="BeginLogout">Log out</MudMenuItemW>
+						</ChildContent>
+					</MudMenu>
+				</Authorized>
+				<NotAuthorized>
+					<MudSwitch T="bool" Checked="@_darkMode" CheckedChanged="@(b => toggleDarkMode(b))" ThumbIconColor="Color.Dark" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Theme</MudSwitch>
+					<MudStack Row="true">
+						<MudButton Href="authentication/login" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Login">Sign in</MudButton>
+					</MudStack>
+				</NotAuthorized>
+			</AuthorizeView>
+		</MudAppBar>
+		<MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+			<MudDrawerHeader>
+				<MudStack Row="true" AlignItems="AlignItems.Center">
+					<MudText Typo="Typo.h4">Concerto</MudText>
 				</MudStack>
-			</NotAuthorized>
-		</AuthorizeView>
-	</MudAppBar>
-	<MudDrawer @bind-Open="_drawerOpen" Elevation="1">
-		<MudDrawerHeader>
-			<MudStack Row="true" AlignItems="AlignItems.Center">
-				<MudText Typo="Typo.h4">Concerto</MudText>
-			</MudStack>
 
-		</MudDrawerHeader>
-		<NavMenu/>
-	</MudDrawer>
-	<MudMainContent Class="pt-12 d-flex" Style="height: 100%">
-		<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="overflow: auto" Class="px-0 flex-grow-1">
-			<CascadingValue Value="@DarkMode">
+			</MudDrawerHeader>
+			<NavMenu />
+		</MudDrawer>
+		<MudMainContent Class="pt-12 d-flex" Style="height: 100%">
+			<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="overflow: auto" Class="px-0 flex-grow-1">
 				@Body
-			</CascadingValue>
-		</MudContainer>
-	</MudMainContent>
-</MudLayout>
-
+			</MudContainer>
+		</MudMainContent>
+	</MudLayout>
+</CascadingValue>
 @code {
 
 	[CascadingParameter]
 	private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+	private LayoutState _layoutState = new LayoutState { Breakpoint = Breakpoint.Always, DarkMode = false };
 
-	bool DarkMode { get; set; }
+	Size AppbarIconSize => _layoutState.Xs ? Size.Medium : Size.Large;
+
+	bool _darkMode { get; set; }
 	bool _drawerOpen = true;
 	ClientAppSettings? _appSettings;
 
@@ -108,8 +112,9 @@
 
 	private void toggleDarkMode(bool darkMode)
 	{
-		DarkMode = darkMode;
-		LocalStorage.SetItem("darkMode", DarkMode);
+		_darkMode = darkMode;
+		LocalStorage.SetItem("darkMode", _darkMode);
+		_layoutState = _layoutState with { DarkMode = _darkMode };
 	}
 
 	protected override void OnInitialized()
@@ -117,12 +122,19 @@
 		_appSettings = AppSettingsService.AppSettings;
 		if (LocalStorage.ContainKey("darkMode"))
 		{
-			DarkMode = LocalStorage.GetItem<bool>("darkMode");
+			_darkMode = LocalStorage.GetItem<bool>("darkMode");
 		}
 		else
 		{
-			LocalStorage.SetItem("darkMode", DarkMode);
+			LocalStorage.SetItem("darkMode", _darkMode);
 		}
+
+		_layoutState = _layoutState with { DarkMode = _darkMode };
+	}
+
+	private void OnBreakpointChanged(Breakpoint breakpoint)
+	{
+		_layoutState = _layoutState with { Breakpoint = breakpoint };
 	}
 
 }

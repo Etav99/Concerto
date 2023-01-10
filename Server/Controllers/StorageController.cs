@@ -67,76 +67,71 @@ public class StorageController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> CreateFolder([FromBody] CreateFolderRequest createFolderRequest)
 	{
-		if (User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, createFolderRequest.ParentId))
-		{
-			await _storageService.CreateFolder(createFolderRequest, UserId);
+		if (!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, createFolderRequest.ParentId)) return Forbid();
+		
+		if(await _storageService.CreateFolder(createFolderRequest, UserId))
 			return Ok();
-		}
-
-		return Forbid();
+		
+		return BadRequest();
 	}
 
 	[HttpPost]
 	public async Task<ActionResult> UpdateFolder([FromBody] UpdateFolderRequest updateFolderRequest)
 	{
-		if (User.IsAdmin() || await _storageService.CanEditFolder(UserId, updateFolderRequest.Id))
-		{
-			await _storageService.UpdateFolder(updateFolderRequest);
-			return Ok();
-		}
-
-		return Forbid();
+		if (!User.IsAdmin() && !await _storageService.CanEditFolder(UserId, updateFolderRequest.Id)) return Forbid();
+		
+		await _storageService.UpdateFolder(updateFolderRequest);
+		return Ok();
 	}
-	
-	
+
 	[HttpPost]
 	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
 	public async Task<ActionResult<FileUploadResult?>> UploadFileChunk([FromForm] IFormFile file, [FromForm] string chunk)
 	{
 		var chunkMetadata = JsonSerializer.Deserialize<FileChunkMetadata>(chunk);
 		if (chunkMetadata is null) return BadRequest();
-		if (_storageService.IsFirstChunk(chunkMetadata) && !(User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId)))
+		if (StorageService.IsFirstChunk(chunkMetadata) && !User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId))
 			return Forbid();
-		
-		if(await _storageService.SaveChunk(chunkMetadata, file))
+
+		bool lastChunk = await _storageService.SaveChunk(chunkMetadata, file);
+		if(lastChunk && !User.IsAdmin())
 		{
-			if (!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId))
-			{
-				_storageService.AbortFileUpload(chunkMetadata);
-				return Forbid();
-			}
-			return Ok(await _storageService.SaveUploadedFile(chunkMetadata, file.FileName, UserId));
+			if (User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId))
+				return Ok(await _storageService.SaveUploadedFile(chunkMetadata, file.FileName, UserId));
+			
+			await _storageService.AbortFileUpload(chunkMetadata);
+			return Forbid();
 		}
 		return Ok();
 	}
 
 	[HttpPost]
-	public ActionResult AbortFileUpload(FileChunkMetadata chunkMetadata)
+	public async Task<ActionResult> AbortFileUpload(FileChunkMetadata chunkMetadata)
 	{
-		_storageService.AbortFileUpload(chunkMetadata);
+		await _storageService.AbortFileUpload(chunkMetadata);
 		return Ok();
 	}
-
 
 	[HttpPost]
 	public async Task<ActionResult> UpdateFile(UpdateFileRequest request)
 	{
-		if (User.IsAdmin() || await _storageService.CanManageFile(UserId, request.FileId))
-			if (await _storageService.UpdateFile(request))
-				return Ok();
+		if (!User.IsAdmin() && !await _storageService.CanManageFile(UserId, request.FileId))
+			return Forbid();
+		
+		if (await _storageService.UpdateFile(request))
+			return Ok();
+		
 		return Forbid();
 	}
 
 	[HttpDelete]
 	public async Task<ActionResult> DeleteFile([FromQuery] long fileId)
 	{
-		if (User.IsAdmin() || await _storageService.CanManageFile(UserId, fileId))
-		{
-			await _storageService.DeleteFile(fileId);
-			return Ok();
-		}
-
-		return Forbid();
+		if (!User.IsAdmin() && !await _storageService.CanManageFile(UserId, fileId))
+			return Forbid();
+		
+		await _storageService.DeleteFile(fileId);
+		return Ok();
 	}
 
 	[HttpDelete]

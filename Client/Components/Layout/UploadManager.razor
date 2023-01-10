@@ -5,61 +5,45 @@
 <MudBadge Style="cursor: pointer; user-select: none;" Content="ActiveUploadsNumber" Color="Color.Info" Overlap="true" Origin="Origin.CenterLeft" OnClick="ToggleOpen" Visible="@(ActiveUploadsNumber > 0)">
 	<MudButton title="Uploads" OnClick="ToggleOpen">
 		<ChildContent>
-			<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Sharp.Upload" Size="Size.Large" />
-			<MudIcon Style="color: var(--mud-palette-appbar-text); margin-left: -10px" Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Large" />
+			<MudIcon Style="color: var(--mud-palette-appbar-text)" Icon="@Icons.Material.Sharp.Upload" Size="IconSize" />
+			<MudIcon Style="color: var(--mud-palette-appbar-text); margin-left: -10px" Icon="@Icons.Material.Filled.ArrowDropDown" Size="IconSize" />
 		</ChildContent>
 	</MudButton>
 </MudBadge>
 
 @if (_isOpen)
 {
-	<div @onclick="ToggleOpen" style="position: fixed; height: 100vh; width: 100vw;">
-		<div @onclick:stopPropagation="true" @onclick:preventDefault="true" @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
-			<MudBreakpointProvider Style="all: inherit;" OnBreakpointChanged="(b) => _smallScreen = b <= Breakpoint.Xs">
-
-			</MudBreakpointProvider>
-
+	<div @onclick="ToggleOpen" style="position: fixed; top:0; left: 0; height: 100vh; width: 100vw;" class="z-max">
+		<div @onclick:stopPropagation="true" @onclick:preventDefault="true"
+			 @ontouchstart:stopPropagation="true" @ontouchstart:preventDefault="true"
+			 @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
 				<MudTable Items="_items" Context="item" Dense="true" Hover="true" Outlined="true" FixedHeader="true" RowClass=""
-				  Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 1fr;" Height="100%">
+					  Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 0fr 1fr;" Height="100%">
 
-@*					<ToolBarContent>
-						<MudButtonGroup OverrideStyles="false" Size="Size.Small">
-							<MudIconButton Disabled="@(ActiveUploadsNumber == _items.Count)" OnClick="(() => StorageService.ClearInactiveUploads())"
+					<ToolBarContent>
+						<MudText Typo="Typo.subtitle2" Class="pr-4">@(_items.Any() ? "Uploads" : "No uploads")</MudText>
+							<MudSpacer />
+						<MudIconButton Disabled="@(ActiveUploadsNumber == _items.Count)" @ontouchend="() => StorageService.ClearInactiveUploads()" OnClick="(() => StorageService.ClearInactiveUploads())"
 									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.ClearAll" Color="Color.Default" Size="Size.Small"
 									   Title="Clear history" />
-							<MudIconButton OnClick="ToggleOpen"
+								<MudIconButton OnClick="ToggleOpen" @ontouchend="() => StorageService.ClearInactiveUploads()"
 									   Icon="@Icons.Filled.Minimize" DisableElevation="true" Variant="Variant.Filled" Size="Size.Small" Color="Color.Default"
 									   Title="Minimize" />
-						</MudButtonGroup>
-					</ToolBarContent>*@
+					</ToolBarContent>
+					
+						<ColGroup>
+							<col />
+							<col style="min-width: 50px" />
+							<col style="min-width: 100px" />
+							<col />
+							<col />
+						</ColGroup>
 
-					<ColGroup>
-						<col />
-						<col style="min-width: 50px" />
-						<col style="min-width: 100px" />
-						<col />
-						<col />
-					</ColGroup>
-
-					<HeaderContent>
-					<MudTh colspan="2">Uploads</MudTh>
-					<MudTh colspan="3" class="py-1 px-2" style="text-align: right;">
-						<MudButtonGroup OverrideStyles="false" Size="Size.Small">
-							<MudIconButton Disabled="@(ActiveUploadsNumber == _items.Count)" OnClick="(() => StorageService.ClearInactiveUploads())"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.ClearAll" Color="Color.Default" Size="Size.Small"
-									   Title="Clear history" />
-							<MudIconButton OnClick="ToggleOpen"
-									   Icon="@Icons.Filled.Minimize" DisableElevation="true" Variant="Variant.Filled" Size="Size.Small" Color="Color.Default"
-									   Title="Minimize" />
-						</MudButtonGroup>
-					</MudTh>
-					</HeaderContent>
-
-					<RowTemplate>
-					<MudTd Class="px-2">
+						<RowTemplate>
+							<MudTd Class="px-2">
 							@if (item.IsInProgress)
 							{
-								<MudIcon Size="Size.Small" Icon="@Icons.Filled.Upload" Color="Color.Info" />
+								<MudIcon Size="Size.Small" Icon="@(item.Progress > 0 ? Icons.Filled.Upload : Icons.Filled.HourglassTop)" Color="Color.Info" />
 							}
 							else if (item.IsComplete)
 							{
@@ -81,7 +65,7 @@
 
 						<MudTd title="@item.Name" Style="max-width: 250px;" Class="@($"px-2 {(item.IsCancelled ? "text-line-through" : string.Empty)}")">
 							<p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-								class="@(item.IsCancelled ? "text-line-through" : string.Empty)">
+						   class="@(item.IsCancelled ? "text-line-through" : string.Empty)">
 								@item.Name
 							</p>
 						</MudTd>
@@ -111,108 +95,7 @@
 						</MudTd>
 					</RowTemplate>
 
-				<FooterContent>
-
-					@if (!_items.Any())
-					{
-						<MudTd colspan="5">
-							Nothing is uploading at the moment.
-						</MudTd>
-					}
-
-				</FooterContent>
-
 				</MudTable>
-
-
-@*			<MudSimpleTable Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 1fr;"
-						Elevation="0" Dense="true" Outlined="true" FixedHeader="true">
-				<colgroup>
-					<col />
-					<col style="min-width: 50px" />
-					<col style="min-width: 75px" />
-					<col />
-					<col />
-				</colgroup>
-				<thead>
-					<tr>
-						<th colspan="2">Uploads</th>
-						<th colspan="3" class="py-1 px-2" style="text-align: right;">
-							<MudButtonGroup OverrideStyles="false" Size="Size.Small">
-								<MudIconButton Disabled="@(ActiveUploadsNumber == _items.Count)" OnClick="(() => StorageService.ClearInactiveUploads())"
-										   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.ClearAll" Color="Color.Default" Size="Size.Small"
-										   Title="Clear history" />
-								<MudIconButton OnClick="ToggleOpen"
-										   Icon="@Icons.Filled.Minimize" DisableElevation="true" Variant="Variant.Filled" Size="Size.Small" Color="Color.Default"
-										   Title="Minimize" />
-							</MudButtonGroup>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					@if (!_items.Any())
-					{
-						<tr>
-							<td colspan="4">
-								Nothing is uploading at the moment.
-							</td>
-						</tr>
-					}
-					@foreach (var item in _items)
-					{
-						<tr>
-							<td class="pr-0">
-								@if (item.IsInProgress)
-								{
-									<MudIcon Size="Size.Small" Icon="@Icons.Filled.Upload" Color="Color.Info" />
-								}
-								else if (item.IsComplete)
-								{
-									<MudIcon Size="Size.Small" Icon="@Icons.Filled.CheckCircle" Color="Color.Success" />
-								}
-								else if (item.IsCancelled)
-								{
-									<MudTooltip Inline="false" Class="z-max" Text="Cancelled">
-										<MudIcon Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Default" />
-									</MudTooltip>
-								}
-								else if (item.IsError)
-								{
-									<MudTooltip Class="z-max break-word" Text="@($"Error code: {item.Result?.ErrorCode}\n\nError:\n{item.Result?.ErrorMessage}")">
-										<MudIcon Size="Size.Small" Icon="@Icons.Filled.Error" Color="Color.Error" />
-									</MudTooltip>
-								}
-							</td>
-
-							<td title="@item.Name" style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" class="@(item.IsCancelled ? "text-line-through" : string.Empty)">
-								@item.Name
-							</td>
-
-							<td class="px-0 pr-2">
-								<MudProgressLinear Color="@(item.IsComplete? Color.Success : item.IsCancelled ? Color.Default : item.IsError ? Color.Error : Color.Primary)"
-										   Value="item.Progress" Class="" />
-							</td>
-
-							<td class="@($"px-0 {(item.IsCancelled ? "text-line-through" : string.Empty)}")">
-								@($"{item.Progress}%")
-							</td>
-
-							<td class="" @onclick:stopPropagation="true" @onclick:preventDefault="true" @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
-								@if (item.IsInProgress)
-								{
-									<MudIconButton OnClick="() => CancelUpload(item)"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.Cancel" Size="Size.Small" />
-								}
-								else
-								{
-									<MudIconButton OnClick="() => StorageService.ClearIfInactive(item)"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.Clear" Size="Size.Small" />
-								}
-							</td>
-						</tr>
-					}
-				</tbody>
-			</MudSimpleTable>*@
 		</div>
 	</div>
 }
@@ -220,13 +103,14 @@
 @*<MudOverlay Visible="_isOpen" OnClick="ToggleOpen" LockScroll="false" />*@
 
 @code {
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new ();
 
 	IReadOnlyCollection<UploadQueueItem> _items = new List<UploadQueueItem>();
 
 	public bool _isOpen = false;
 	public int ActiveUploadsNumber = 0;
 
-	bool _smallScreen = false;
+	Size IconSize => LayoutState.Xs ? Size.Medium : Size.Large;
 
 	MudMenu? _menu;
 
@@ -256,7 +140,7 @@
 
 	private void OnQueueChanged(object? sender, IReadOnlyCollection<UploadQueueItem> items)
 	{
-		_items = items;
+		_items = items.OrderByDescending(x => x.IsUploading).ThenByDescending(x => x.IsPending).ToList();
 		ActiveUploadsNumber = _items.Where(i => i.IsInProgress).Count();
 		StateHasChanged();
 	}

@@ -1,4 +1,5 @@
-﻿@using Concerto.Client.Extensions
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Components.Authorization
@@ -9,6 +10,8 @@
 @inject ISnackbar Snackbar
 @inject ICourseService CourseService
 
+@inherits MudComponentBase
+
 @if (Loading)
 {
 	<LoadingIndicator Color="Color.Primary" Size="Size.Large"/>
@@ -16,21 +19,25 @@
 else
 {
 	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<CourseListItem, bool>(CourseFilter)"
-	          Style="height: 100%" Class="flex-grow-1" Height="calc(100% - 116px)" FixedHeader="true" FixedFooter="true" Outlined="true"
+		  Style="@TableStyle" Class="@Class" Height="100%" FixedHeader="true" FixedFooter="true" Outlined="true"
 	          RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;">
 		<ToolBarContent>
-			<MudText Typo="Typo.h6">Your courses</MudText>
+			<MudText Class="mr-2" Typo="Typo.subtitle1">Your courses</MudText>
 			<MudSpacer/>
-			<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+			<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+					  Class="mt-0 mr-2" Style="" />
 			<MudSpacer/>
 			<MudButtonGroup OverrideStyles="false">
-				<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize"/>
 
-				@if (ManagementEnabled)
+				@if (LayoutState.SmAndUp)
 				{
-					<AuthorizeView Roles="teacher">
-						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false"/>
-					</AuthorizeView>
+					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
+					@if (ManagementEnabled)
+					{
+						<AuthorizeView Roles="teacher">
+							<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false" />
+						</AuthorizeView>
+					}
 				}
 
 				<MudMenu Dense="true">
@@ -39,7 +46,7 @@ else
 					</ActivatorContent>
 					<ChildContent>
 						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-						             OnClick="Initialize">
+								  OnTouch="Initialize" OnClick="Initialize">
 							Refresh view
 						</MudMenuItemW>
 
@@ -47,7 +54,7 @@ else
 						{
 							<AuthorizeView Roles="teacher">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
-								             OnClick="CreateCourse" Disabled="false">
+									  OnClick="CreateCourse" OnTouch="CreateCourse" Disabled="false">
 									Create course
 								</MudMenuItemW>
 							</AuthorizeView>
@@ -80,11 +87,11 @@ else
 						<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 					</ActivatorContent>
 					<ChildContent>
-						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
+						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnTouch="() => SelectCourse(context)" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
 						@if (ManagementEnabled)
 						{
 							<AuthorizeView Roles="teacher" Context="auth">
-								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}
 
@@ -100,9 +107,14 @@ else
 
 
 @code {
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
 	[Parameter]
 	public EventCallback<long> OnCourseSelected { get; set; }
+
+	private string TableStyle => LayoutState.Xs
+	? $"min-height: 245px; display:grid; grid-template-rows: 0fr 0fr 1fr; {Style}"
+	: $"min-height: 245px; display:grid; grid-template-rows: 0fr 1fr; {Style}";
 
 	[Parameter]
 	public string SelectLabel { get; set; } = "Open";

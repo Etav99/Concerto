@@ -27,6 +27,11 @@
 
 	.mud-nav-group.hidden > .mud-expanded { display: none; }
 
+	.color-folder-yellow
+	{
+		color: @FolderYellow !important;
+	}
+
 	.text-line-through {
 		text-decoration: line-through;
 	}
@@ -37,6 +42,16 @@
 
 	.break-word {
 		word-break: break-word !important;
+	}
+
+	.cursor-pointer {
+		cursor: pointer;
+	}
+
+	.text-ellipsis {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 </style>
@@ -57,6 +72,8 @@
 
 	string Orange => DarkMode ? Colors.Orange.Darken3 : Colors.Orange.Lighten4;
 	string OrangeAccent => DarkMode ? Colors.Orange.Darken4 : Colors.Orange.Lighten3;
+
+	string FolderYellow => DarkMode ? Colors.Yellow.Darken3 : Colors.Yellow.Darken2;
 
 	string Purple => DarkMode ? Colors.Purple.Darken3 : Colors.Purple.Lighten4;
 	string PurpleAccent => DarkMode ? Colors.Purple.Darken4 : Colors.Purple.Lighten3;

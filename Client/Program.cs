@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Concerto.Client;
 using Concerto.Client.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -12,16 +13,29 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-
 // Add HTTP Client with base address and authorization handler 
-builder.Services.AddHttpClient("WebAPI", client => client.BaseAddress = baseAddress)
+if (builder.HostEnvironment.Environment == "DevelopmentStandalone")
+{
+	baseAddress = new Uri("https://localhost:7001/concerto/app/");
+	builder.Services.AddHttpClient("WebAPI", client => client.BaseAddress = baseAddress)
+	.AddHttpMessageHandler(sp => {
+		var handler = sp.GetRequiredService<AuthorizationMessageHandler>()
+			.ConfigureHandler(new[] { baseAddress.ToString() });
+		return handler;
+	});
+}
+else
+{
+	builder.Services.AddHttpClient("WebAPI", client => client.BaseAddress = baseAddress)
 	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+}
+
+
+
 // Register it as scoped, each service will use the same HTTP client provided by DI
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("WebAPI"));
-
-
 AppSettingsService appSettingsService = new AppSettingsService(new HttpClient { BaseAddress = baseAddress });
-await appSettingsService.FetchAppSetings();
+await appSettingsService.FetchAppSettings();
 var appSettings = appSettingsService.AppSettings;
 builder.Services.AddSingleton<IAppSettingsService, AppSettingsService>(sp => appSettingsService);
 builder.Services.AddScoped<ICourseService, CourseService>();

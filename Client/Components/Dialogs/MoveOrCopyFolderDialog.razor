@@ -1,13 +1,12 @@
-﻿@using Concerto.Client.Services
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @using Concerto.Client.Components.Lists
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject IStorageService StorageService
-@inject ICourseService CourseService
 @inject IDialogService DialogService
-@inject IStorageService StorageService
 
 <MudDialog>
 	<DialogContent>
@@ -26,25 +25,26 @@
 				</MudStack>
 
 				<FileManager Class="" Style="height: calc(100% - 48px)" Outlined="true" Elevation="0"
-					             ChooseFolderMode="true" InitialFolderId="_selectedCourse!.RootFolderId" OnSelected="Submit"
-					             ChooseFolderString="@(Copy ? "Copy here" : "Move here")" ExcludeFromChoose="ExcludedFromChoose"/>
+					             ChooseFolderMode="true" InitialFolderId="_selectedCourse!.RootFolderId"
+								 OnFolderLoaded="OnFolderChanged" />
 			</MudStack>
 		}
 	</DialogContent>
-
+	
 	<DialogActions>
 		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" Disabled="!_canChoose" OnClick="Submit">@(Copy ? "Copy here" : "Move here")</MudButton>
 	</DialogActions>
 </MudDialog>
 
 
-@code {
+	@code {
 
 	[CascadingParameter]
 	MudDialogInstance Dialog { get; set; } = null!;
 
 	[Parameter]
-	public IEnumerable<FolderContentItem>? Items { get; set; }
+	public IReadOnlyCollection<FolderContentItem>? Items { get; set; }
 
 	HashSet<long> ExcludedFromChoose = null!;
 
@@ -57,6 +57,8 @@
 	[Parameter]
 	public bool Copy { get; set; }
 
+	private bool _canChoose = false;
+	private long _destinationFolderId;
 
 	private bool _toAnotherCourse;
 
@@ -69,6 +71,7 @@
 			{
 				_toAnotherCourse = value;
 				_selectedCourse = _initialCourse;
+				_canChoose = false;
 			}
 			else
 			{
@@ -107,7 +110,6 @@
 		var fileIds = Items.Where(item => item is FileItem).Select(file => file.Id);
 
 		ExcludedFromChoose = folderIds.ToHashSet();
-		ExcludedFromChoose.Add(FromFolderId);
 
 		_copyRequest = new CopyFolderItemsRequest
 		{
@@ -126,9 +128,10 @@
 
 	private async Task ChooseCourse()
 	{
+		var options = new DialogOptions { FullScreen = true };
 		var parameters = new DialogParameters { ["WithoutCourseIds"] = new List<long> { InitialCourseId } };
 		var name = "Select course";
-		var result = await DialogService.Show<SelectCourseDialog>(name, parameters).Result;
+		var result = await DialogService.Show<SelectCourseDialog>(name, parameters, options).Result;
 		if (result.Cancelled) return;
 		var courseId = result.Data as long?;
 		if (courseId is null) return;
@@ -139,10 +142,19 @@
 		StateHasChanged();
 	}
 
-	private async Task Submit(FolderItem destinationFolder)
+	private async Task OnFolderChanged(FileManager.FolderSelectedEventArgs args)
 	{
-		_copyRequest.DestinationFolderId = destinationFolder.Id;
-		_moveRequest.DestinationFolderId = destinationFolder.Id;
+		var folder = args.Folder;
+		_destinationFolderId = args.Folder.Id;
+		_canChoose = args.Folder.CanWrite
+					 && FromFolderId != args.Folder.Id
+					 && !args.Breadcrumbs.Any(x => ExcludedFromChoose.Contains(x.Id));
+	}
+
+	private async Task Submit()
+	{
+		_copyRequest.DestinationFolderId = _destinationFolderId;
+		_moveRequest.DestinationFolderId = _destinationFolderId;
 		try
 		{
 			if (Copy)

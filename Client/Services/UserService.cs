@@ -48,15 +48,12 @@ public class UserService : UserClient, IUserService, IDisposable
 		_authenticationStateTask = authenticationState;
 	}
 
-	public async Task<bool> IsLoggedIn()
+	private async Task<bool> IsLoggedIn()
 	{
-		if (_authenticationStateTask != null)
-		{
-			var authenticationState = await _authenticationStateTask;
-			return authenticationState.User.Identity?.IsAuthenticated ?? false;
-		}
-
-		return false;
+		if (_authenticationStateTask == null) return false;
+		
+		var authenticationState = await _authenticationStateTask;
+		return authenticationState.User.Identity?.IsAuthenticated ?? false;
 	}
 }
 

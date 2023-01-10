@@ -1,30 +1,33 @@
 ﻿@inject IUserService UserService
+@using Concerto.Client.Components.Layout;
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @inherits MudComponentBase
 
-<MudBreakpointProvider Style="all: inherit;" OnBreakpointChanged="(b) => _smallScreen = b <= Breakpoint.Xs">
+
 	<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User, bool>(Filter)"
-			  RowsPerPage="25" Loading="Loading" RowClassFunc="RowClassFunc"
+			  RowsPerPage="50" Loading="Loading" RowClassFunc="RowClassFunc"
 			  SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
-			  Style="@($"min-height: 245px; display:grid; grid-template-rows: 1fr; {Style}" )" Class="@Class" Height="@TableContentHeight" RowStyle="text-align: right;">
+			  Style="@($"min-height: 400px; display:grid; grid-template-rows: 1fr; {Style}" )" Class="@Class" Height="@TableContentHeight" RowStyle="text-align: right;">
 
 		<ToolBarContent>
 			<MudText Typo="Typo.subtitle1">Course members</MudText>
 			<MudSpacer/>
-			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
+			<MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Class="ma-0"></MudTextField>
 		</ToolBarContent>
 
 		<ColGroup>
 
 
-			<MudHidden Breakpoint="Breakpoint.Xs">
+			@if(LayoutState.SmAndUp)
+			{
 				<col style="width: 20px" />
 				<col style="min-width: 100px" />
-			</MudHidden>
-			<MudHidden Breakpoint="Breakpoint.SmAndUp">
+			}
+			else
+			{
 				<col style="padding-top: 10px" />
-			</MudHidden>
+			}
 			<col style="max-width: 32px;" />
 			<col style="min-width: 100px;" />
 			<col style="min-width: 100px;" />
@@ -45,9 +48,10 @@
 		</HeaderContent>
 
 		<RowTemplate>
-			<MudHidden Breakpoint="Breakpoint.Xs">
+			@if (LayoutState.SmAndUp)
+			{
 				<MudTd DataLabel="Selected">←</MudTd>
-			</MudHidden>
+			}
 			<MudTd DataLabel="Name">@context.FirstName</MudTd>
 			<MudTd DataLabel="Surname">@context.LastName</MudTd>
 		</RowTemplate>
@@ -67,19 +71,14 @@
 		</FooterContent>
 
 		<PagerContent>
-			<MudTablePager PageSizeOptions="new[] { 2, 50, 100 }"/>
+			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
 		</PagerContent>
 
 	</MudTable>
-</MudBreakpointProvider>
-
-
-
-
 
 @code
 {
-	private bool _smallScreen = false;
+	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
 	private string TableContentHeight => $"calc({Height})";
 

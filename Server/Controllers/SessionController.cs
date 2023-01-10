@@ -48,7 +48,7 @@ public class SessionController : ControllerBase
 	[HttpDelete]
 	public async Task<ActionResult> DeleteSession(long sessionId)
 	{
-		if (!await _sessionService.CanManageSession(UserId, sessionId)) return Forbid();
+		if (!await _sessionService.CanManageSession(sessionId, UserId)) return Forbid();
 		if (!await _sessionService.DeleteSession(sessionId)) return Forbid();
 		return Ok();
 	}

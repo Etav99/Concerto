@@ -26,6 +26,7 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
+builder.Services.AddHostedService<ScheduledTasksService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
@@ -71,7 +72,7 @@ builder.Services.AddAuthentication(options =>
 						var accessToken = context.Request.Query["access_token"];
 						if (!string.IsNullOrEmpty(accessToken))
 						{
-							logger.LogDebug("Token set from query");
+							// logger.LogDebug("Token set from query");
 							context.Token = accessToken;
 						}
 					}
@@ -91,6 +92,18 @@ builder.Services.AddDbContext<AppDataContext>(options =>
 );
 builder.Services.AddScoped<AppDataContext>();
 
+// Configure the HTTP request pipeline.
+if (builder.Environment.IsDevelopment())	
+{
+	// Allow any origin
+     builder.Services.AddCors(options =>
+     {
+         options.AddPolicy("DevPolicy", builder =>
+          builder.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader());
+     });
+}
 
 var app = builder.Build();
 
@@ -105,6 +118,7 @@ app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor AP
 if (app.Environment.IsDevelopment())
 {
 	app.UseWebAssemblyDebugging();
+	app.UseCors("DevPolicy");
 }
 else
 {

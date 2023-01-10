@@ -1,4 +1,5 @@
-﻿@using Concerto.Client.Extensions
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -16,348 +17,347 @@
 <MudPaper Class="@Class" Style="@Style" Elevation="@Elevation" Outlined="@Outlined">
 	@if (FolderContent is not null)
 	{
-		<MudBreakpointProvider Style="height: inherit; " OnBreakpointChanged="OnBreakPointChanged">
-			<MudPaper MinHeight="40px" Outlined="false" Class="pl-4 pa-0 mud-breadcrumbs" Style="background-color: var(--mud-palette-surface);" Elevation="0">
-				<MudIconButton DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.ArrowBack" Disabled="@(BreadCrumbs.Count <= 1)" OnClick="Back"></MudIconButton>
-				@foreach (var breadcrumb in BreadCrumbs)
+		<MudPaper Height="45px" Outlined="false" Elevation="0"
+			  Class="pl-4 py-0 mud-breadcrumbs align-content-stretch" Style="overflow-x: scroll; background-color: var(--mud-palette-surface);">
+
+			<MudIconButton Variant="Variant.Filled" Color="Color.Default" Icon="@Icons.Material.Filled.ArrowBack"
+					   Disabled="@(BreadCrumbs.Count <= 1)" OnClick="Back" DisableElevation="true" />
+
+			@if (LayoutState.SmAndUp)
+			foreach (var breadcrumb in BreadCrumbs)
+			{
+				var isCurrent = FolderContent.Self.Equals(breadcrumb);
+
+				@if (!isCurrent)
 				{
-					var isCurrent = FolderContent.Self.Equals(breadcrumb);
-					<MudButton Disabled="isCurrent" Style="text-transform: none" Variant="Variant.Text" Color="Color.Default" OnClick="async () => await BreadcrumbBack(breadcrumb)">
-						<MudIcon Class="mr-1" Icon="@Icons.Material.Sharp.Folder" />
-						@breadcrumb.Name
-					</MudButton>
-					@if (!isCurrent)
-					{
-						<MudIcon Icon="@Icons.Material.Sharp.ChevronRight" />
-					}
+						<MudButton Class="d-inline-block " Style="text-transform: none; min-width:auto;" Variant="Variant.Text" Color="Color.Default"
+								   OnClick="async () => await BreadcrumbBack(breadcrumb)">
+							@breadcrumb.Name
+						</MudButton>
+						<p style="display: inline-block; user-select: none;" class="mx-2">></p>
 				}
-			</MudPaper>
+				else
+				{
+						<MudButton Class="d-inline-block " Style="text-transform: none; min-width:auto;" Variant="Variant.Text" Color="Color.Primary">
+							@breadcrumb.Name
+						</MudButton>
+				}
+			}
+			else
+			{
+				<MudButton StartIcon="@Icons.Material.Sharp.Folder" Style="text-transform: none; pointer-events: none; text-align: center;">
+					@BreadCrumbs.LastOrDefault()?.Name
+				</MudButton>
+			}
+		</MudPaper>
 
-			<MudTable @ref="_table" T="FolderContentItem" Comparer="_comparer" Items="FolderContentItems" @bind-SelectedItems="SelectedItems" MultiSelection="@SelectionMode"
-				  Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
-				  Class="" Style="height: calc(100% - 40px)" Outlined="false" Height="@($"calc(100% - {TableContentHeightDiff})")" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
-				  OnRowClick="OnRowClick" RowStyleFunc="RowStyleFunc" AllowUnsorted="false" Dense="true">
-				<ToolBarContent>
+		<MudTable @ref="_table" T="FolderContentItem" Comparer="_comparer" Items="FolderContentItems" @bind-SelectedItems="SelectedItems" MultiSelection="@SelectionMode"
+			  Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
+			  Class="" Style="height: calc(100% - 45px)" Outlined="false" Height="@($"calc(100% - {TableContentHeightDiff})")" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
+			  OnRowClick="OnRowClick" RowStyleFunc="RowStyleFunc" RowClassFunc="RowClassFunc" AllowUnsorted="false" Dense="true">
+			<ToolBarContent>
 
-					<MudHidden Invert="true" Breakpoint="Breakpoint.SmAndUp">
-						<MudIcon Class="mr-2" Icon="@Icons.Material.Sharp.Folder" Size="Size.Large" />
-						<MudText Typo="Typo.h5">@FolderContent.Self.Name</MudText>
-						<MudSpacer />
-					</MudHidden>
+				@if (LayoutState.SmAndUp)
+				{
+					<MudIcon Class="mr-2 color-folder-yellow" Icon="@Icons.Material.Sharp.Folder" Size="Size.Large" />
+					<MudText Typo="Typo.h5">@FolderContent.Self.Name</MudText>
+					<MudSpacer />
+				}
 
-					<MudHidden Invert="true" Breakpoint="Breakpoint.Xs">
-						<MudIcon Class="mr-2" Icon="@Icons.Material.Sharp.Folder" Size="Size.Medium" />
-						<MudText Typo="Typo.body1">@FolderContent.Self.Name</MudText>
-						<MudSpacer />
-					</MudHidden>
+				<div class="ml-2">
+					<MudTextField @bind-Value="_searchString" Immediate="true" Clearable="true"
+							  Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+							  IconSize="Size.Small" Margin="Margin.Dense" Class="mt-0 mr-2" />
+				</div>
+				<MudSpacer />
 
-
-					<div class="ml-2" style=@($"max-width: {(_smallScreen ? "100px;" : "150px")}")>
-						<MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small" Margin="Margin.Dense" Class="mt-0 mr-2" />
-					</div>
-
-					<MudButtonGroup Class="ml-2" OverrideStyles="false">
-
-
-						@if (ChooseFolderMode)
+				<MudButtonGroup Class="ml-2" OverrideStyles="false">
+					@if (LayoutState.MdAndUp)
+					{
+						<MudIconButton Title="Refresh" OnClick="Refresh"
+							   DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" />
+						@if (!ChooseFolderMode)
 						{
-							<MudButton Disabled="@(!FolderContent.Self.CanWrite || ExcludeFromChoose.Contains(FolderContent.Self.Id))" DisableElevation="true" Color="Color.Info" Variant="Variant.Filled" OnClick="() => OnSelected.InvokeAsync(FolderContent.Self)">
-								@(ChooseFolderString ?? "Choose")
-							</MudButton>
+							<MudIconButton Title="Upload files" OnClick="async () => await UploadFiles()" Disabled="@(!FolderContent.Self.CanWrite)"
+							   DisableElevation="true" Icon="@Icons.Material.Filled.UploadFile" Color="Color.Default" Variant="Variant.Filled" />
+							<MudIconButton Title="Create folder" OnClick="async () => await ShowCreateFolderDialog()" Disabled="@(!FolderContent.Self.CanWrite)"
+							   DisableElevation="true" Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Default" Variant="Variant.Filled" />
+							<MudIconButton Title="Toggle selection mode" OnClick="() => SelectionMode = !SelectionMode"
+							   DisableElevation="true" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled" Icon="@(SelectionMode ? Icons.Material.Filled.Deselect : Icons.Material.Filled.SelectAll)" />
 						}
+					}
 
-						<MudHidden Breakpoint="Breakpoint.SmAndDown">
-							<MudIconButton Title="Refresh" OnClick="Refresh"
-									   DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" />
+					<MudMenu Dense="true">
+						<ActivatorContent>
+							<MudIconButton Title="More" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+						</ActivatorContent>
+						<ChildContent>
+
+							<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
+									  OnClick="Refresh" OnTouch="Refresh">
+								Refresh view
+							</MudMenuItemW>
+
 							@if (!ChooseFolderMode)
 							{
-								<MudIconButton Title="Upload files" OnClick="async () => await UploadFiles()" Disabled="@(!FolderContent.Self.CanWrite)"
-									   DisableElevation="true" Icon="@Icons.Material.Filled.UploadFile" Color="Color.Default" Variant="Variant.Filled" />
-								<MudIconButton Title="Create folder" OnClick="async () => await ShowCreateFolderDialog()" Disabled="@(!FolderContent.Self.CanWrite)"
-									   DisableElevation="true" Icon="@Icons.Material.Filled.CreateNewFolder" Color="Color.Default" Variant="Variant.Filled" />
-								<MudIconButton Title="Toggle selection mode" OnClick="() => SelectionMode = !SelectionMode"
-									   DisableElevation="true" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled" Icon="@(SelectionMode ? Icons.Material.Filled.Deselect : Icons.Material.Filled.SelectAll)" />
-							}
-						</MudHidden>
-
-						<MudMenu Dense="true">
-							<ActivatorContent>
-								<MudIconButton Title="More" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
-							</ActivatorContent>
-							<ChildContent>
-
-								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Refresh"
-										  OnClick="Refresh" OnTouch="Refresh">
-									Refresh view
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.UploadFile"
+									  OnClick="async () => await UploadFiles()" OnTouch="async () => await UploadFiles()"
+									  Disabled="@(!FolderContent.Self.CanWrite)">
+									Upload files
 								</MudMenuItemW>
 
-								@if (!ChooseFolderMode)
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CreateNewFolder"
+									  OnClick="async () => await ShowCreateFolderDialog()" OnTouch="async () => await ShowCreateFolderDialog()"
+									  Disabled="@(!FolderContent.Self.CanWrite)">
+									Create folder
+								</MudMenuItemW>
+
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Settings"
+									  OnClick="async () => await ShowUpdateFolderDialog(FolderContent.Self)" OnTouch="async () => await ShowUpdateFolderDialog(FolderContent.Self)"
+									  Disabled="@(!FolderContent.Self.CanEdit)">
+									Settings
+								</MudMenuItemW>
+
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@(SelectionMode ? Icons.Material.Filled.Deselect : Icons.Material.Filled.SelectAll)"
+									  OnClick="() => SelectionMode = !SelectionMode" OnTouch="() => SelectionMode = !SelectionMode">
+									@(!SelectionMode ? "Select" : "Cancel selection")
+								</MudMenuItemW>
+
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
+									  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
+									  Disabled="@(!CanMoveSelected)">
+									Move selected to
+								</MudMenuItemW>
+
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
+									  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
+									  Disabled="@(!CanCopySelected)">
+									Copy selected to
+								</MudMenuItemW>
+
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
+									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
+									  Disabled="@(!CanCopySelected)">
+									Delete selected
+								</MudMenuItemW>
+							}
+						</ChildContent>
+					</MudMenu>
+				</MudButtonGroup>
+
+			</ToolBarContent>
+
+			<ColGroup>
+				@if (SelectionMode)
+				{
+					<col style="width: 10px" />
+				}
+				<col />
+				<col />
+				<col />
+				<col />
+			</ColGroup>
+
+			<HeaderContent>
+				<MudTh>
+
+
+					<MudTableSortLabel @ref="_nameLabel" InitialDirection="SortDirection.Ascending"
+								   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_nameLabel?.SortDirection, x) + x.Name)">
+						Name
+					</MudTableSortLabel>
+
+
+				</MudTh>
+				<MudTh>
+					<MudTableSortLabel @ref="_formatLabel"
+								   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_formatLabel?.SortDirection, x) + ((x as FileItem)?.Extension ?? DirFormat + x.Name ))">
+						Format
+					</MudTableSortLabel>
+				</MudTh>
+				<MudTh>
+					<MudTableSortLabel @ref="_typeLabel"
+								   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_typeLabel?.SortDirection, x) + x.ToDisplayString() + x.Name)">
+						Type
+					</MudTableSortLabel>
+				</MudTh>
+				<MudTh></MudTh>
+			</HeaderContent>
+
+			<RowTemplate>
+				@if (context is FolderItem folder)
+				{
+					<MudTd DataLabel="Name" Style="">
+						<MudStack Row="true">
+							<MudIcon Size="Size.Medium" Class="color-folder-yellow" Icon="@Icons.Material.Filled.Folder" />
+							<MudText Typo="Typo.body2">@context.Name</MudText>
+						</MudStack>
+					</MudTd>
+					<MudTd DataLabel="Format">@DirFormat</MudTd>
+					<MudTd DataLabel="Type">
+						<MudStack Row="true">
+							<MudIcon Size="Size.Medium" Icon="@folder.Type.ToIcon()" />
+							<MudText Typo="Typo.body2">@folder.Type.ToDisplayString()</MudText>
+						</MudStack>
+					</MudTd>
+					<MudTd Style="text-align: right">
+						<MudMenu Dense="true">
+							<ActivatorContent>
+								@if (LayoutState.Xs)
 								{
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.UploadFile"
-										  OnClick="async () => await UploadFiles()" OnTouch="async () => await UploadFiles()"
-										  Disabled="@(!FolderContent.Self.CanWrite)">
-										Upload files
-									</MudMenuItemW>
-
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CreateNewFolder"
-										  OnClick="async () => await ShowCreateFolderDialog()" OnTouch="async () => await ShowCreateFolderDialog()"
-										  Disabled="@(!FolderContent.Self.CanWrite)">
-										Create folder
-									</MudMenuItemW>
-
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Settings"
-										  OnClick="async () => await ShowUpdateFolderDialog(FolderContent.Self)" OnTouch="async () => await ShowUpdateFolderDialog(FolderContent.Self)"
-										  Disabled="@(!FolderContent.Self.CanEdit)">
-										Settings
-									</MudMenuItemW>
-
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@(SelectionMode ? Icons.Material.Filled.Deselect : Icons.Material.Filled.SelectAll)"
-										  OnClick="() => SelectionMode = !SelectionMode" OnTouch="() => SelectionMode = !SelectionMode">
-										@(!SelectionMode ? "Select" : "Cancel selection")
-									</MudMenuItemW>
-
+									<MudButton DisableElevation="true" StartIcon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled">Actions</MudButton>
+								}
+								else
+								{
+									<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+								}
+							</ActivatorContent>
+							<ChildContent>
+								@if (SelectionMode)
+								{
 									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
-										  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
-										  Disabled="@(!CanMoveSelected)">
+									  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
+									  Disabled="@(!CanMoveSelected)">
 										Move selected to
 									</MudMenuItemW>
 
 									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
-										  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
-										  Disabled="@(!CanCopySelected)">
+									  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
+									  Disabled="@(!CanCopySelected)">
 										Copy selected to
 									</MudMenuItemW>
 
 									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
-										  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-										  Disabled="@(!CanCopySelected)">
+									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
+									  Disabled="@(!CanCopySelected)">
 										Delete selected
+									</MudMenuItemW>
+								}
+								else
+								{
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.FolderOpen"
+									  OnClick="() => OpenFolder(folder)" OnTouch="() => OpenFolder(folder)">
+										Open
+									</MudMenuItemW>
+									<MudMenuItemW hidden="@ChooseFolderMode" IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Settings"
+									  OnClick="() => ShowUpdateFolderDialog(folder)" OnTouch="() => ShowUpdateFolderDialog(folder)"
+									  Disabled=@(!folder.CanEdit)>
+										Settings
+									</MudMenuItemW>
+									<MudMenuItemW hidden="@ChooseFolderMode" IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete"
+									  OnClick="async () => await DeleteFolder(folder)" OnTouch="async () => await DeleteFolder(folder)"
+									  Disabled=@(!folder.CanDelete)>
+										Delete
+									</MudMenuItemW>
+								}
+
+							</ChildContent>
+						</MudMenu>
+					</MudTd>
+				}
+				else if (context is FileItem file)
+				{
+					<MudTd DataLabel="Name" Style="">
+						<MudStack Row="true">
+							<MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.InsertDriveFile" />
+							<MudText Typo="Typo.body2">@context.Name</MudText>
+						</MudStack>
+					</MudTd>
+					<MudTd DataLabel="Format">
+						<MudStack Row="true">
+							<MudText Typo="Typo.body2">@file.Extension</MudText>
+						</MudStack>
+					</MudTd>
+					<MudTd DataLabel="Type">
+						<MudStack Row="true">
+							<MudStack Row="true">
+								<MudIcon Size="Size.Medium" Icon="@file.ToIcon()" />
+								<MudText Typo="Typo.body2">@file.ToDisplayString()</MudText>
+							</MudStack>
+						</MudStack>
+					</MudTd>
+					<MudTd Style="text-align: right">
+						<MudMenu Dense="true" hidden="@ChooseFolderMode">
+							<ActivatorContent>
+								@if (LayoutState.Xs)
+								{
+									<MudButton DisableElevation="true" StartIcon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled">Actions</MudButton>
+								}
+								else
+								{
+									<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+								}
+							</ActivatorContent>
+							<ChildContent>
+
+
+								@if (SelectionMode)
+								{
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
+									  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
+									  Disabled="@(!CanMoveSelected)">
+										Move selected to
+									</MudMenuItemW>
+
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
+									  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
+									  Disabled="@(!CanCopySelected)">
+										Copy selected to
+									</MudMenuItemW>
+
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
+									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
+									  Disabled="@(!CanCopySelected)">
+										Delete selected
+									</MudMenuItemW>
+								}
+								else
+								{
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Download"
+									  OnClick="() => DownloadFile(file)" OnTouch="() => DownloadFile(file)">
+										Download
+									</MudMenuItemW>
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit"
+									  OnClick="() => ShowUpdateFileDialog(file)" OnTouch="() => ShowUpdateFileDialog(file)"
+									  Disabled=@(!file.CanEdit)>
+										Edit
+									</MudMenuItemW>
+									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete"
+									  OnClick="() => DeleteFile(file)" OnTouch="() => DeleteFile(file)"
+									  Disabled=@(!file.CanDelete)>
+										Delete
 									</MudMenuItemW>
 								}
 							</ChildContent>
 						</MudMenu>
-					</MudButtonGroup>
-
-				</ToolBarContent>
-
-				<ColGroup>
-					@if (SelectionMode)
-					{
-						<col style="width: 10px" />
-					}
-					<col />
-					<col />
-					<col />
-					<col />
-				</ColGroup>
-
-				<HeaderContent>
-					<MudTh>
-
-
-						<MudTableSortLabel @ref="_nameLabel" InitialDirection="SortDirection.Ascending"
-									   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_nameLabel.SortDirection, x) + x.Name)">
-							Name
-						</MudTableSortLabel>
-
-
-					</MudTh>
-					<MudTh>
-						<MudTableSortLabel @ref="_formatLabel"
-									   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_formatLabel.SortDirection, x) + ((x as FileItem)?.Extension ?? DirFormat + x.Name ))">
-							Format
-						</MudTableSortLabel>
-					</MudTh>
-					<MudTh>
-						<MudTableSortLabel @ref="_typeLabel"
-									   SortBy="new Func<FolderContentItem, object>(x => FolderPrecedence(_typeLabel.SortDirection, x) + x.ToDisplayString() + x.Name)">
-							Type
-						</MudTableSortLabel>
-					</MudTh>
-					<MudTh></MudTh>
-				</HeaderContent>
-
-				<RowTemplate>
-					@if (context is FolderItem folder)
-					{
-						<MudTd DataLabel="Name" Style="">
-							<MudStack Row="true">
-								<MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Folder" />
-								<MudText Typo="Typo.body2">@context.Name</MudText>
-							</MudStack>
-						</MudTd>
-						<MudTd DataLabel="Format">@DirFormat</MudTd>
-						<MudTd DataLabel="Type">
-							<MudStack Row="true">
-								<MudIcon Size="Size.Medium" Icon="@folder.Type.ToIcon()" />
-								<MudText Typo="Typo.body2">@folder.Type.ToDisplayString()</MudText>
-							</MudStack>
-						</MudTd>
-						<MudTd Style="text-align: right">
-							<MudMenu Dense="true">
-								<ActivatorContent>
-									@if (_smallScreen)
-									{
-										<MudButton DisableElevation="true" StartIcon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled">Actions</MudButton>
-									}
-									else
-									{
-										<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
-									}
-								</ActivatorContent>
-								<ChildContent>
-									@if (SelectionMode)
-									{
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
-										  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
-										  Disabled="@(!CanMoveSelected)">
-											Move selected to
-										</MudMenuItemW>
-
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
-										  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
-										  Disabled="@(!CanCopySelected)">
-											Copy selected to
-										</MudMenuItemW>
-
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
-										  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-										  Disabled="@(!CanCopySelected)">
-											Delete selected
-										</MudMenuItemW>
-									}
-									else
-									{
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.FolderOpen"
-										  OnClick="() => OpenFolder(folder)" OnTouch="() => OpenFolder(folder)">
-											Open
-										</MudMenuItemW>
-										<MudMenuItemW hidden="@ChooseFolderMode" IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Settings"
-										  OnClick="() => ShowUpdateFolderDialog(folder)" OnTouch="() => ShowUpdateFolderDialog(folder)"
-										  Disabled=@(!folder.CanEdit)>
-											Settings
-										</MudMenuItemW>
-										<MudMenuItemW hidden="@ChooseFolderMode" IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete"
-										  OnClick="async () => await DeleteFolder(folder)" OnTouch="async () => await DeleteFolder(folder)"
-										  Disabled=@(!folder.CanDelete)>
-											Delete
-										</MudMenuItemW>
-									}
-
-								</ChildContent>
-							</MudMenu>
-						</MudTd>
-					}
-					else if (context is FileItem file)
-					{
-						<MudTd DataLabel="Name" Style="">
-							<MudStack Row="true">
-								<MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.InsertDriveFile" />
-								<MudText Typo="Typo.body2">@context.Name</MudText>
-							</MudStack>
-						</MudTd>
-						<MudTd DataLabel="Format">
-							<MudStack Row="true">
-								<MudText Typo="Typo.body2">@file.Extension</MudText>
-							</MudStack>
-						</MudTd>
-						<MudTd DataLabel="Type">
-							<MudStack Row="true">
-								<MudStack Row="true">
-									<MudIcon Size="Size.Medium" Icon="@file.ToIcon()" />
-									<MudText Typo="Typo.body2">@file.ToDisplayString()</MudText>
-								</MudStack>
-							</MudStack>
-						</MudTd>
-						<MudTd Style="text-align: right">
-							<MudMenu Dense="true" hidden="@ChooseFolderMode">
-								<ActivatorContent>
-									@if (_smallScreen)
-									{
-										<MudButton DisableElevation="true" StartIcon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled">Actions</MudButton>
-									}
-									else
-									{
-										<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
-									}
-								</ActivatorContent>
-								<ChildContent>
-
-
-									@if (SelectionMode)
-									{
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
-										  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
-										  Disabled="@(!CanMoveSelected)">
-											Move selected to
-										</MudMenuItemW>
-
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.ContentCopy"
-										  OnClick="async () => await CopySelected()" OnTouch="async () => await CopySelected()"
-										  Disabled="@(!CanCopySelected)">
-											Copy selected to
-										</MudMenuItemW>
-
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
-										  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-										  Disabled="@(!CanCopySelected)">
-											Delete selected
-										</MudMenuItemW>
-									}
-									else
-									{
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Download"
-										  OnClick="() => DownloadFile(file)" OnTouch="() => DownloadFile(file)">
-											Download
-										</MudMenuItemW>
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit"
-										  OnClick="() => ShowUpdateFileDialog(file)" OnTouch="() => ShowUpdateFileDialog(file)"
-										  Disabled=@(!file.CanEdit)>
-											Edit
-										</MudMenuItemW>
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete"
-										  OnClick="() => DeleteFile(file)" OnTouch="() => DeleteFile(file)"
-										  Disabled=@(!file.CanDelete)>
-											Delete
-										</MudMenuItemW>
-									}
-								</ChildContent>
-							</MudMenu>
-						</MudTd>
-					}
-				</RowTemplate>
-			</MudTable>
-		</MudBreakpointProvider>
+					</MudTd>
+				}
+			</RowTemplate>
+		</MudTable>
 	}
 </MudPaper>
 
 
 
 @code {
+		[CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
+		[Parameter]
+		public bool ChooseFolderMode { get; set; } = false;
+
+		[Parameter]
+		public EventCallback<FolderSelectedEventArgs> OnFolderLoaded { get; set; }
+
+
+	private long? _initialFolderId = null;
 	[Parameter]
-	public bool ChooseFolderMode { get; set; } = false;
+	public long? InitialFolderId { get; set; } = null;
 
-	[Parameter]
-	public string? ChooseFolderString { get; set; }
-
-	[Parameter]
-	public HashSet<long> ExcludeFromChoose { get; set; } = new();
-
-	[Parameter]
-	public EventCallback<FolderItem> OnSelected { get; set; }
-
-
-
-	[Parameter]
-	public long InitialFolderId { get; set; }
+	private CancellationTokenSource? _lastRefreshCancellation;
 
 	private string _height = string.Empty;
 
-	private bool _smallScreen = false;
-	private void OnBreakPointChanged(Breakpoint breakpoint) => _smallScreen = breakpoint <= Breakpoint.Xs;
-	private string TableContentHeightDiff => _smallScreen ? "128px" : "64px";
-
+	private string TableContentHeightDiff => LayoutState.Xs ? "128px" : "64px";
 
 	private MudTable<FolderContentItem>? _table;
 
@@ -415,6 +415,8 @@
 
 	private bool _loading = true;
 	private string? _searchString;
+
+
 	private long? CurrentFolderId => FolderContent?.Self.Id;
 
 	protected override void OnInitialized()
@@ -427,15 +429,28 @@
 		StorageService.OnUploadedToFolderEventHandler -= OnUploadFinished;
 	}
 
+	protected override void OnAfterRender(bool firstRender)
+	{
+			
+	}
+
 	protected override async Task OnParametersSetAsync()
 	{
-		var currentInitialFolderId = BreadCrumbs.FirstOrDefault()?.Id;
-		if (currentInitialFolderId != InitialFolderId)
+		if(InitialFolderId is not null && _initialFolderId != InitialFolderId)
 		{
+			_initialFolderId = InitialFolderId;
+
 			SelectionMode = false;
-			BreadCrumbs.Clear();
-			await LoadFolderContent(InitialFolderId);
-			BreadCrumbs.Add(FolderContent!.Self);
+			try
+			{
+				await LoadFolderContent(InitialFolderId.Value);
+				BreadCrumbs.Clear();
+				BreadCrumbs.Add(FolderContent!.Self);
+			}
+			catch(OperationCanceledException e)
+			{
+
+			}
 		}
 	}
 
@@ -452,13 +467,28 @@
 		StateHasChanged();
 	}
 
+	public async Task OpenFolder(FolderItem folder)
+	{
+		await LoadFolderContent(folder.Id);
+		BreadCrumbs.Add(FolderContent!.Self);
+		SelectedItems.Clear();
+	}
+
 	private async Task LoadFolderContent(long folderId)
 	{
 		_loading = true;
-		FolderContent = await StorageService.GetFolderContentAsync(folderId);
+		_lastRefreshCancellation?.Cancel();
+		_lastRefreshCancellation = new();
+		var folderContent = await StorageService.GetFolderContentAsync(folderId, _lastRefreshCancellation.Token);
+		_lastRefreshCancellation.Token.ThrowIfCancellationRequested();
+
+		FolderContent = folderContent;
+
 		var files = FolderContent.Files.Cast<FolderContentItem>();
 		var subFolders = FolderContent.SubFolders.Cast<FolderContentItem>();
 		FolderContentItems = files.Concat(subFolders).ToHashSet(new FolderContentItemIdEqualityComparer());
+
+		await OnFolderLoaded.InvokeAsync(new FolderSelectedEventArgs(FolderContent.Self, BreadCrumbs));
 		_loading = false;
 	}
 
@@ -496,6 +526,7 @@
 			var itemsNames = string.Join(",\n\n", SelectedItems.Select(x => x.Name));
 			if (!await DialogService.ShowDeleteManyConfirmationDialog("Delete folder items", "folder items", itemsNames)) return;
 			await StorageService.DeleteFolderItemsAsync(request);
+			SelectionMode = false;
 			Snackbar.Add("Items deleted", Severity.Success);
 			await Refresh();
 		}
@@ -509,13 +540,22 @@
 	public async Task MoveSelected()
 	{
 		var moved = await DialogService.ShowMoveFolderItemsDialog(SelectedItems, FolderContent!.Self.Id, FolderContent!.CourseId);
-		if (moved) await Refresh();
+		if (moved)
+		{
+			SelectionMode = false;
+			await Refresh();
+		}
 	}
 
 	public async Task CopySelected()
 	{
 		var copied = await DialogService.ShowCopyFolderItemsDialog(SelectedItems, FolderContent!.Self.Id, FolderContent!.CourseId);
-		if (copied) await Refresh();
+		if (copied)
+		{
+			SelectionMode = false;
+			await Refresh();
+		}
+		
 	}
 
 
@@ -574,12 +614,6 @@
 		await StorageService.DownloadFile(file.Id, file.Name);
 	}
 
-	public async Task OpenFolder(FolderItem folder)
-	{
-		await LoadFolderContent(folder.Id);
-		BreadCrumbs.Add(FolderContent!.Self);
-		SelectedItems.Clear();
-	}
 
 	private async Task OnRowClick(TableRowClickEventArgs<FolderContentItem> tableClick)
 	{
@@ -594,6 +628,12 @@
 	public string RowStyleFunc(FolderContentItem item, int rowNumber)
 	{
 		if (item is FolderItem) return "cursor: pointer;";
+		return string.Empty;
+	}
+
+	public string RowClassFunc(FolderContentItem item, int rowNumber)
+	{
+		if (SelectedItems.Contains(item)) return "row-colored row-modified";
 		return string.Empty;
 	}
 
@@ -620,4 +660,10 @@
 			Refresh().AndForget();
 		}
 	}
+
+	public record struct FolderSelectedEventArgs
+	(
+		FolderItem Folder,
+		IReadOnlyCollection<FolderItem> Breadcrumbs
+	);
 }

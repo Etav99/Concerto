@@ -27,6 +27,12 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "concerto/app",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "https://localhost:7001;http://localhost:7000",
+      "dotnetRunMessages": true,
+      "hotReloadEnabled": true,
+      "hotReloadProfile" : "aspnetcore",
+      "commandLineArgs": "watch run",
       "environmentVariables": {
         "CONCERTO_STORAGE_PATH": "storage/",
         "ASPNETCORE_ENVIRONMENT": "Development",
@@ -42,11 +48,7 @@
         "SERVER_CLIENT_SECRET": "qJjsnzN3zDIYDuDtW0elhLrMPALh2EwZ",
         "CONCERTO_FILE_SIZE_LIMIT_MB": "102400",
         "CONCERTO_MAX_ALLOWED_FILES": "1000"
-      },
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "applicationUrl": "https://localhost:7001;http://localhost:7000",
-      "dotnetRunMessages": true,
-      "hotReloadEnabled": true
+      }
     },
     "Docker": {
       "commandName": "Docker",

@@ -10,17 +10,20 @@
 
 <MudDialog>
 	<DialogContent>
-		<MudStack Style="width: 100%">
-			<MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+		<MudStack Style="width: 100%" Spacing="0">
+			<MudFileUpload Style="overflow: auto;" T="IReadOnlyList<IBrowserFile>" FilesChanged="OnInputFileChanged" MaximumFileCount="1000"
+						   Hidden="false" Class="@DragClass" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
 						   @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
 				<ButtonTemplate>
-					<MudPaper Height="300px" Outlined="true" Class="@DragClass">
-						<MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
+					<div style="height: 200px" >
+						<MudText Style="" Typo="Typo.h6">
+							Click here or drag files
+						</MudText>
 						@foreach (var file in _fileNames)
 						{
-							<MudChip Color="Color.Dark" Text="@file" />
+							<MudChip Class="" Color="Color.Dark" Text="@file" />
 						}
-					</MudPaper>
+					</div>
 				</ButtonTemplate>
 			</MudFileUpload>
 		</MudStack>
@@ -41,15 +44,15 @@
 	[Parameter]
 	public long FolderId { get; set; }
 
-	private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+	private static string DefaultDragClass = "flex-1 relative rounded-lg border-4 cursor-pointer border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
 	private string DragClass = DefaultDragClass;
 	private List<string> _fileNames = new();
 	private IReadOnlyList<IBrowserFile> _files = new List<IBrowserFile>();
 
-	private void OnInputFileChanged(InputFileChangeEventArgs e)
+	private void OnInputFileChanged(IReadOnlyList<IBrowserFile> files)
 	{
 		ClearDragClass();
-		_files = e.GetMultipleFiles();
+		_files = files;
 		_fileNames = _files.Select(f => f.Name).ToList();
 	}
 

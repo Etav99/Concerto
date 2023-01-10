@@ -11,16 +11,15 @@
 
 @if (Loading)
 {
-	<LoadingIndicator Color="Color.Primary" Size="Size.Large"/>
+	<LoadingIndicator Color="Color.Primary" Size="Size.Large" />
 }
 else
 {
 	<MudStack Reverse="true" Class="flex-grow-1 pa-4" Justify="Justify.FlexStart" Style="height: calc(100% - 4px); overflow: auto; width: 100%;" id="messagesContainer">
 
-		<MudFab Size="Size.Medium" Style="position: absolute" Color="Color.Default" StartIcon="@Icons.Material.Filled.Refresh" OnClick="async () => {Posts = null; await LoadMorePosts();}"/>
-
 		@if (_createPostRequest is null)
 		{
+			<MudFab Size="Size.Medium" Class="z-20" Style="position: absolute" Color="Color.Default" StartIcon="@Icons.Material.Filled.Refresh" OnClick="async () => {Posts = null; await LoadMorePosts();}" />
 			<MudPaper Elevation="0" Outlined="true" Class="ml-16">
 				<MudButton Style="width: 100%;" Size="Size.Large" Class="flex-shrink-0" StartIcon="@Icons.Filled.PostAdd" OnClick="CreatePost">Create post</MudButton>
 			</MudPaper>
@@ -30,8 +29,8 @@ else
 			<MudPaper Class="pa-2 mt-2" Elevation="0" Outlined="true">
 				<MudForm @ref="_createPostForm" @bind-IsValid="@_createPostRequestValid">
 					<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SendPost()" Disabled="!_createPostRequestValid" Color="Color.Primary">Create post</MudButton>
-					<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error" >Cancel</MudButton>
-					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined"/>
+					<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error">Cancel</MudButton>
+					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
 					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 				</MudForm>
 
@@ -62,20 +61,20 @@ else
 								<MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Baseline">
 									<MudAvatar Class="" Size="Size.Small">@post.Author.Initials</MudAvatar>
 									<MudText Typo="Typo.caption">@($"{post.Author.FullName} posted on {post.CreatedAt.ToLocalTime()}{(post.Edited ? " (Edited)" : "")}")</MudText>
+									</MudStack>
+									<MudText Typo="Typo.h6">@post.Title</MudText>
 								</MudStack>
-								<MudText Typo="Typo.h6">@post.Title</MudText>
-							</MudStack>
 
-							<MudMenu Dense="true" Class="align-self-start">
-								<ActivatorContent>
-									<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
-								</ActivatorContent>
-								<ChildContent>
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" OnClick="() => EditPost(post)" Disabled=@(!post.CanEdit)>Edit</MudMenuItemW>
-									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeletePost(post)" Disabled=@(!post.CanDelete)>Delete</MudMenuItemW>
-								</ChildContent>
-							</MudMenu>
-						</MudStack>
+								<MudMenu Dense="true" Class="align-self-start">
+									<ActivatorContent>
+										<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+									</ActivatorContent>
+									<ChildContent>
+										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" OnTouch="() => EditPost(post)" OnClick="() => EditPost(post)" Disabled=@(!post.CanEdit)>Edit</MudMenuItemW>
+										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnTouch="async () => await DeletePost(post)" OnClick="async () => await DeletePost(post)" Disabled=@(!post.CanDelete)>Delete</MudMenuItemW>
+									</ChildContent>
+								</MudMenu>
+							</MudStack>
 
 						@*Post content*@						<MudPaper Elevation="0" Class="">
 							<MudText Style="white-space: pre-wrap" Typo="Typo.body1">@post.Content</MudText>
@@ -104,13 +103,13 @@ else
 					}
 					@*Comments*@					@foreach (var comment in post.Comments)
 					{
-@*Comment*@						@if (_editCommentRequest is not null && _editCommentRequest.CommentId == comment.Id)
+						@*Comment*@						@if (_editCommentRequest is not null && _editCommentRequest.CommentId == comment.Id)
 						{
 							<MudPaper Class="pa-2 mt-2" Elevation="0" Outlined="true">
 								<MudForm @ref="_editCommentForm" @bind-IsValid="@_editCommentRequestValid">
 									<MudButton StartIcon="@Icons.Filled.Send" OnClick="async () => await SaveComment()" Disabled="!_editCommentRequestValid" Color="Color.Primary">Send comment</MudButton>
 									<MudButton StartIcon="@Icons.Filled.Cancel" OnClick="CancelEditComment" Color="Color.Error">Cancel</MudButton>
-									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3"/>
+									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3" />
 								</MudForm>
 							</MudPaper>
 						}
@@ -121,21 +120,21 @@ else
 									<MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Baseline">
 										<MudAvatar Class="" Size="Size.Small">@comment.Author.Initials</MudAvatar>
 										<MudText Typo="Typo.caption">@($"{comment.Author.FullName} commented on {comment.CreatedAt.ToLocalTime()}{(comment.Edited ? " (Edited)" : "")}")</MudText>
+										</MudStack>
+										<MudText Style="white-space: pre-wrap" Class="mt-1" Typo="Typo.body2">@comment.Content</MudText>
 									</MudStack>
-									<MudText Style="white-space: pre-wrap" Class="mt-1" Typo="Typo.body2">@comment.Content</MudText>
-								</MudStack>
 
 
-								<MudMenu Dense="true" Class="align-self-start">
-									<ActivatorContent>
-										<MudIconButton Size="Size.Small" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
-									</ActivatorContent>
-									<ChildContent>
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" OnClick="() => EditComment(comment, post.Id)" Disabled=@(!comment.CanEdit)>Edit</MudMenuItemW>
-										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteComment(comment)" Disabled=@(!comment.CanDelete)>Delete</MudMenuItemW>
-									</ChildContent>
-								</MudMenu>
-							</MudPaper>
+									<MudMenu Dense="true" Class="align-self-start">
+										<ActivatorContent>
+											<MudIconButton Size="Size.Small" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />
+										</ActivatorContent>
+										<ChildContent>
+											<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" OnTouch="() => EditComment(comment, post.Id)" OnClick="() => EditComment(comment, post.Id)" Disabled=@(!comment.CanEdit)>Edit</MudMenuItemW>
+											<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnTouch="() => EditComment(comment, post.Id)" OnClick="async () => await DeleteComment(comment)" Disabled=@(!comment.CanDelete)>Delete</MudMenuItemW>
+										</ChildContent>
+									</MudMenu>
+								</MudPaper>
 						}
 					}
 

@@ -5,7 +5,6 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject IStorageService StorageService
-@inject ICourseService CourseService
 
 <MudDialog>
 	<TitleContent>
@@ -25,7 +24,16 @@
 				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
 				<FolderTypePicker @bind-Value="_request.Type"></FolderTypePicker>
 				<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType"/>
-				<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers"/>
+
+				<MudPaper Elevation="0" Outlined="true" Class="d-flex flex-column" Style="overflow: auto;">
+					<MudText Class="ml-4 align-self-start"> User specific permissions
+					<MudTooltip Style="vertical-align: middle;" Class="align-self-start" Text="Those settings will override folder permissions for specified users" Arrow="true">
+						<MudIcon Class="mt d-inline-block" Icon="@Icons.Material.Filled.Info"/>
+					</MudTooltip>
+					</MudText>
+					<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers"
+											Style="min-heigh: 400px; max-height:calc(100vh - 450px);" />
+				</MudPaper>
 			</MudStack>
 		}
 	</DialogContent>
