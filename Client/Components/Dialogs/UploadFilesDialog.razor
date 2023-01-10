@@ -16,7 +16,7 @@
 						   @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
 				<ButtonTemplate>
 					<div style="height: 200px" >
-						<MudText Style="" Typo="Typo.h6">
+						<MudText Style="position: sticky" Typo="Typo.h6">
 							Click here or drag files
 						</MudText>
 						@foreach (var file in _fileNames)

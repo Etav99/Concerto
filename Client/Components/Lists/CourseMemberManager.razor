@@ -3,12 +3,13 @@
 @using Concerto.Client.Services
 @using Concerto.Client.Components.Input
 @inject IUserService UserService
+@inherits MudComponentBase
 
 	<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
 			  RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
 			  RowsPerPage="25" 
-			  SortLabel="Sort By" Dense="true" Hover="true"  Outlined="true" FixedFooter="true" FixedHeader="true" 
-			  Height="calc(100% - 64px - 52px)" Class="" Style="height: calc(100% - 58px - 62px - 36px - 42px); min-height: 450px;">
+			  SortLabel="Sort By" Dense="true" Hover="true"  Outlined="true" FixedFooter="true" FixedHeader="true"
+			  Height="100%" Class="@Class" Style="@TableStyle">
 
 		<ToolBarContent>
 			<MudText Typo="Typo.subtitle1">Users</MudText>
@@ -127,7 +128,7 @@
 		</FooterContent>
 
 		<PagerContent>
-			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
+			<MudTablePager Style="" Class=""  PageSizeOptions="new[] { 25, 50, 100 }"/>
 		</PagerContent>
 
 	</MudTable>
@@ -152,6 +153,10 @@
 
 	[Parameter]
 	public Dictionary<long, User> Users { get; set; } = null!;
+
+	string TableStyle => LayoutState.Xs
+	? $"display:grid; grid-template-rows: min-content min-content 1fr min-content; {Style}"
+	: $"display:grid; grid-template-rows: min-content 1fr min-content; {Style}";
 
 
 	Size Size => LayoutState.Xs ? Size.Small : Size.Medium;

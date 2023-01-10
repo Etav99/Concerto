@@ -13,8 +13,7 @@
 }
 else
 {
-	<MudStack Spacing="4" Class="pa-4" Style="height: 100%; overflow: auto">
-
+	<div style="display: grid;grid-row-gap: 2px; grid-template-rows: min-content min-content min-content 1fr; height: 100%; overflow: auto">
 		<MudStack Row="true" Style="background-color: var(--mud-palette-default)" Justify="Justify.SpaceBetween">
 			<MudButtonGroup OverrideStyles="false">
 				<MudButton OnClick="Discard" Disabled="!Changed" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Restore" Color="Color.Error">Discard</MudButton>
@@ -26,22 +25,25 @@ else
 		</MudStack>
 
 
-		<MudPaper Class="d-flex align-center pa-4" Elevation="0" Outlined="true">
-			<MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Person" Title="Role"/>
-			<MudText>Your role in this course: @CourseSettings?.CurrentUserRole.ToDisplayString()</MudText>
+		<MudPaper Class="d-flex align-center pa-2" Elevation="0" Outlined="true">
+			<MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Person" Title="Role" />
+			<MudText>Your role: @CourseSettings?.CurrentUserRole.ToDisplayString()</MudText>
 		</MudPaper>
+
 		<MudPaper Elevation="0">
 			<MudForm @ref="_courseNameForm" @bind-IsValid="@_courseNameValid">
-				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Title" Immediate="true" Variant="Variant.Outlined" Validation="new Func<string, string?>(Validation.NotEmpty)" @bind-Value="Request.Name" T="string" Label="Course name"></MudTextField>
+				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Title" Immediate="true" Variant="Variant.Outlined"
+						  Validation="new Func<string, string?>(Validation.NotEmpty)" @bind-Value="Request.Name" T="string" Label="Course name"
+						  Margin="Margin.Dense" />
 			</MudForm>
 		</MudPaper>
 
 		<CourseMemberManager SelectedCourseUsers="Request.Members" SelectedCourseUsersChanged="() => StateHasChanged()"
-		                     ExistingCourseUsers="CurrentMembers"
-		                     AvailableCourseUsers="AvailableMembers"
-		                     Users="Users"/>
+						 ExistingCourseUsers="CurrentMembers"
+						 AvailableCourseUsers="AvailableMembers"
+						 Users="Users" Style=" overflow: auto" />
+	</div>
 
-	</MudStack>
 }
 
 

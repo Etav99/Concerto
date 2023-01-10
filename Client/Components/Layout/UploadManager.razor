@@ -13,12 +13,10 @@
 
 @if (_isOpen)
 {
-	<div @onclick="ToggleOpen" style="position: fixed; top:0; left: 0; height: 100vh; width: 100vw;" class="z-max">
-		<div @onclick:stopPropagation="true" @onclick:preventDefault="true"
-			 @ontouchstart:stopPropagation="true" @ontouchstart:preventDefault="true"
-			 @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
+	<div @onclick="ToggleOpen" style="cursor: pointer; position: fixed; top:0; left: 0; height: 100vh; width: 100vw;" class="z-max">
+		<div @onclick:stopPropagation="true" @ontouchstart:stopPropagation="true" @ontouchend:stopPropagation="true" style="cursor: auto;">
 				<MudTable Items="_items" Context="item" Dense="true" Hover="true" Outlined="true" FixedHeader="true" RowClass=""
-					  Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 0fr 1fr;" Height="100%">
+					  Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 1fr;" Height="100%">
 
 					<ToolBarContent>
 						<MudText Typo="Typo.subtitle2" Class="pr-4">@(_items.Any() ? "Uploads" : "No uploads")</MudText>
