@@ -116,7 +116,7 @@
 	{
 		var parameters = new DialogParameters { ["CourseId"] = CourseId };
 		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
-		if (result.Cancelled) return;
+		if (result.Canceled) return;
 		await Initialize();
 	}
 

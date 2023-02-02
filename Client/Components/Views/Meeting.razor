@@ -1,7 +1,8 @@
 ﻿@using System.Web
-@inject IJSRuntime JsRuntime
+@inject IJSRuntime JS
 
 <MudPaper id="jitsi" Class="flex-grow-1 pa-2" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true"/>
+
 
 @code {
 
@@ -11,14 +12,45 @@
 	[Parameter]
 	public Guid? Guid { get; set; }
 
+	// private DotNetObjectReference<Meeting>? _dotNetObjectReference;
+	// private IJSObjectReference? mediaRecorder;
+
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender && MeetingName != null && Guid != null)
 		{
 			var guid = Guid.ToString()!.Replace("-", string.Empty);
 			var name = HttpUtility.UrlPathEncode($"Concerto/{guid}");
-			await JsRuntime.InvokeAsync<string>("startMeeting", "jitsi", name);
+			await JS.InvokeAsync<string>("startMeeting", "jitsi", name);
 		}
 	}
+
+	// public async Task StartRecording()
+	// {
+	// 	_dotNetObjectReference ??= DotNetObjectReference.Create(this);
+	// 	mediaRecorder = await JS.InvokeAsync<IJSObjectReference>("startRecording", (object)_dotNetObjectReference, 100);
+	// }
+	// 
+	// public async Task StopRecording()
+	// {
+	// 	if (mediaRecorder != null) await mediaRecorder.InvokeVoidAsync("stop");
+	// }
+	// 
+	// [JSInvokable]
+	// public async Task ProcessRecordingChunk(byte[] chunk)
+	// {
+	// 	var s = chunk;
+	// 
+	// }
+	// 
+	// public async ValueTask DisposeAsync()
+	// {
+	// 	if (mediaRecorder != null)
+	// 	{
+	// 		await mediaRecorder.InvokeVoidAsync("stop");
+	// 		await mediaRecorder.DisposeAsync();
+	// 	}
+	// 	_dotNetObjectReference?.Dispose();
+	// }
 
 }

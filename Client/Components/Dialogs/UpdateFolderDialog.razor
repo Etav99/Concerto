@@ -5,6 +5,7 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject IStorageService StorageService
+@inherits DialogAutoFullscreen
 
 <MudDialog>
 	<TitleContent>
@@ -45,10 +46,6 @@
 
 
 @code {
-
-	[CascadingParameter]
-	MudDialogInstance Dialog { get; set; } = null!;
-
 	[Parameter]
 	public long EditedFolderId { get; set; }
 

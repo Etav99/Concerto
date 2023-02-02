@@ -19,7 +19,7 @@
 					<MudCheckBox @bind-Checked="ToAnotherCourse">To another course</MudCheckBox>
 					@if (ToAnotherCourse)
 					{
-						<MudIcon Icon="@Icons.Filled.ArrowRight"/>
+						<MudIcon Icon="@Icons.Material.Filled.ArrowRight"/>
 						<MudText>@_selectedCourse?.Name</MudText>
 						<MudButton Color="Color.Info" OnClick="ChooseCourse">Change</MudButton>
 					}
@@ -139,7 +139,7 @@
 		StateHasChanged();
 	}
 
-	private async Task OnFolderChanged(FileManager.FolderSelectedEventArgs args)
+	private void OnFolderChanged(FileManager.FolderSelectedEventArgs args)
 	{
 		var folder = args.Folder;
 		_destinationFolderId = folder.Id;

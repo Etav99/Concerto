@@ -181,7 +181,7 @@ public static class FolderContentItemTypeExtensions
 				_ when ImageExtensions.Contains(extension) => Icons.Custom.FileFormats.FileImage,
 				_ when VideoExtensions.Contains(extension) => Icons.Custom.FileFormats.FileVideo,
 				_ when MusicSheetExtensions.Contains(extension) => Icons.Custom.FileFormats.FileMusic,
-				_ => Icons.Filled.InsertDriveFile
+				_ => Icons.Material.Filled.InsertDriveFile
 			};
 		}
 
@@ -192,13 +192,13 @@ public static class FolderContentItemTypeExtensions
 	{
 		return type switch
 		{
-			FolderType.CourseRoot => Icons.Filled.Home,
-			FolderType.Sheets => Icons.Filled.MusicNote,
-			FolderType.Recordings => Icons.Filled.VideoCameraFront,
-			FolderType.Video => Icons.Filled.VideoLibrary,
-			FolderType.Audio => Icons.Filled.LibraryMusic,
-			FolderType.Documents => Icons.Filled.LibraryBooks,
-			FolderType.Other => Icons.Filled.Workspaces,
+			FolderType.CourseRoot => Icons.Material.Filled.Home,
+			FolderType.Sheets => Icons.Material.Filled.MusicNote,
+			FolderType.Recordings => Icons.Material.Filled.VideoCameraFront,
+			FolderType.Video => Icons.Material.Filled.VideoLibrary,
+			FolderType.Audio => Icons.Material.Filled.LibraryMusic,
+			FolderType.Documents => Icons.Material.Filled.LibraryBooks,
+			FolderType.Other => Icons.Material.Filled.Workspaces,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
 		};
 	}

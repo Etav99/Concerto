@@ -1,6 +1,6 @@
 ﻿@inherits MudMenuItem
 
-<div @onclick:stopPropagation="true" @onclick:preventDefault="true" @ontouchend:stopPropagation="true" @ontouchend:preventDefault="true">
+<div ontouchend="event.stopPropagation();" ontouchstart="event.stopPropagation();">
 	<MudListItem @attributes="UserAttributes" @onclick="OnClickHandler" @ontouchend="OnTouchHandler"  Disabled="@Disabled" Class="@Class" Style="@Style" Icon="@Icon" IconColor="@IconColor" IconSize="@IconSize">
 		@ChildContent
 	</MudListItem>

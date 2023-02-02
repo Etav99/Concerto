@@ -10,8 +10,10 @@
 
 <MudDialog Class="" Style="max-height: 100vh; overflow:auto;" ContentStyle="" ClassContent="d-flex flex-column">
 	<DialogContent>
-		<MudTextField Variant="Variant.Outlined" Class="mb-2" @bind-Value="_courseName" T="string" Label="Course name"></MudTextField>
-		<CourseMemberPicker @bind-SelectedUsers="_members" Style="@(!IsFullScreen ? "max-height:calc(100vh - 210px);" : "height:calc(100vh - 215px);")" />
+		<MudContainer Style="min-height: 300px; min-width: 550px; overflow-y: scroll">
+			<MudTextField Variant="Variant.Outlined" Class="mb-2" @bind-Value="_courseName" T="string" Label="Course name" Margin="Margin.Dense"></MudTextField>
+			<CourseMemberPicker @bind-SelectedUsers="_members" Style="@PickerStyle" />
+        </MudContainer>
 	</DialogContent>
 	<DialogActions>
 		<MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
@@ -24,6 +26,10 @@
 	private string? _courseName;
 
 	private HashSet<User> _members = new(new UserIdEqualityComparer());
+
+	string PickerHeight => !IsFullScreen ? "max-height:calc(100vh - 210px);" : "height:calc(100vh - 215px);";
+	string PickerStyle => $"{PickerHeight} min-height: 300px;";
+
 
 
 	private async Task Submit()

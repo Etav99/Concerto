@@ -32,7 +32,7 @@ else
 
 		<MudPaper Elevation="0">
 			<MudForm @ref="_courseNameForm" @bind-IsValid="@_courseNameValid">
-				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Title" Immediate="true" Variant="Variant.Outlined"
+				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Title" Immediate="true" Variant="Variant.Outlined"
 						  Validation="new Func<string, string?>(Validation.NotEmpty)" @bind-Value="Request.Name" T="string" Label="Course name"
 						  Margin="Margin.Dense" />
 			</MudForm>
@@ -41,7 +41,7 @@ else
 		<CourseMemberManager SelectedCourseUsers="Request.Members" SelectedCourseUsersChanged="() => StateHasChanged()"
 						 ExistingCourseUsers="CurrentMembers"
 						 AvailableCourseUsers="AvailableMembers"
-						 Users="Users" Style=" overflow: auto" />
+						 Users="Users" Style=" overflow: auto; min-height: 400px;" />
 	</div>
 
 }

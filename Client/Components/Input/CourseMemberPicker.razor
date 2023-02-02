@@ -23,14 +23,16 @@
 			{
 				<col style="width: 20px" />
 				<col style="min-width: 100px" />
+				<col style="max-width: 32px;" />
+				<col style="min-width: 100px;" />
+				<col style="min-width: 100px;" />
 			}
 			else
 			{
-				<col style="padding-top: 10px" />
+			<col />
+			<col />
+			<col />
 			}
-			<col style="max-width: 32px;" />
-			<col style="min-width: 100px;" />
-			<col style="min-width: 100px;" />
 		
 
 		</ColGroup>
@@ -45,6 +47,9 @@
 			<MudTh>
 				<MudTableSortLabel SortBy="new Func<User, object>(x => x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
 			</MudTh>
+			<MudTh>
+				<MudTableSortLabel SortBy="new Func<User, object>(x => x.Username)">Username</MudTableSortLabel>
+			</MudTh>
 		</HeaderContent>
 
 		<RowTemplate>
@@ -54,6 +59,7 @@
 			}
 			<MudTd DataLabel="Name">@context.FirstName</MudTd>
 			<MudTd DataLabel="Surname">@context.LastName</MudTd>
+			<MudTd DataLabel="Username">@context.Username</MudTd>
 		</RowTemplate>
 
 		<FooterContent>

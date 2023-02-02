@@ -31,9 +31,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Client\Concerto.Client.csproj" />
-		<ProjectReference Include="..\Shared\Concerto.Shared.csproj" />
+	  <ProjectReference Include="..\Client\Concerto.Client.csproj" />
+	  <ProjectReference Include="..\Shared\Concerto.Shared.csproj" />
 	</ItemGroup>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <Exec Command="docker-compose  -f &quot;C:\Users\etavp\source\repos\Concerto\docker-compose.yml&quot; -f &quot;C:\Users\etavp\source\repos\Concerto\compose\docker-compose.base.yml&quot; -f &quot;C:\Users\etavp\source\repos\Concerto\compose\docker-compose.base.override.yml&quot; -p dockercompose6821823662301229339 --ansi never stop concerto_server&#xD;&#xA;docker-compose  -f &quot;C:\Users\etavp\source\repos\Concerto\docker-compose.yml&quot; -f &quot;C:\Users\etavp\source\repos\Concerto\compose\docker-compose.base.yml&quot; -f &quot;C:\Users\etavp\source\repos\Concerto\compose\docker-compose.base.override.yml&quot; -p dockercompose6821823662301229339 --ansi never up -d --remove-orphans keycloak pgadmin postgres" />
+	</Target>
 
 
 </Project>

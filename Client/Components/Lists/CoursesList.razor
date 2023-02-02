@@ -91,7 +91,7 @@ else
 						@if (ManagementEnabled)
 						{
 							<AuthorizeView Roles="teacher" Context="auth">
-								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}
 

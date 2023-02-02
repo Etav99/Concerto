@@ -22,10 +22,10 @@
 						<MudText Typo="Typo.subtitle2" Class="pr-4">@(_items.Any() ? "Uploads" : "No uploads")</MudText>
 							<MudSpacer />
 						<MudIconButton Disabled="@(ActiveUploadsNumber == _items.Count)" @ontouchend="() => StorageService.ClearInactiveUploads()" OnClick="(() => StorageService.ClearInactiveUploads())"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.ClearAll" Color="Color.Default" Size="Size.Small"
+									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Material.Filled.ClearAll" Color="Color.Default" Size="Size.Small"
 									   Title="Clear history" />
 								<MudIconButton OnClick="ToggleOpen" @ontouchend="() => StorageService.ClearInactiveUploads()"
-									   Icon="@Icons.Filled.Minimize" DisableElevation="true" Variant="Variant.Filled" Size="Size.Small" Color="Color.Default"
+									   Icon="@Icons.Material.Filled.Minimize" DisableElevation="true" Variant="Variant.Filled" Size="Size.Small" Color="Color.Default"
 									   Title="Minimize" />
 					</ToolBarContent>
 					
@@ -41,22 +41,22 @@
 							<MudTd Class="px-2">
 							@if (item.IsInProgress)
 							{
-								<MudIcon Size="Size.Small" Icon="@(item.Progress > 0 ? Icons.Filled.Upload : Icons.Filled.HourglassTop)" Color="Color.Info" />
+								<MudIcon Size="Size.Small" Icon="@(item.Progress > 0 ? Icons.Material.Filled.Upload : Icons.Material.Filled.HourglassTop)" Color="Color.Info" />
 							}
 							else if (item.IsComplete)
 							{
-								<MudIcon Size="Size.Small" Icon="@Icons.Filled.CheckCircle" Color="Color.Success" />
+								<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
 							}
 							else if (item.IsCancelled)
 							{
 								<MudTooltip Inline="false" Class="z-max" Text="Cancelled">
-									<MudIcon Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Default" />
+									<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Cancel" Color="Color.Default" />
 								</MudTooltip>
 							}
 							else if (item.IsError)
 							{
 								<MudTooltip Class="z-max break-word" Text="@($"Error code: {item.Result?.ErrorCode}\n\nError:\n{item.Result?.ErrorMessage}")">
-									<MudIcon Size="Size.Small" Icon="@Icons.Filled.Error" Color="Color.Error" />
+									<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
 								</MudTooltip>
 							}
 						</MudTd>
@@ -83,12 +83,12 @@
 							@if (item.IsInProgress)
 							{
 								<MudIconButton title="Cancel" OnClick="() => CancelUpload(item)"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.Cancel" Size="Size.Small" />
+									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" />
 							}
 							else
 							{
 								<MudIconButton title="Clear" OnClick="() => StorageService.ClearIfInactive(item)"
-									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Filled.Clear" Size="Size.Small" />
+									   DisableElevation="true" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Clear" Size="Size.Small" />
 							}
 						</MudTd>
 					</RowTemplate>
@@ -109,8 +109,6 @@
 	public int ActiveUploadsNumber = 0;
 
 	Size IconSize => LayoutState.Xs ? Size.Medium : Size.Large;
-
-	MudMenu? _menu;
 
 	public void ToggleOpen()
 	{

@@ -32,9 +32,13 @@ else
 			</HeaderContent>
 
 			<ColGroup>
-				<col/>
-				<col style="min-width: 210px"/>
 				<col />
+				@if (LayoutState.MdAndUp)
+				{
+					<col style="min-width: 210px" />
+					<col />
+				}
+
 			</ColGroup>
 
 
