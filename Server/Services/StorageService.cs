@@ -24,10 +24,10 @@ public class StorageService
     }
 
     // Create
-    internal async Task<bool> CreateFolder(Dto.CreateFolderRequest request, long ownerId)
+    internal async Task<long?> CreateFolder(Dto.CreateFolderRequest request, long ownerId)
     {
         var parent = await _context.Folders.FindAsync(request.ParentId);
-        if (parent == null) return false;
+        if (parent == null) return null;
 
         var rootParentOrNotInheriting = parent.IsCourseRoot || !request.CoursePermission.Inherited;
 
@@ -51,7 +51,7 @@ public class StorageService
         await InheritPermissions(parent, newFolder, false);
         await _context.SaveChangesAsync();
         
-        return true;
+        return newFolder.Id;
     }
 
     // Read
@@ -67,7 +67,7 @@ public class StorageService
         foreach (var subFolder in folder.SubFolders)
             if (isAdmin)
             {
-                subFolders.Add(subFolder.ToFolderItem(true, true, true));
+                subFolders.Add(subFolder.ToFolderItem(true, true, await CanDeleteFolder(userId, subFolder.Id)));
             }
             else
             {
@@ -180,8 +180,8 @@ public class StorageService
         var folder = await _context.Folders.FindAsync(folderId);
         if (folder is null) return false;
 
-        // If root then only admin or supervisor can edit
-        if (folder.IsCourseRoot)
+        // If permanent then only admin or supervisor can edit
+        if (folder.IsPermanent)
         {
             var courseUserRole = (await _context.CourseUsers.FindAsync(folder.CourseId, userId))?.Role;
             return courseUserRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
@@ -200,7 +200,7 @@ public class StorageService
     {
         var folder = await _context.Folders.FindAsync(folderId);
         if (folder is null) return false;
-        if (folder.IsCourseRoot) return false;
+        if (folder.IsPermanent) return false;
 
         // True if folder owner
         if (folder.OwnerId == userId) return true;
@@ -470,6 +470,7 @@ public class StorageService
                 OwnerId = userId,
                 DisplayName = fileUploadResult.DisplayFileName,
                 Extension = fileUploadResult.Extension,
+                Size = lastChunk.FileSize,
                 StorageName = fileUploadResult.StorageFileName,
                 FolderId = folderId
             };

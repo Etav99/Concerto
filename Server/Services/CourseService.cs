@@ -1,14 +1,7 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
-using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
-using Course = Concerto.Shared.Models.Dto.Course;
-using CourseUser = Concerto.Server.Data.Models.CourseUser;
-using CourseUserRole = Concerto.Server.Data.Models.CourseUserRole;
-using FolderPermission = Concerto.Server.Data.Models.FolderPermission;
-using FolderPermissionType = Concerto.Server.Data.Models.FolderPermissionType;
-using FolderType = Concerto.Server.Data.Models.FolderType;
-using User = Concerto.Shared.Models.Dto.User;
+using System.Collections.Immutable;
 
 namespace Concerto.Server.Services;
 
@@ -26,18 +19,8 @@ public class CourseService
 	}
 
 	// Create
-	public async Task<long> CreateCourse(CreateCourseRequest request, long userId)
+	public async Task<long> CreateCourse(Dto.CreateCourseRequest request, long userId)
 	{
-		var membersRoles = request.Members.ToDictionary(m => m.UserId, m => m.Role.ToEntity());
-		membersRoles.Add(userId, CourseUserRole.Admin);
-
-		var members = await _context.Users
-			.Where(u => membersRoles.Keys.Contains(u.Id))
-			.ToListAsync();
-
-		if (members.Count != membersRoles.Count)
-			return 0;
-
 		// Create course
 		var course = new Data.Models.Course
 		{
@@ -45,33 +28,39 @@ public class CourseService
 			Name = request.Name,
 			CreatedDate = DateTime.UtcNow
 		};
+		
+		// Create course users
+		var courseUsers = request.Members.Select(m => m.ToEntity()).ToList();
+		courseUsers.Add(new CourseUser(userId, CourseUserRole.Admin));
+
+		// Check if members are valid
+		var membersIds = courseUsers.Select(cu => cu.UserId).ToImmutableHashSet();
+		var members = await _context.Users
+			.Where(u => membersIds.Contains(u.Id))
+			.ToListAsync();
+		if (members.Count != courseUsers.Count)
+			return 0;
+
+
+		await using var transaction = _context.Database.BeginTransaction();
 
 		// Add members to course
-		var courseUsers = members.Select(member => new CourseUser
-				{
-					CourseId = course.Id, UserId = member.Id, Role = membersRoles[member.Id]
-				}
-			)
-			.ToList();
 		course.CourseUsers = courseUsers;
 
 		await _context.Courses.AddAsync(course);
 		await _context.SaveChangesAsync();
 
-		// Create course root folder, with default read permissions for course members
-		var rootFolder = new Folder
-		{
-			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
-			OwnerId = userId,
-			CourseId = course.Id,
-			Name = course.Name,
-			Type = FolderType.CourseRoot
-		};
+		var rootFolder = Folder.NewRoot(course.Id, userId);
+
 		await _context.Folders.AddAsync(rootFolder);
 		await _context.SaveChangesAsync();
 
 		course.RootFolderId = rootFolder.Id;
+		course.SessionsFolderId = rootFolder.SubFolders.Where(f => f.Type is FolderType.Sessions).Single().Id;
+		
 		await _context.SaveChangesAsync();
+
+		await transaction.CommitAsync();
 
 		return course.Id;
 	}
@@ -83,13 +72,13 @@ public class CourseService
 		return courseUser != null;
 	}
 
-	public async Task<Course?> GetCourse(long courseId, long userId, bool isAdmin = false)
+	public async Task<Dto.Course?> GetCourse(long courseId, long userId, bool isAdmin = false)
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		return course?.ToViewModel(isAdmin || await CanManageCourse(courseId, userId));
 	}
 
-	public async Task<CourseSettings?> GetCourseSettings(long courseId, long userId, bool isAdmin = false)
+	public async Task<Dto.CourseSettings?> GetCourseSettings(long courseId, long userId, bool isAdmin = false)
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		if (course == null)
@@ -111,7 +100,7 @@ public class CourseService
 		return course.ToSettingsViewModel(userId, courseRole.Value, courseRole == CourseUserRole.Admin);
 	}
 
-	internal async Task<IEnumerable<User>> GetCourseUsers(long courseId)
+	internal async Task<IEnumerable<Dto.User>> GetCourseUsers(long courseId)
 	{
 		return await _context.CourseUsers
 			.Where(cu => cu.CourseId == courseId)
@@ -120,7 +109,7 @@ public class CourseService
 			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<CourseListItem>> GetUserCoursesList(long userId)
+	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(long userId)
 	{
 		return await _context.CourseUsers
 			.Where(cu => cu.UserId == userId)
@@ -129,7 +118,7 @@ public class CourseService
 			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<CourseListItem>> GetAllCourses()
+	public async Task<IEnumerable<Dto.CourseListItem>> GetAllCourses()
 	{
 		return await _context.Courses
 			.Select(r => r.ToCourseListItem())
@@ -148,8 +137,8 @@ public class CourseService
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
 	}
-
-	public async Task<bool> UpdateCourse(UpdateCourseRequest request, long userId)
+	
+	public async Task<bool> UpdateCourse(Dto.UpdateCourseRequest request, long userId)
 	{
 		var course = await _context.Courses.FindAsync(request.CourseId);
 		if (course == null) return false;
@@ -204,13 +193,13 @@ public class CourseService
 		return true;
 	}
 
-	internal async Task<long> CloneCourse(CloneCourseRequest request, long userId)
+	internal async Task<long> CloneCourse(Dto.CloneCourseRequest request, long userId)
 	{
 		var course = await _context.Courses.FindAsync(request.CourseId);
 		if (course == null)
 			return 0;
 
-		var createCourseRequest = new CreateCourseRequest
+		var createCourseRequest = new Dto.CreateCourseRequest
 		{
 			Name = request.Name, Description = request.Description, Members = Enumerable.Empty<Dto.CourseUser>()
 		};

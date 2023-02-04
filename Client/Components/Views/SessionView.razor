@@ -22,11 +22,11 @@ else
 	         KeepPanelsAlive="true">
 
 		<MudTabPanel Text="Meeting">
-			<Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid"/>
+			<Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid" UploadFolderId="SelectedSession?.FolderId" />
 		</MudTabPanel>
 
 		<MudTabPanel Text="Course content">
-			<FileManager InitialFolderId="SelectedSession!.CourseRootFolderId!.Value"
+			<FileManager InitialFolderId="SelectedSession!.CourseRootFolderId"
 					 Class="flex-grow-1" Style="height: 100%;" Elevation="0" />
 		</MudTabPanel>
 

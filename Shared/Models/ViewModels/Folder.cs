@@ -45,9 +45,13 @@ public record FileItem(
 	long Id,
 	string Name,
 	string Extension,
+	long Size,
 	bool CanEdit,
 	bool CanDelete
-) : FolderContentItem(Id, Name, CanEdit, CanDelete);
+) : FolderContentItem(Id, Name, CanEdit, CanDelete)
+{
+	public string FullName => $"{Name}.{Extension}";
+}
 
 public record FolderSettings(
 	long Id,
@@ -60,7 +64,6 @@ public record FolderSettings(
 	IEnumerable<UserFolderPermission> UserPermissions,
 	IEnumerable<UserFolderPermission> ParentUserPermissions
 ) : EntityModel(Id);
-
 public record UserFolderPermission(User User, FolderPermission Permission)
 {
 	public User User { get; set; } = User;
@@ -92,6 +95,7 @@ public enum FolderPermissionType
 public enum FolderType
 {
 	CourseRoot,
+	Sessions,
 	Sheets,
 	Recordings,
 	Video,
@@ -107,6 +111,7 @@ public static class FolderTypeExtensions
 		return type switch
 		{
 			FolderType.CourseRoot => "Course Root",
+			FolderType.Sessions => "Sessions",
 			FolderType.Sheets => "Sheets",
 			FolderType.Recordings => "Recordings",
 			FolderType.Video => "Video",

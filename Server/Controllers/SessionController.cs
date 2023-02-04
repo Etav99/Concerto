@@ -27,11 +27,12 @@ public class SessionController : ControllerBase
 
 	[Authorize(Roles = "teacher")]
 	[HttpPost]
-	public async Task<ActionResult> CreateSession([FromBody] CreateSessionRequest request)
+	public async Task<ActionResult<long>> CreateSession([FromBody] CreateSessionRequest request)
 	{
 		if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
-
-		if (await _sessionService.CreateSession(request)) return Ok();
+		
+		var sessionId = await _sessionService.CreateSession(request, UserId);
+		if (sessionId is not null) return Ok(sessionId);
 		return BadRequest();
 	}
 

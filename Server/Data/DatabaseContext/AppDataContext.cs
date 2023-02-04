@@ -31,6 +31,12 @@ public class AppDataContext : DbContext
 			.HasForeignKey(c => c.RootFolderId);
 
 		modelBuilder.Entity<Course>()
+			.HasOne(c => c.SessionsFolder)
+			.WithMany()
+			.IsRequired(false)
+			.HasForeignKey(c => c.SessionsFolderId);
+
+		modelBuilder.Entity<Course>()
 			.HasMany(c => c.Posts)
 			.WithOne(c => c.Course)
 			.HasForeignKey(c => c.CourseId)

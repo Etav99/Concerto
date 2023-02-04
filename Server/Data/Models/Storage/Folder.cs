@@ -1,4 +1,5 @@
-﻿using Concerto.Shared.Models.Dto;
+﻿using Concerto.Client.Pages;
+using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.Models;
@@ -23,13 +24,41 @@ public class Folder : Entity
 
 	public FolderPermission CoursePermission { get; set; } = null!;
 	public virtual ICollection<UserFolderPermission> UserPermissions { get; set; } = null!;
+	
+	public bool IsCourseRoot => Type is FolderType.CourseRoot;
+	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
 
-	public bool IsCourseRoot => Type == FolderType.CourseRoot;
+	public static Folder NewRoot(long courseId, long ownerId)
+	{
+		// Create course sessions folder, with default read permissions for course members
+		var sessionsFolder = new Folder
+		{
+			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
+			OwnerId = ownerId,
+			CourseId = courseId,
+			Name = "Sessions",
+			Type = FolderType.Sessions
+		};
+
+		// Create course root folder, with default read permissions for course members
+		var rootFolder = new Folder
+		{
+			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
+			OwnerId = ownerId,
+			CourseId = courseId,
+			Name = "Root",
+			Type = FolderType.CourseRoot,
+			SubFolders = new List<Folder>{sessionsFolder}
+		};
+
+		return rootFolder;
+	}
 }
 
 public enum FolderType
 {
 	CourseRoot,
+	Sessions,
 	Sheets,
 	Recordings,
 	Video,
@@ -56,6 +85,7 @@ public static partial class ViewModelConversions
 		return type switch
 		{
 			FolderType.CourseRoot => Dto.FolderType.CourseRoot,
+			FolderType.Sessions => Dto.FolderType.Sessions,
 			FolderType.Sheets => Dto.FolderType.Sheets,
 			FolderType.Recordings => Dto.FolderType.Recordings,
 			FolderType.Video => Dto.FolderType.Video,

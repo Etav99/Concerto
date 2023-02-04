@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Concerto.Shared.Models.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.Models;
 
@@ -11,6 +12,24 @@ public class CourseUser
 	public long UserId { get; set; }
 	public User User { get; set; } = null!;
 	public CourseUserRole Role { get; set; }
+
+	public CourseUser() { }
+
+
+	public CourseUser(long userId, CourseUserRole role)
+	{
+		CourseId = Entity.NoId;
+		UserId = userId;
+		Role = role;
+	}
+	public CourseUser(long courseId, long userId, CourseUserRole role)
+	{
+		CourseId = courseId;
+		UserId = userId;
+		Role = role;
+	}
+
+
 }
 
 public enum CourseUserRole
@@ -22,9 +41,19 @@ public enum CourseUserRole
 
 public static partial class ViewModelConversions
 {
-	public static Dto.CourseUser ToViewModel(this CourseUser role)
+	public static Dto.CourseUser ToViewModel(this CourseUser courseUser)
 	{
-		return new Dto.CourseUser(role.UserId, role.Role.ToViewModel());
+		return new Dto.CourseUser(courseUser.UserId, courseUser.Role.ToViewModel());
+	}
+
+	public static CourseUser ToEntity(this Dto.CourseUser courseUser, long courseId = 0)
+	{
+		return new CourseUser
+		{
+			CourseId = courseId,
+			UserId = courseUser.UserId,
+			Role = courseUser.Role.ToEntity()
+		};
 	}
 
 	public static CourseUserRole ToEntity(this Dto.CourseUserRole role)

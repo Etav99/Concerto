@@ -1993,12 +1993,12 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body);
+        System.Threading.Tasks.Task<long> CreateSessionAsync(CreateSessionRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<long> CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
@@ -2076,7 +2076,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body)
+        public virtual System.Threading.Tasks.Task<long> CreateSessionAsync(CreateSessionRequest body)
         {
             return CreateSessionAsync(body, System.Threading.CancellationToken.None);
         }
@@ -2084,7 +2084,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="SessionException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<long> CreateSessionAsync(CreateSessionRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Session/CreateSession");
@@ -2100,6 +2100,7 @@ namespace Concerto.Client.Services
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2124,7 +2125,12 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            return;
+                            var objectResponse_ = await ReadObjectResponseAsync<long>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SessionException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
                         }
                         else
                         {
@@ -2672,12 +2678,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body);
+        System.Threading.Tasks.Task<long> CreateFolderAsync(CreateFolderRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<long> CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -2753,12 +2759,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -3110,7 +3116,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body)
+        public virtual System.Threading.Tasks.Task<long> CreateFolderAsync(CreateFolderRequest body)
         {
             return CreateFolderAsync(body, System.Threading.CancellationToken.None);
         }
@@ -3118,7 +3124,7 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<long> CreateFolderAsync(CreateFolderRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/CreateFolder");
@@ -3134,6 +3140,7 @@ namespace Concerto.Client.Services
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3158,7 +3165,12 @@ namespace Concerto.Client.Services
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            return;
+                            var objectResponse_ = await ReadObjectResponseAsync<long>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new StorageException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
                         }
                         else
                         {
@@ -3816,21 +3828,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body)
+        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token)
         {
-            return DownloadFileAsync(fileId, body, System.Threading.CancellationToken.None);
+            return DownloadFileAsync(fileId, token, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/DownloadFile?");
             if (fileId != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("fileId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(fileId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (token != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("token") + "=").Append(System.Uri.EscapeDataString(ConvertToString(token, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -3840,10 +3856,6 @@ namespace Concerto.Client.Services
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var json_ = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
-                    var content_ = new System.Net.Http.StringContent(json_);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-                    request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("GET");
 
                     PrepareRequest(client_, request_, urlBuilder_);

@@ -1,8 +1,76 @@
 ﻿@using System.Web
+@using Concerto.Client.Services;
+@using Concerto.Shared.Models.Dto;
 @inject IJSRuntime JS
+@inject IStorageService StorageService 
+@implements IDisposable
 
-<MudPaper id="jitsi" Class="flex-grow-1 pa-2" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true"/>
+<style>
+	.container {
+		height:100%;
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: min-content 1fr;
+		gap: 0px 0px;
+		grid-template-areas:
+			"buttons"
+			"meeting";
+	}
 
+	.buttons {
+		grid-area: buttons;
+	}
+
+	.meeting {
+		grid-area: meeting;
+	}
+</style>
+
+<div class="container pa-1">
+	<div class="buttons d-flex ">
+
+		<MudFileUpload T="IBrowserFile" FilesChanged="UploadRecording" Accept="video/*" Class="mt-0">
+			<ButtonTemplate>
+				<MudButton HtmlTag="label"
+						   Variant="Variant.Filled"
+						   Color="Color.Info"
+						   DisableElevation="true"
+						   StartIcon="@Icons.Material.Filled.CloudUpload"
+						   for="@context">
+					Upload recording
+				</MudButton>
+			</ButtonTemplate>
+		</MudFileUpload>
+
+		@if (_selectedAudioInputId is not null && audioInputs is not null)
+		{
+			@if (!isRecording)
+			{
+				<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
+					Start recording
+				</MudButton>
+			}
+			else
+			{
+				<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
+					Stop recording
+				</MudButton>
+			}
+
+			<div class="d-flex ">
+				<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
+				<select style="align-self: stretch; flex-shrink: 1;" @bind="_selectedAudioInputId">
+					@foreach (var input in audioInputs)
+					{
+						<option value="@input.Id">@input.Name</option>
+					}
+				</select>
+			</div>
+		}
+
+	</div>
+	<MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
+</div>
 
 @code {
 
@@ -10,10 +78,38 @@
 	public string? MeetingName { get; set; }
 
 	[Parameter]
+	public long? UploadFolderId { get; set; }
+
+	[Parameter]
 	public Guid? Guid { get; set; }
 
-	// private DotNetObjectReference<Meeting>? _dotNetObjectReference;
-	// private IJSObjectReference? mediaRecorder;
+	private (string Name, string Id)[]? audioInputs;
+
+	private string? _selectedAudioInputId;
+
+	bool isRecording = false;
+
+	private DotNetObjectReference<Meeting>? _dotNetObjectReference;
+	private IJSObjectReference? mediaRecorder;
+
+	class AudioDevices
+	{
+		public string test { get; set; }
+		public string[] Names { get; set; }
+		public string[] Ids { get; set; }
+	}
+
+	protected override void OnInitialized()
+	{
+		_dotNetObjectReference = DotNetObjectReference.Create(this);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		var audioDevices = await GetAudioInputs();
+		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
+		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : null;
+	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -25,32 +121,45 @@
 		}
 	}
 
-	// public async Task StartRecording()
-	// {
-	// 	_dotNetObjectReference ??= DotNetObjectReference.Create(this);
-	// 	mediaRecorder = await JS.InvokeAsync<IJSObjectReference>("startRecording", (object)_dotNetObjectReference, 100);
-	// }
-	// 
-	// public async Task StopRecording()
-	// {
-	// 	if (mediaRecorder != null) await mediaRecorder.InvokeVoidAsync("stop");
-	// }
-	// 
-	// [JSInvokable]
-	// public async Task ProcessRecordingChunk(byte[] chunk)
-	// {
-	// 	var s = chunk;
-	// 
-	// }
-	// 
-	// public async ValueTask DisposeAsync()
-	// {
-	// 	if (mediaRecorder != null)
-	// 	{
-	// 		await mediaRecorder.InvokeVoidAsync("stop");
-	// 		await mediaRecorder.DisposeAsync();
-	// 	}
-	// 	_dotNetObjectReference?.Dispose();
-	// }
+	public async Task StartRecording()
+	{
+		await JS.InvokeVoidAsync("startRecording", _dotNetObjectReference, _selectedAudioInputId, 500);
+	}
+
+	public async Task StopRecording()
+	{
+		await JS.InvokeVoidAsync("stopRecording", _dotNetObjectReference);
+	}
+
+	[JSInvokable]
+	public void RecordingStateChanged(bool state)
+	{
+		isRecording = state;
+		StateHasChanged();
+	}
+
+	public void UploadRecording(IBrowserFile recording)
+	{
+		if (UploadFolderId != null)
+		{
+			StorageService.QueueFilesToUpload(UploadFolderId.Value, new[] { recording });
+		}
+	}
+
+	private async Task<AudioDevices> GetAudioInputs()
+	{
+		return await JS.InvokeAsync<AudioDevices>("getAudioInputs", _dotNetObjectReference);
+	}
+
+	[JSInvokable]
+	public void SetAudioInputs(string[] names, string[] ids)
+	{
+		audioInputs = names.Zip(ids, (name, id) => (name, id)).ToArray();
+	}
+
+	public void Dispose()
+	{
+		_dotNetObjectReference?.Dispose();
+	}
 
 }

@@ -61,7 +61,8 @@ namespace Concerto.Server.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    RootFolderId = table.Column<long>(type: "bigint", nullable: true)
+                    RootFolderId = table.Column<long>(type: "bigint", nullable: true),
+                    SessionsFolderId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -169,6 +170,7 @@ namespace Concerto.Server.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
+                    FolderId = table.Column<long>(type: "bigint", nullable: false),
                     MeetingGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()")
                 },
                 constraints: table =>
@@ -178,6 +180,12 @@ namespace Concerto.Server.Migrations
                         name: "FK_Sessions_Courses_CourseId",
                         column: x => x.CourseId,
                         principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Sessions_Folders_FolderId",
+                        column: x => x.FolderId,
+                        principalTable: "Folders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -190,6 +198,7 @@ namespace Concerto.Server.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     FolderId = table.Column<long>(type: "bigint", nullable: false),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: false),
                     Extension = table.Column<string>(type: "text", nullable: false),
                     StorageName = table.Column<string>(type: "text", nullable: false)
@@ -247,6 +256,11 @@ namespace Concerto.Server.Migrations
                 column: "RootFolderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Courses_SessionsFolderId",
+                table: "Courses",
+                column: "SessionsFolderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CourseUsers_CourseId",
                 table: "CourseUsers",
                 column: "CourseId");
@@ -287,6 +301,11 @@ namespace Concerto.Server.Migrations
                 column: "CourseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_FolderId",
+                table: "Sessions",
+                column: "FolderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UploadedFiles_FolderId",
                 table: "UploadedFiles",
                 column: "FolderId");
@@ -321,6 +340,13 @@ namespace Concerto.Server.Migrations
                 column: "RootFolderId",
                 principalTable: "Folders",
                 principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Courses_Folders_SessionsFolderId",
+                table: "Courses",
+                column: "SessionsFolderId",
+                principalTable: "Folders",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -332,6 +358,10 @@ namespace Concerto.Server.Migrations
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Courses_Folders_RootFolderId",
+                table: "Courses");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Courses_Folders_SessionsFolderId",
                 table: "Courses");
 
             migrationBuilder.DropTable(

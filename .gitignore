@@ -4,3 +4,4 @@ bin
 .git
 compose
 keycloak
+Client/NPM/node_modules

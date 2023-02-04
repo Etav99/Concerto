@@ -187,6 +187,9 @@
 						Type
 					</MudTableSortLabel>
 				</MudTh>
+				<MudTh>
+						Size
+				</MudTh>
 				<MudTh></MudTh>
 			</HeaderContent>
 
@@ -215,6 +218,7 @@
 							<MudText Typo="Typo.body2">@folder.Type.ToDisplayString()</MudText>
 						</MudStack>
 					</MudTd>
+					<MudTd DataLabel="Size"></MudTd>
 					<MudTd Style="text-align: right">
 						<MudMenu Dense="true">
 							<ActivatorContent>
@@ -294,6 +298,9 @@
 							</MudStack>
 						</MudStack>
 					</MudTd>
+					<MudTd DataLabel="Size">
+						<MudText Typo="Typo.body2">@file.Size.ToFileSizeString()</MudText>
+					</MudTd>
 					<MudTd Style="text-align: right">
 						@if(!ChooseFolderMode)
 						{
@@ -363,6 +370,9 @@
 
 	[Parameter]
 	public bool ChooseFolderMode { get; set; } = false;
+
+	[Parameter]
+	public bool SelectFilesMode { get; set; } = false;
 
 	[Parameter]
 	public EventCallback<FolderSelectedEventArgs> OnFolderLoaded { get; set; }

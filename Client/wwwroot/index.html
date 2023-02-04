@@ -17,27 +17,29 @@
 </head>
 
 <body>
-<div id="app" style="height: 100vh;">
-	<svg class="loading-progress">
-		<circle r="40%" cx="50%" cy="50%"/>
-		<circle r="40%" cx="50%" cy="50%"/>
-	</svg>
-	<div class="loading-progress-text"></div>
-</div>
+	<div id="app" style="height: 100vh;">
+		<svg class="loading-progress">
+			<circle r="40%" cx="50%" cy="50%" />
+			<circle r="40%" cx="50%" cy="50%" />
+		</svg>
+		<div class="loading-progress-text"></div>
+	</div>
 
-<div id="blazor-error-ui">
-	An unhandled error has occurred.
-	<a href="" class="reload">Reload</a>
-	<a class="dismiss">🗙</a>
-</div>
-<script src="_framework/blazor.webassembly.js"></script>
-<script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-<script src="_content/MudBlazor/MudBlazor.min.js"></script>
-<script src="js/scrollToBottom.js"></script>
-<script src="js/downloadFile.js"></script>
-<script src="https://meet.jit.si/external_api.js"></script>
+	<div id="blazor-error-ui">
+		An unhandled error has occurred.
+		<a href="" class="reload">Reload</a>
+		<a class="dismiss">🗙</a>
+	</div>
+	<script src="_framework/blazor.webassembly.js"></script>
+	<script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+	<script src="_content/MudBlazor/MudBlazor.min.js"></script>
+	<script src="https://meet.jit.si/external_api.js"></script>
+	<script src="js/bundle.js"></script>
+	<script src="js/utilities.js"></script>
+	<script src="js/RecordingManager.js"></script>
+	<script src="js/meetings.js"></script>
 
-<script>navigator.serviceWorker.register('service-worker.js');</script>
+	<script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>

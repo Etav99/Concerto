@@ -14,6 +14,8 @@ public class UploadedFile : Entity
 
 	public long OwnerId { get; set; }
 
+	public long Size { get; set; }
+
 	public string DisplayName { get; set; } = string.Empty;
 	public string Extension { get; set; } = string.Empty;
 	public string StorageName { get; set; } = string.Empty;
@@ -43,6 +45,7 @@ public static partial class ViewModelConversions
 		return new FileItem(file.Id,
 			file.DisplayName,
 			file.Extension,
+			file.Size,
 			canManage,
 			canManage
 		);
@@ -62,18 +65,6 @@ public static partial class ViewModelConversions
 			Uploaded = fileUploadResult.Uploaded,
 			ErrorMessage = fileUploadResult.ErrorMessage
 		};
-	}
-
-	public static Dto.UploadedFile ToViewModel(this UploadedFile file)
-	{
-		return new Dto.UploadedFile(file.Id,
-			file.DisplayName
-		);
-	}
-
-	public static IEnumerable<Dto.UploadedFile> ToViewModel(this IEnumerable<UploadedFile> files)
-	{
-		return files.Select(u => u.ToViewModel());
 	}
 }
 

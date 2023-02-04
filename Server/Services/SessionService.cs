@@ -10,14 +10,14 @@ namespace Concerto.Server.Services;
 public class SessionService
 {
 	private readonly AppDataContext _context;
-	private readonly StorageService _fileService;
+	private readonly StorageService _storageService;
 	private readonly ILogger<SessionService> _logger;
 
-	public SessionService(ILogger<SessionService> logger, AppDataContext context, StorageService fileService)
+	public SessionService(ILogger<SessionService> logger, AppDataContext context, StorageService storageService)
 	{
 		_logger = logger;
 		_context = context;
-		_fileService = fileService;
+		_storageService = storageService;
 	}
 
 	public async Task<Session?> GetSession(long sessionId, long userId, bool isAdmin)
@@ -69,26 +69,39 @@ public class SessionService
 		return true;
 	}
 
-	public async Task<bool> CreateSession(CreateSessionRequest request)
+	public async Task<long?> CreateSession(CreateSessionRequest request, long ownerId)
 	{
 		var course = await _context.Courses
 			.Include(r => r.CourseUsers)
 			.ThenInclude(ru => ru.User)
 			.FirstOrDefaultAsync(r => r.Id == request.CourseId);
 
-		if (course == null)
-			return false;
+		if (course == null || !course.SessionsFolderId.HasValue)
+			return null;
+
+		var createFolderRequest = new CreateFolderRequest
+		{
+			ParentId = course.SessionsFolderId.Value!,
+			Name = request.Name,
+			Type = Dto.FolderType.Recordings,
+		    CoursePermission = new Dto.FolderPermission(Dto.FolderPermissionType.Read, true)
+		};
+		
+		var folderId = await _storageService.CreateFolder(createFolderRequest, ownerId);
+		if (folderId == null)
+			return null;
 
 		var session = new Data.Models.Session
-			{
-				Name = request.Name,
-				ScheduledDate = request.ScheduledDateTime.ToUniversalTime(),
-				Course = course
-			};
+		{
+			Name = request.Name,
+			ScheduledDate = request.ScheduledDateTime.ToUniversalTime(),
+			Course = course,
+			FolderId = folderId.Value
+		};
 
 		await _context.Sessions.AddAsync(session);
 		await _context.SaveChangesAsync();
-		return true;
+		return session.Id;
 	}
 
 	internal async Task<IEnumerable<SessionListItem>> GetCourseSessions(long courseId)

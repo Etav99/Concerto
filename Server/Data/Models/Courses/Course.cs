@@ -17,6 +17,8 @@ public class Course : Entity
 
 	public long? RootFolderId { get; set; }
 	public Folder? RootFolder { get; set; } = null!;
+	public long? SessionsFolderId { get; set; }
+	public Folder? SessionsFolder { get; set; } = null!;
 }
 
 public static partial class ViewModelConversions

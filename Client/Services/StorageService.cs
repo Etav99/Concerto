@@ -57,7 +57,7 @@ public class StorageService : StorageClient, IStorageService
         _JS = jS;
     }
 
-    public void QueueFilesToUpload(long folderId, IEnumerable<IBrowserFile> files)
+	public void QueueFilesToUpload(long folderId, IEnumerable<IBrowserFile> files)
     {
         foreach (var file in files)
         {

@@ -1,0 +1,79 @@
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions;
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto
+@using Concerto.Client.Components.Lists
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject IStorageService StorageService
+@inject IDialogService DialogService
+@inherits DialogAutoFullscreen
+
+<MudDialog>
+	<DialogContent>
+		@if (!Loading)
+		{
+			<div style="display: grid; grid-template-rows: min-content max-content">
+
+				<MudChipSet AllClosable="true" OnClose="(f) => _selectedFiles.Remove((FileItem) f.Value)">
+					@foreach (var file in _selectedFiles)
+					{
+						<MudChip Value="file" Icon="@file.ToIcon()" Text="@file.FullName" />
+					}
+				</MudChipSet>
+
+				<FileManager Class="" Style="height: calc(100% - 48px)" Outlined="true" Elevation="0"
+						 ChooseFolderMode="true" InitialFolderId="_course!.RootFolderId"
+				/>
+			</div>
+		}
+	</DialogContent>
+	
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Submit">OK</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+	@code {
+
+	[Parameter]
+	public long CourseId { get; set; }
+
+	private Course? _course;
+
+	[Parameter, EditorRequired]
+	public HashSet<FileItem> SelectedFiles { get; set; } = new(new FolderContentItemIdEqualityComparer());
+
+	public HashSet<FileItem> _selectedFiles { get; set; } = new(new FolderContentItemIdEqualityComparer());
+
+	bool Loading => _course is null;
+
+	protected override void OnInitialized()
+	{
+		Dialog.Options.FullWidth = true;
+		Dialog.Options.MaxWidth = MaxWidth.Large;
+		Dialog.SetOptions(Dialog.Options);
+
+		_selectedFiles = new(SelectedFiles, new FolderContentItemIdEqualityComparer());
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		_course = await CourseService.GetCourseAsync(CourseId);
+	}
+
+
+	private async Task Submit()
+	{
+
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
+}

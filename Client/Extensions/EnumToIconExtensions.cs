@@ -4,7 +4,7 @@ using MudBlazor;
 
 namespace Concerto.Client.Extensions;
 
-public static class FolderContentItemTypeExtensions
+public static class FolderContentItemExtensions
 {
 	public static HashSet<string> DocumentExtensions = new()
 	{
@@ -193,6 +193,7 @@ public static class FolderContentItemTypeExtensions
 		return type switch
 		{
 			FolderType.CourseRoot => Icons.Material.Filled.Home,
+			FolderType.Sessions => Icons.Material.Filled.VideoCameraFront,
 			FolderType.Sheets => Icons.Material.Filled.MusicNote,
 			FolderType.Recordings => Icons.Material.Filled.VideoCameraFront,
 			FolderType.Video => Icons.Material.Filled.VideoLibrary,
@@ -201,6 +202,27 @@ public static class FolderContentItemTypeExtensions
 			FolderType.Other => Icons.Material.Filled.Workspaces,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
 		};
+	}
+
+	// Return file size string in float format up to 2 decimal places
+	public static string ToFileSizeString(this long size)
+	{
+		if (size < 1024)
+		{
+			return $"{size} B";
+		}
+
+		if (size < 1048576)
+		{
+			return $"{(float)size / 1024:F2} KB";
+		}
+
+		if (size < 1073741824)
+		{
+			return $"{(float)size / 1048576:F2} MB";
+		}
+
+		return $"{(float)size / 1073741824:F2} GB";
 	}
 }
 

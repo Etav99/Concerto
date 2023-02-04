@@ -6,7 +6,8 @@ public record Session(
 	DateTime ScheduledDateTime,
 	long CourseId,
 	string CourseName,
-	long? CourseRootFolderId,
+	long CourseRootFolderId,
+	long FolderId,
 	bool CanManage,
 	Guid MeetingGuid
 ) : EntityModel(Id);
@@ -14,7 +15,8 @@ public record Session(
 public record SessionListItem(
 	long Id,
 	string Name,
-	DateTime ScheduledDate
+	DateTime ScheduledDate,
+	long FolderId
 ) : EntityModel(Id);
 
 public record SessionSettings(

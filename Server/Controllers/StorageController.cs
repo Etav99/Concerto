@@ -65,14 +65,14 @@ public class StorageController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult> CreateFolder([FromBody] CreateFolderRequest createFolderRequest)
+	public async Task<ActionResult<long>> CreateFolder([FromBody] CreateFolderRequest createFolderRequest)
 	{
 		if (!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, createFolderRequest.ParentId)) return Forbid();
 		
-		if(await _storageService.CreateFolder(createFolderRequest, UserId))
-			return Ok();
-		
-		return BadRequest();
+
+		var folderId = await _storageService.CreateFolder(createFolderRequest, UserId);
+		if (folderId == null) return BadRequest();
+		return Ok(folderId);
 	}
 
 	[HttpPost]
