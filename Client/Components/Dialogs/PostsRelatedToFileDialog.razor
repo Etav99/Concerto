@@ -1,0 +1,50 @@
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Components.Views
+@using Concerto.Client.Extensions;
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto
+@using Concerto.Client.Components.Lists
+@inject ICourseService CourseService
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject IStorageService StorageService
+@inject IDialogService DialogService
+
+
+
+<MudDialog>
+		<DialogContent>
+			<div style="display: grid; grid-template-rows: 1fr; height: calc(100vh - 134px)">
+				<Forum CourseId="CourseId" OnlyRelatedToFile="File" OnNoPosts="OnNoPosts" Title="@($"Posts related to {File.FullName}")" />
+			</div>
+		</DialogContent>
+
+		<DialogActions>
+			<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Close">Close</MudButton>
+		</DialogActions>
+</MudDialog>
+
+@code {
+
+	[CascadingParameter]
+	protected MudDialogInstance Dialog { get; set; } = null!;
+
+	[Parameter]
+	public long CourseId { get; set; }
+
+	[Parameter]
+	public FileItem File { get; set; } = null!;
+
+	bool _postsAvailable = false;
+
+	private void OnNoPosts()
+	{
+		Snackbar.Add($"No posts related to {File.FullName}", Severity.Info);
+		Dialog.Close();
+	}
+
+	private void Close()
+	{
+		Dialog.Close();
+	}
+}

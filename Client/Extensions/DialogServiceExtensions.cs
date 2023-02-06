@@ -83,6 +83,32 @@ public static class DialogServiceExtensions
 		if (result.Canceled) return false;
 		return true;
 	}
+	
+	public static async Task<bool> ShowSelectFilesDialog(this IDialogService dialogService, HashSet<FileItem> selectedFiles, long courseId)
+	{
+		var options = new DialogOptions() { FullScreen = true, MaxWidth=MaxWidth.Large };
+		var parameters = new DialogParameters
+		{
+			["SelectedFiles"] = selectedFiles,
+			["CourseId"] = courseId
+		};
+		var result = await dialogService.Show<SelectFilesDialog>("Select files", parameters, options).Result;
+		if (result.Canceled) return false;
+		return true;
+	}
+
+	public static async Task<bool> ShowPostsRelatedToFileDialog(this IDialogService dialogService, long courseId, FileItem file)
+	{
+		var options = new DialogOptions() { FullScreen = true, MaxWidth=MaxWidth.Large };
+		var parameters = new DialogParameters
+		{
+			["File"] = file,
+			["CourseId"] = courseId
+		};
+		var result = await dialogService.Show<PostsRelatedToFileDialog>($"Posts related to {file.FullName}", parameters, options).Result;
+		if (result.Canceled) return false;
+		return true;
+	}
 
 }
 

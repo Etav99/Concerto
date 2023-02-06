@@ -240,6 +240,30 @@ namespace Concerto.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "PostUploadedFile",
+                columns: table => new
+                {
+                    PostId = table.Column<long>(type: "bigint", nullable: false),
+                    ReferencedFilesId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostUploadedFile", x => new { x.PostId, x.ReferencedFilesId });
+                    table.ForeignKey(
+                        name: "FK_PostUploadedFile_Post_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Post",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostUploadedFile_UploadedFiles_ReferencedFilesId",
+                        column: x => x.ReferencedFilesId,
+                        principalTable: "UploadedFiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_AuthorId",
                 table: "Comments",
@@ -294,6 +318,11 @@ namespace Concerto.Server.Migrations
                 name: "IX_Post_CourseId",
                 table: "Post",
                 column: "CourseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostUploadedFile_ReferencedFilesId",
+                table: "PostUploadedFile",
+                column: "ReferencedFilesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_CourseId",
@@ -371,16 +400,19 @@ namespace Concerto.Server.Migrations
                 name: "CourseUsers");
 
             migrationBuilder.DropTable(
-                name: "Sessions");
+                name: "PostUploadedFile");
 
             migrationBuilder.DropTable(
-                name: "UploadedFiles");
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "UserFolderPermissions");
 
             migrationBuilder.DropTable(
                 name: "Post");
+
+            migrationBuilder.DropTable(
+                name: "UploadedFiles");
 
             migrationBuilder.DropTable(
                 name: "Users");

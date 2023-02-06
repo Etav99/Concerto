@@ -39,7 +39,10 @@ public record FolderItem(
 	bool CanEdit,
 	bool CanDelete,
 	FolderType Type
-) : FolderContentItem(Id, Name, CanEdit, CanDelete);
+) : FolderContentItem(Id, Name, CanEdit, CanDelete)
+{
+	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
+}
 
 public record FileItem(
 	long Id,
@@ -50,7 +53,7 @@ public record FileItem(
 	bool CanDelete
 ) : FolderContentItem(Id, Name, CanEdit, CanDelete)
 {
-	public string FullName => $"{Name}.{Extension}";
+	public string FullName => $"{Name}{Extension}";
 }
 
 public record FolderSettings(
@@ -63,7 +66,10 @@ public record FolderSettings(
 	FolderPermission? ParentCoursePermission,
 	IEnumerable<UserFolderPermission> UserPermissions,
 	IEnumerable<UserFolderPermission> ParentUserPermissions
-) : EntityModel(Id);
+) : EntityModel(Id)
+{
+	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
+}
 public record UserFolderPermission(User User, FolderPermission Permission)
 {
 	public User User { get; set; } = User;

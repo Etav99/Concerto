@@ -23,6 +23,10 @@ public class ForumService
 
 	internal async Task<Post?> CreatePost(CreatePostRequest request, long userId)
 	{
+		var referencedFiles = await _context.UploadedFiles
+			.Where(rf => request.ReferencedFilesIds.Contains(rf.Id))
+			.ToListAsync();
+
 		var post = new Data.Models.Post
 		{
 			CourseId = request.CourseId,
@@ -30,6 +34,7 @@ public class ForumService
 			Title = request.Title,
 			Content = request.Content,
 			CreatedAt = DateTime.UtcNow,
+			ReferencedFiles = referencedFiles,
 			Edited = false
 		};
 
@@ -38,7 +43,7 @@ public class ForumService
 		return post.ToViewModel(0, true, true);
 	}
 
-	internal async Task<IEnumerable<Post>> GetPosts(long courseId, long userId, bool isAdmin = false, long? beforeId = null)
+	internal async Task<IEnumerable<Post>> GetPosts(long courseId, long userId, bool isAdmin = false, long? beforeId = null, long? relatedToFileId = null)
 	{
 		const int pageSize = 10;
 
@@ -46,11 +51,14 @@ public class ForumService
 			.Where(p => p.CourseId == courseId);
 
 		if (beforeId != null) query = query.Where(p => p.Id < beforeId);
+		if (relatedToFileId != null)
+			query = query.Where(p => p.ReferencedFiles.Any(rf => rf.Id == relatedToFileId));
 
 		var posts = await query
 			.OrderByDescending(p => p.Id)
 			.Take(pageSize)
 			.Include(p => p.Author)
+			.Include(p => p.ReferencedFiles)
 			.ToListAsync();
 
 
@@ -83,6 +91,13 @@ public class ForumService
 		var post = await _context.Posts.FindAsync(request.PostId);
 		if (post == null) return null;
 
+		await _context.Entry(post).Collection(p => p.ReferencedFiles).LoadAsync();
+
+		var referencedFiles = await _context.UploadedFiles
+			.Where(rf => request.ReferencedFilesIds.Contains(rf.Id))
+			.ToListAsync();
+
+		post.ReferencedFiles = referencedFiles;
 		post.Title = request.Title;
 		post.Content = request.Content;
 		post.Edited = true;

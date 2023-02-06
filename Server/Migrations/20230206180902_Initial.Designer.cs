@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230205214758_Initial")]
+    [Migration("20230206180902_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -306,6 +306,21 @@ namespace Concerto.Server.Migrations
                     b.ToTable("UserFolderPermissions");
                 });
 
+            modelBuilder.Entity("PostUploadedFile", b =>
+                {
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ReferencedFilesId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("PostId", "ReferencedFilesId");
+
+                    b.HasIndex("ReferencedFilesId");
+
+                    b.ToTable("PostUploadedFile");
+                });
+
             modelBuilder.Entity("Concerto.Server.Data.Models.Comment", b =>
                 {
                     b.HasOne("Concerto.Server.Data.Models.User", "Author")
@@ -498,6 +513,21 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PostUploadedFile", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Post", null)
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concerto.Server.Data.Models.UploadedFile", null)
+                        .WithMany()
+                        .HasForeignKey("ReferencedFilesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>

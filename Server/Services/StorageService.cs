@@ -247,8 +247,11 @@ public class StorageService
         var folder = await _context.Folders.FindAsync(request.Id);
         if (folder == null) return;
 
-        folder.Name = request.Name;
-        folder.Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity();
+        if(!folder.IsPermanent)
+        {
+            folder.Name = request.Name;
+            folder.Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity();
+        }
 
         if (request.CoursePermission.Inherited)
             folder.CoursePermission = folder.CoursePermission with { Inherited = true };

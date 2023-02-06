@@ -101,6 +101,7 @@ public static partial class ViewModelConversions
 		return type switch
 		{
 			Dto.FolderType.CourseRoot => FolderType.CourseRoot,
+			Dto.FolderType.Sessions => FolderType.Sessions,
 			Dto.FolderType.Sheets => FolderType.Sheets,
 			Dto.FolderType.Recordings => FolderType.Recordings,
 			Dto.FolderType.Video => FolderType.Video,

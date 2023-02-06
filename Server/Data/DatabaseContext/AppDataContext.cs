@@ -66,6 +66,11 @@ public class AppDataContext : DbContext
 			.Property(p => p.MeetingGuid)
 			.HasDefaultValueSql("gen_random_uuid()");
 
+		modelBuilder.Entity<Session>()
+			.HasOne(s => s.Folder)
+			.WithOne()
+			.OnDelete(DeleteBehavior.SetNull);
+
 		// Folder entity configuration
 		// Folder n-1 Owner
 		modelBuilder.Entity<Folder>()
@@ -129,6 +134,11 @@ public class AppDataContext : DbContext
 			.HasForeignKey(ufp => ufp.FolderId)
 			.OnDelete(DeleteBehavior.Cascade);
 
+
+		modelBuilder.Entity<Post>()
+			.HasMany(uf => uf.ReferencedFiles)
+			.WithMany();
+		
 
 		/*        // Data seed
 		        modelBuilder.Entity<User>()

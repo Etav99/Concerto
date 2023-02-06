@@ -1,9 +1,6 @@
 ﻿using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
-using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
-using CourseUserRole = Concerto.Server.Data.Models.CourseUserRole;
-using Session = Concerto.Shared.Models.Dto.Session;
 
 namespace Concerto.Server.Services;
 
@@ -20,7 +17,7 @@ public class SessionService
 		_storageService = storageService;
 	}
 
-	public async Task<Session?> GetSession(long sessionId, long userId, bool isAdmin)
+	public async Task<Dto.Session?> GetSession(long sessionId, long userId, bool isAdmin)
 	{
 		var session = await _context.Sessions
 			.FindAsync(sessionId);
@@ -64,12 +61,19 @@ public class SessionService
 		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null) return false;
 
+		// change folder type to recordings
+		var folder = await _context.Folders.FindAsync(session.FolderId);
+		if (folder != null)
+		{
+			folder.Type = FolderType.Recordings;
+		}
+
 		_context.Remove(session);
 		await _context.SaveChangesAsync();
 		return true;
 	}
 
-	public async Task<long?> CreateSession(CreateSessionRequest request, long ownerId)
+	public async Task<long?> CreateSession(Dto.CreateSessionRequest request, long ownerId)
 	{
 		var course = await _context.Courses
 			.Include(r => r.CourseUsers)
@@ -79,12 +83,12 @@ public class SessionService
 		if (course == null || !course.SessionsFolderId.HasValue)
 			return null;
 
-		var createFolderRequest = new CreateFolderRequest
+		var createFolderRequest = new Dto.CreateFolderRequest
 		{
 			ParentId = course.SessionsFolderId.Value!,
 			Name = request.Name,
-			Type = Dto.FolderType.Recordings,
-		    CoursePermission = new Dto.FolderPermission(Dto.FolderPermissionType.Read, true)
+			Type = Dto.FolderType.Sessions,
+		    CoursePermission = new Dto.FolderPermission(Dto.FolderPermissionType.ReadWriteOwned, false)
 		};
 		
 		var folderId = await _storageService.CreateFolder(createFolderRequest, ownerId);
@@ -104,7 +108,7 @@ public class SessionService
 		return session.Id;
 	}
 
-	internal async Task<IEnumerable<SessionListItem>> GetCourseSessions(long courseId)
+	internal async Task<IEnumerable<Dto.SessionListItem>> GetCourseSessions(long courseId)
 	{
 		return await _context.Sessions
 			.Where(s => s.Course.Id == courseId)
@@ -112,7 +116,7 @@ public class SessionService
 			.ToListAsync();
 	}
 
-	internal async Task<bool> UpdateSession(UpdateSessionRequest request)
+	internal async Task<bool> UpdateSession(Dto.UpdateSessionRequest request)
 	{
 		var session = await _context.Sessions.FindAsync(request.SessionId);
 		if (session == null)
@@ -125,7 +129,7 @@ public class SessionService
 		return true;
 	}
 
-	public async Task<SessionSettings?> GetSessionSettings(long sessionId)
+	public async Task<Dto.SessionSettings?> GetSessionSettings(long sessionId)
 	{
 		var session = await _context.Sessions.FindAsync(sessionId);
 

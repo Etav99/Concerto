@@ -19,10 +19,12 @@ public class Post : Entity
 	[Required] public string Title { get; set; } = null!;
 
 	[Required] public string Content { get; set; } = null!;
+	
 
 	public bool Edited { get; set; } = false;
 
 	public virtual ICollection<Comment> Comments { get; set; } = null!;
+	public virtual ICollection<UploadedFile> ReferencedFiles { get; set; } = null!;
 }
 
 [Index(nameof(PostId))]
@@ -52,7 +54,7 @@ public enum PostType
 public static partial class ViewModelConversions
 {
 	public static Dto.Post ToViewModel(this Post post, int CommentsCount, bool canEdit, bool canDelete)
-	{
+	{	
 		return new Dto.Post(post.Id,
 			Author: post.Author.ToViewModel(),
 			CourseId: post.CourseId,
@@ -62,6 +64,7 @@ public static partial class ViewModelConversions
 			CommentsCount: CommentsCount,
 			Edited: post.Edited,
 			Comments: new List<Dto.Comment>(),
+			ReferencedFiles: post.ReferencedFiles.Select(f => f.ToFileItem(false)).ToList(),
 			CanEdit: canEdit,
 			CanDelete: canDelete
 		);

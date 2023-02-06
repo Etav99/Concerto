@@ -22,14 +22,14 @@
 		else
 		{
 			<MudStack Spacing="4">
-				<MudTextField @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
-				<FolderTypePicker @bind-Value="_request.Type"></FolderTypePicker>
+				<MudTextField Disabled="_permanent" @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
+				<FolderTypePicker Disabled="_permanent" @bind-Value="_request.Type"></FolderTypePicker>
 				<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType"/>
 
 				<MudPaper Elevation="0" Outlined="true" Class="d-flex flex-column" Style="overflow: auto;">
 					<MudText Class="ml-4 align-self-start"> User specific permissions
 					<MudTooltip Style="vertical-align: middle;" Class="align-self-start" Text="Those settings will override folder permissions for specified users" Arrow="true">
-						<MudIcon Class="mt d-inline-block" Icon="@Icons.Material.Filled.Info"/>
+						<MudIcon Class="d-inline-block" Icon="@Icons.Material.Filled.Info"/>
 					</MudTooltip>
 					</MudText>
 					<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers"
@@ -58,10 +58,13 @@
 	// Form
 	private UpdateFolderRequest _request = null!;
 
+	bool _permanent = false;
+
 	protected override async Task OnInitializedAsync()
 	{
 		Loading = true;
 		var folderSettings = await StorageService.GetFolderSettingsAsync(EditedFolderId);
+		_permanent = folderSettings.IsPermanent;
 		CourseUsers = (await CourseService.GetCourseUsersAsync(folderSettings.CourseId)).ToHashSet();
 		_request = new UpdateFolderRequest(folderSettings.Id)
 		{

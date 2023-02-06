@@ -7,6 +7,7 @@
 @inject IUserService UserService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IStorageService StorageService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @if (Loading)
@@ -20,24 +21,43 @@ else
 		@if (_createPostRequest is null)
 		{
 			<MudFab Size="Size.Medium" Class="z-20" Style="position: absolute" Color="Color.Default" StartIcon="@Icons.Material.Filled.Refresh" OnClick="async () => {Posts = null; await LoadMorePosts();}" />
-			<MudPaper Elevation="0" Outlined="true" Class="ml-16">
-				<MudButton Style="width: 100%;" Size="Size.Large" Class="flex-shrink-0" StartIcon="@Icons.Material.Filled.PostAdd" OnClick="CreatePost">Create post</MudButton>
+			<MudPaper Elevation="0" Outlined="!ViewOnly" Class="ml-16">
+				@if (!ViewOnly)
+				{
+					<MudButton Style="width: 100%;" Size="Size.Large" Class="flex-shrink-0" StartIcon="@Icons.Material.Filled.PostAdd" OnClick="CreatePost">Create post</MudButton>
+				}
 			</MudPaper>
 		}
 		else
 		{
 			<MudPaper Class="pa-2 mt-2" Elevation="0" Outlined="true">
 				<MudForm @ref="_createPostForm" @bind-IsValid="@_createPostRequestValid">
+
 					<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SendPost()" Disabled="!_createPostRequestValid" Color="Color.Primary">Create post</MudButton>
 					<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error">Cancel</MudButton>
 					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
+
+					<div style="min-height: 24px; max-height: 96px; overflow: auto;" class="mt-1 pa-0">
+						Files:
+						@foreach (var file in _createPostFiles)
+						{
+							<MudChip DisableRipple="true" Value="file" Icon="@file.ToIcon()" Text="@file.FullName" OnClose="CloseCreatePostFileChip" />
+						}
+						<MudIconButton DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="async () => await EditReferencedFiles(_createPostFiles)" />
+					</div>
+
 					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 				</MudForm>
 
 			</MudPaper>
 		}
 
-
+		@if (OnlyRelatedToFile is not null && !Posts!.Any())
+		{
+			<MudText Typo="Typo.h6" Class="ml-10" Align="Align.Center">
+				No posts related to file @OnlyRelatedToFile.FullName
+			</MudText>
+		}
 		@foreach (var post in Posts!)
 		{
 			<MudPaper Class="pa-4" Elevation="0" Outlined="false" Style="background-color: var(--mud-palette-background)">
@@ -50,13 +70,22 @@ else
 								<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SavePost()" Disabled="!_editPostRequestValid" Color="Color.Primary">Edit post</MudButton>
 								<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelEditPost" Color="Color.Error">Cancel</MudButton>
 								<MudTextField @bind-Value="_editPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
+								<div style="min-height: 24px; max-height: 96px; overflow: auto;" class="mt-1 pa-0">
+									Files:
+									@foreach (var file in _editPostFiles)
+									{
+										<MudChip DisableRipple="true" Value="file" Icon="@file.ToIcon()" Text="@file.FullName" OnClose="CloseEditPostFileChip" />
+									}
+									<MudIconButton DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="async () => await EditReferencedFiles(_editPostFiles)" />
+								</div>
 								<MudTextField @bind-Value="_editPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 							</MudForm>
 						</MudPaper>
 					}
 					else
 					{
-						@*Header author*@						<MudStack Row="true" Spacing="0" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+						@*Header author*@
+						<MudStack Row="true" Spacing="0" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
 							<MudStack Spacing="0" Class="mb-2">
 								<MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Baseline">
 									<MudAvatar Class="" Size="Size.Small">@post.Author.Initials</MudAvatar>
@@ -76,7 +105,18 @@ else
 								</MudMenu>
 							</MudStack>
 
-						@*Post content*@						<MudPaper Elevation="0" Class="">
+						@*Post content*@
+						@if(post.ReferencedFiles.Any())
+						{
+							<div style="min-height: 24px; max-height: 96px; overflow: auto;" class="mt-1 pa-0">
+								Files:
+								@foreach (var file in post.ReferencedFiles)
+								{
+									<MudChip DisableRipple="true" Value="file" Icon="@file.ToIcon()" Text="@file.FullName" OnClick="async () => await StorageService.DownloadFile(file.Id, file.FullName)" />
+								}
+							</div>
+						}
+						<MudPaper Elevation="0" Class="">
 							<MudText Style="white-space: pre-wrap" Typo="Typo.body1">@post.Content</MudText>
 						</MudPaper>
 					}
@@ -101,9 +141,11 @@ else
 
 						</MudPaper>
 					}
-					@*Comments*@					@foreach (var comment in post.Comments)
+					@*Comments*@
+					@foreach (var comment in post.Comments)
 					{
-						@*Comment*@						@if (_editCommentRequest is not null && _editCommentRequest.CommentId == comment.Id)
+						@*Comment*@
+						@if (_editCommentRequest is not null && _editCommentRequest.CommentId == comment.Id)
 						{
 							<MudPaper Class="pa-2 mt-2" Elevation="0" Outlined="true">
 								<MudForm @ref="_editCommentForm" @bind-IsValid="@_editCommentRequestValid">
@@ -120,10 +162,10 @@ else
 									<MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Baseline">
 										<MudAvatar Class="" Size="Size.Small">@comment.Author.Initials</MudAvatar>
 										<MudText Typo="Typo.caption">@($"{comment.Author.FullName} commented on {comment.CreatedAt.ToLocalTime()}{(comment.Edited ? " (Edited)" : "")}")</MudText>
-										</MudStack>
-										<MudText Style="white-space: pre-wrap" Class="mt-1" Typo="Typo.body2">@comment.Content</MudText>
 									</MudStack>
-
+									<MudText Style="white-space: pre-wrap" Class="mt-1" Typo="Typo.body2">@comment.Content</MudText>
+								</MudStack>
+								
 
 									<MudMenu Dense="true" Class="align-self-start">
 										<ActivatorContent>
@@ -166,6 +208,15 @@ else
 
 	bool Loading => Posts is null;
 
+	[Parameter]
+	public FileItem? OnlyRelatedToFile { get; set; }
+
+	[Parameter]
+	public EventCallback OnNoPosts { get; set; }
+
+	bool ViewOnly => OnlyRelatedToFile is not null;
+
+
 	List<Post>? Posts = null;
 
 	MudForm? _createCommentForm;
@@ -174,6 +225,7 @@ else
 
 	MudForm? _createPostForm;
 	CreatePostRequest? _createPostRequest = null;
+	HashSet<FileItem> _createPostFiles = new(new FolderContentItemIdEqualityComparer());
 	bool _createPostRequestValid;
 
 	MudForm? _editCommentForm;
@@ -183,19 +235,24 @@ else
 
 	MudForm? _editPostForm;
 	EditPostRequest? _editPostRequest = null;
+	HashSet<FileItem> _editPostFiles = new(new FolderContentItemIdEqualityComparer());
 	bool _editPostRequestValid;
+
+	long i = 0;
 
 	bool _morePostsAvailable = true;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadMorePosts();
+		if (Posts is not null && Posts.Count == 0)
+			await OnNoPosts.InvokeAsync();
 	}
 
 	private async Task LoadMorePosts()
 	{
 		var oldestPostId = Posts?.LastOrDefault()?.Id;
-		var posts = (await ForumService.GetPostsAsync(CourseId, oldestPostId)).ToList();
+		var posts = (await ForumService.GetPostsAsync(CourseId, oldestPostId, OnlyRelatedToFile?.Id)).ToList();
 		_morePostsAvailable = posts.Count == 10;
 		if (Posts is null) Posts = new List<Post>();
 		Posts.AddRange(posts);
@@ -251,6 +308,7 @@ else
 	private void EditPost(Post post)
 	{
 		_editPostRequest = new EditPostRequest(post.Id, post.Title, post.Content);
+		_editPostFiles = new(post.ReferencedFiles, new FolderContentItemIdEqualityComparer());
 	}
 
 	private void CancelEditPost()
@@ -265,14 +323,16 @@ else
 
 		if (_editPostRequest != null)
 		{
+			_editPostRequest.ReferencedFilesIds = _editPostFiles.Select(f => f.Id).ToList();
 			try
 			{
-				await ForumService.UpdatePostAsync(_editPostRequest);
+				var editedPost = await ForumService.UpdatePostAsync(_editPostRequest);
 				var post = Posts?.Find(p => p.Id == _editPostRequest.PostId);
 				if (post != null)
 				{
-					post.Title = _editPostRequest.Title;
-					post.Content = _editPostRequest.Content;
+					post.Title = editedPost.Title;
+					post.Content = editedPost.Content;
+					post.ReferencedFiles = editedPost.ReferencedFiles;
 					post.Edited = true;
 				}
 				_editPostRequest = null;
@@ -329,6 +389,7 @@ else
 
 		if (_createPostRequest != null)
 		{
+			_createPostRequest.ReferencedFilesIds = _createPostFiles.Select(f => f.Id).ToList();
 			try
 			{
 				var post = await ForumService.CreatePostAsync(_createPostRequest);
@@ -374,4 +435,18 @@ else
 		}
 	}
 
+
+	private async Task EditReferencedFiles(HashSet<FileItem> referencedFiles)
+	{
+		await DialogService.ShowSelectFilesDialog(referencedFiles, CourseId);
+	}
+
+	private void CloseCreatePostFileChip(MudChip chip)
+	{
+		_createPostFiles.Remove((FileItem)chip.Value);
+	}
+	private void CloseEditPostFileChip(MudChip chip)
+	{
+		_editPostFiles.Remove((FileItem)chip.Value);
+	}
 }

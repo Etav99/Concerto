@@ -10,6 +10,7 @@ public record Post(
 	string Content,
 	int CommentsCount,
 	List<Comment> Comments,
+	List<FileItem> ReferencedFiles,
 	bool CanEdit,
 	bool CanDelete
 )
@@ -18,6 +19,8 @@ public record Post(
 	public bool Edited { get; set; } = Edited;
 	public string Title { get; set; } = Title;
 	public string Content { get; set; } = Content;
+
+	public List<FileItem> ReferencedFiles { get; set; } = ReferencedFiles;
 
 	public void addComments(Comment comment)
 	{
@@ -60,6 +63,7 @@ public record CreatePostRequest(long CourseId)
 {
 	public string Title { get; set; } = string.Empty;
 	public string Content { get; set; } = string.Empty;
+	public ICollection<long> ReferencedFilesIds { get; set; } = new List<long>();
 }
 
 public record CreateCommentRequest(long PostId)
@@ -71,6 +75,7 @@ public record EditPostRequest(long PostId, string Title, string Content)
 {
 	public string Title { get; set; } = Title;
 	public string Content { get; set; } = Content;
+	public ICollection<long> ReferencedFilesIds { get; set; } = new List<long>();
 }
 
 public record EditCommentRequest(long CommentId, string Content)

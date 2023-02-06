@@ -14,7 +14,7 @@
 @inject IJSRuntime JS
 @inject IAccessTokenProvider AccessTokenProvider
 
-<MudPaper Class="@Class" Style="@Style" Elevation="@Elevation" Outlined="@Outlined">
+<MudPaper Class="@Class" Style="@($"{Style}")" Elevation="@Elevation" Outlined="@Outlined">
 	@if (FolderContent is not null)
 	{
 		<MudPaper Height="45px" Outlined="false" Elevation="0"
@@ -76,7 +76,7 @@
 					{
 						<MudIconButton Title="Refresh" OnClick="Refresh"
 							   DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" />
-						@if (!ChooseFolderMode)
+						@if (!HideManagementButtons)
 						{
 							<MudIconButton Title="Upload files" OnClick="async () => await UploadFiles()" Disabled="@(!FolderContent.Self.CanWrite)"
 							   DisableElevation="true" Icon="@Icons.Material.Filled.UploadFile" Color="Color.Default" Variant="Variant.Filled" />
@@ -98,7 +98,7 @@
 								Refresh view
 							</MudMenuItemW>
 
-							@if (!ChooseFolderMode)
+							@if (!HideManagementButtons)
 							{
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.UploadFile"
 									  OnClick="async () => await UploadFiles()" OnTouch="async () => await UploadFiles()"
@@ -163,7 +163,10 @@
 				@if (SelectionMode && !LayoutState.Xs)
 				{
 					<MudTh>
-						<MudCheckBox T="bool?" Dense="true" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
+						@if(!SelectFilesMode)
+						{
+							<MudCheckBox T="bool?" Dense="true" CheckedChanged="SelectAllClicked" Checked="_selectAllState" />
+						}
 					</MudTh>
 				}
 
@@ -194,11 +197,14 @@
 			</HeaderContent>
 
 			<RowTemplate>
-				
+
 				@if (SelectionMode)
 				{
 					<MudTd DataLabel="Selected">
-						<MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Checked="@SelectedItems.Contains(context)" />
+						@if (!SelectFilesMode || context is FileItem)
+						{
+							<MudCheckBox Class="py-2" T="bool" CheckedChanged="async () => await ToggleSelectedItem(context)" Dense="true" Checked="@SelectedItems.Contains(context)" />
+						}
 					</MudTd>
 				}
 
@@ -232,7 +238,7 @@
 								}
 							</ActivatorContent>
 							<ChildContent>
-								@if (SelectionMode)
+								@if (SelectionMode && !HideManagementButtons)
 								{
 									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.DriveFileMove"
 									  OnClick="async () => await MoveSelected()" OnTouch="async () => await MoveSelected()"
@@ -258,7 +264,7 @@
 									  OnClick="() => OpenFolder(folder)" OnTouch="() => OpenFolder(folder)">
 										Open
 									</MudMenuItemW>
-									@if (!ChooseFolderMode)
+									@if (!HideManagementButtons)
 									{
 										<MudMenuItemW hidden="@ChooseFolderMode" IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Settings"
 									  OnClick="() => ShowUpdateFolderDialog(folder)" OnTouch="() => ShowUpdateFolderDialog(folder)"
@@ -302,7 +308,7 @@
 						<MudText Typo="Typo.body2">@file.Size.ToFileSizeString()</MudText>
 					</MudTd>
 					<MudTd Style="text-align: right">
-						@if(!ChooseFolderMode)
+						@if (!HideManagementButtons)
 						{
 							<MudMenu Dense="true" hidden="@ChooseFolderMode">
 								<ActivatorContent>
@@ -339,8 +345,12 @@
 									else
 									{
 										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Download"
-									  OnClick="() => DownloadFile(file)" OnTouch="() => DownloadFile(file)">
+											OnClick="() => DownloadFile(file)" OnTouch="() => DownloadFile(file)">
 											Download
+										</MudMenuItemW>
+										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Forum"
+									  OnClick="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.CourseId, file)" OnTouch="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.CourseId, file)">
+											Show related posts
 										</MudMenuItemW>
 										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit"
 									  OnClick="() => ShowUpdateFileDialog(file)" OnTouch="() => ShowUpdateFileDialog(file)"
@@ -375,6 +385,12 @@
 	public bool SelectFilesMode { get; set; } = false;
 
 	[Parameter]
+	public HashSet<FolderContentItem> SelectedItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
+
+	[Parameter]
+	public EventCallback<HashSet<FolderContentItem>> OnSelectedItemsChanged { get; set; }
+
+	[Parameter]
 	public EventCallback<FolderSelectedEventArgs> OnFolderLoaded { get; set; }
 
 
@@ -394,15 +410,15 @@
 	private HashSet<FolderContentItem> FolderContentItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
 	private FolderContentItemIdEqualityComparer _comparer = new();
 
-	private HashSet<FolderContentItem> SelectedItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
 	private bool CanMoveSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
 	private bool CanCopySelected => SelectionMode && SelectedItems.Any();
 	private bool CanDeleteSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
-
+	
 	private bool? _selectAllState => SelectedItems.Count == FolderContentItems.Count ? true : SelectedItems.Count > 0 ? null : false;
 
 	private bool _selectionMode = false;
 
+	private bool HideManagementButtons => ChooseFolderMode || SelectFilesMode;
 
 	private bool SelectionMode
 	{
@@ -473,7 +489,8 @@
 		{
 			_initialFolderId = InitialFolderId;
 
-			SelectionMode = false;
+			_selectionMode = SelectFilesMode;
+
 			try
 			{
 				await LoadFolderContent(InitialFolderId.Value);
@@ -501,7 +518,7 @@
 	{
 		await LoadFolderContent(folder.Id);
 		BreadCrumbs.Add(FolderContent!.Self);
-		SelectedItems.Clear();
+		if(!SelectFilesMode) SelectedItems.Clear();
 	}
 
 	private async Task LoadFolderContent(long folderId)
@@ -650,16 +667,50 @@
 	private async Task OnRowClick(TableRowClickEventArgs<FolderContentItem> tableClick)
 	{
 		var item = tableClick.Item;
-		if (SelectionMode)
+
+		if (SelectFilesMode)
 		{
-			if (SelectedItems.Contains(item)) SelectedItems.Remove(item);
-			else SelectedItems.Add(item);
-			return;
-		};
-		if (item is FolderItem)
-		{
-			await OpenFolder((FolderItem)item);
+			if (item is FileItem file)
+				await ToggleSelectedItem(file);
+			else if (item is FolderItem folder)
+				await OpenFolder(folder);
 		}
+		else if (SelectionMode)
+		{
+			await ToggleSelectedItem(item);
+			return;
+		}
+		else if (item is FolderItem folder)
+		{
+			await OpenFolder(folder);
+		}
+	}
+
+	private async Task ToggleSelectedItem(FolderContentItem item)
+	{
+		if (SelectedItems.Contains(item)) SelectedItems.Remove(item);
+		else SelectedItems.Add(item);
+		await OnSelectedItemsChanged.InvokeAsync(SelectedItems);
+		StateHasChanged();
+	}
+
+	private async Task SelectAllClicked()
+	{
+		switch (_selectAllState)
+		{
+			case true:
+			case null:
+				SelectedItems.ExceptWith(FolderContentItems);
+				break;
+			case false:
+				if (SelectFilesMode)
+					SelectedItems.UnionWith(FolderContentItems.Where(x => x is FileItem).Where(x => FolderContentItemFilter(x)).ToHashSet(new FolderContentItemIdEqualityComparer()));
+				else
+					SelectedItems.UnionWith(FolderContentItems.Where(x => FolderContentItemFilter(x)).ToHashSet(new FolderContentItemIdEqualityComparer()));
+				break;
+		}
+		await OnSelectedItemsChanged.InvokeAsync(SelectedItems);
+		StateHasChanged();
 	}
 
 	public string RowStyleFunc(FolderContentItem item, int rowNumber)
@@ -703,29 +754,5 @@
 		FolderItem Folder,
 		IReadOnlyCollection<FolderItem> Breadcrumbs
 	);
-
-
-	private void SelectAllClicked()
-	{
-		switch (_selectAllState)
-		{
-			case true:
-			case null:
-				SelectedItems.ExceptWith(FolderContentItems);
-				break;
-			case false:
-				SelectedItems.UnionWith(FolderContentItems.Where(x => FolderContentItemFilter(x)).ToHashSet(new FolderContentItemIdEqualityComparer()));
-				break;
-		}
-		StateHasChanged();
-	}
-
-	private void CheckedChanged(FolderContentItem item)
-	{
-		if (SelectedItems.Contains(item)) SelectedItems.Remove(item);
-		else SelectedItems.Add(item);
-		StateHasChanged();
-	}
-
 
 }

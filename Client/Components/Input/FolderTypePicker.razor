@@ -1,9 +1,9 @@
 ﻿@using Concerto.Client.Extensions
 @using Concerto.Shared.Models.Dto
-<MudSelect Disabled="IsCourseRoot" T="FolderType" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" Label="Folder type" Adornment="Adornment.Start" AdornmentIcon="@Value.ToIcon()" AnchorOrigin="Origin.BottomCenter">
-	@if (IsCourseRoot)
+<MudSelect Disabled="Disabled" T="FolderType" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" Label="Folder type" Adornment="Adornment.Start" AdornmentIcon="@Value.ToIcon()" AnchorOrigin="Origin.BottomCenter">
+	@if (Disabled)
 	{
-		<MudSelectItem Value="@(FolderType.CourseRoot)">@FolderType.CourseRoot.ToDisplayString()</MudSelectItem>
+		<MudSelectItem Value="Value">@Value.ToDisplayString()</MudSelectItem>
 	}
 	else
 	{
@@ -23,9 +23,10 @@
 	public FolderType Value { get; set; }
 
 	[Parameter]
-	public EventCallback<FolderType> ValueChanged { get; set; }
+	public bool Disabled { get; set; }
 
-	bool IsCourseRoot => Value == FolderType.CourseRoot;
+	[Parameter]
+	public EventCallback<FolderType> ValueChanged { get; set; }
 
 	[Parameter]
 	public EventCallback<FolderType> OnChange { get; set; }

@@ -14,18 +14,18 @@
 	<DialogContent>
 		@if (!Loading)
 		{
-			<div style="display: grid; grid-template-rows: min-content max-content">
+			<div style="display: grid; grid-template-rows: min-content 1fr; height: calc(100vh - 134px)">
 
-				<MudChipSet AllClosable="true" OnClose="(f) => _selectedFiles.Remove((FileItem) f.Value)">
-					@foreach (var file in _selectedFiles)
+				<div style="min-height: 48px; max-height: 84px; overflow: scroll;">
+					Selected Files:
+					@foreach (var file in _selectedItems.OfType<FileItem>())
 					{
-						<MudChip Value="file" Icon="@file.ToIcon()" Text="@file.FullName" />
+						<MudChip DisableRipple="true" Value="file" Icon="@file.ToIcon()" Text="@file.FullName" OnClose="closeFileChip" />
 					}
-				</MudChipSet>
-
-				<FileManager Class="" Style="height: calc(100% - 48px)" Outlined="true" Elevation="0"
-						 ChooseFolderMode="true" InitialFolderId="_course!.RootFolderId"
-				/>
+				</div>
+				
+				<FileManager Class="" Style="height: calc(100%)" Outlined="true" Elevation="0"
+						 SelectFilesMode="true" SelectedItems="_selectedItems" OnSelectedItemsChanged="() => StateHasChanged()" InitialFolderId="_course!.RootFolderId" />
 			</div>
 		}
 	</DialogContent>
@@ -37,7 +37,7 @@
 </MudDialog>
 
 
-	@code {
+@code {
 
 	[Parameter]
 	public long CourseId { get; set; }
@@ -47,7 +47,7 @@
 	[Parameter, EditorRequired]
 	public HashSet<FileItem> SelectedFiles { get; set; } = new(new FolderContentItemIdEqualityComparer());
 
-	public HashSet<FileItem> _selectedFiles { get; set; } = new(new FolderContentItemIdEqualityComparer());
+	public HashSet<FolderContentItem> _selectedItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
 
 	bool Loading => _course is null;
 
@@ -57,7 +57,7 @@
 		Dialog.Options.MaxWidth = MaxWidth.Large;
 		Dialog.SetOptions(Dialog.Options);
 
-		_selectedFiles = new(SelectedFiles, new FolderContentItemIdEqualityComparer());
+		_selectedItems = new(SelectedFiles, new FolderContentItemIdEqualityComparer());
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -65,10 +65,17 @@
 		_course = await CourseService.GetCourseAsync(CourseId);
 	}
 
-
-	private async Task Submit()
+	private void Submit()
 	{
+		// Modify SelectedFiles so that it contains the same files as _selectedFiles
+		SelectedFiles.Clear();
+		SelectedFiles.UnionWith(_selectedItems.OfType<FileItem>());
+		Dialog.Close();
+	}
 
+	void closeFileChip(MudChip chip)
+	{
+		_selectedItems.Remove((FolderContentItem)chip.Value);
 	}
 
 	void Cancel()

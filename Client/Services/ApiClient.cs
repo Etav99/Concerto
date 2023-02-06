@@ -1160,12 +1160,12 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="ForumException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, long? relatedToFileId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ForumException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, long? relatedToFileId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="ForumException">A server side error occurred.</exception>
@@ -1261,15 +1261,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="ForumException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, long? relatedToFileId)
         {
-            return GetPostsAsync(courseId, beforeId, System.Threading.CancellationToken.None);
+            return GetPostsAsync(courseId, beforeId, relatedToFileId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ForumException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Post>> GetPostsAsync(long? courseId, long? beforeId, long? relatedToFileId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Forum/GetPosts?");
@@ -1280,6 +1280,10 @@ namespace Concerto.Client.Services
             if (beforeId != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("beforeId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(beforeId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (relatedToFileId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("relatedToFileId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(relatedToFileId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 

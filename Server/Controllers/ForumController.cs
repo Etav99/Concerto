@@ -26,10 +26,10 @@ public class ForumController : ControllerBase
 	private long UserId => HttpContext.UserId();
 
 	[HttpPost]
-	public async Task<ActionResult<IEnumerable<Post>>> GetPosts(long courseId, long? beforeId = null)
+	public async Task<ActionResult<IEnumerable<Post>>> GetPosts(long courseId, long? beforeId = null, long? relatedToFileId = null)
 	{
 		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
-		return Ok(await _forumService.GetPosts(courseId, UserId, User.IsAdmin(), beforeId));
+		return Ok(await _forumService.GetPosts(courseId, UserId, User.IsAdmin(), beforeId, relatedToFileId));
 	}
 
 	[HttpPost]
