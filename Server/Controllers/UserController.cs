@@ -52,7 +52,7 @@ public class UserController : ControllerBase
 	{
 		return await _userService.GetUsers(UserId);
 	}
-
+	
 	[HttpGet]
 	public async Task<IEnumerable<User>> Search([FromQuery] string searchString)
 	{

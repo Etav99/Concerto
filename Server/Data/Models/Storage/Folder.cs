@@ -13,8 +13,8 @@ public class Folder : Entity
 	public long CourseId { get; set; }
 	public Course Course { get; set; } = null!;
 
-	public long OwnerId { get; set; }
-	public User Owner { get; set; } = null!;
+	public long? OwnerId { get; set; }
+	public User? Owner { get; set; }
 
 	public long? ParentId { get; set; }
 	public Folder? Parent { get; set; }
@@ -28,30 +28,31 @@ public class Folder : Entity
 	public bool IsCourseRoot => Type is FolderType.CourseRoot;
 	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
 
-	public static Folder NewRoot(long courseId, long ownerId)
+	public static Folder NewRoot(long courseId)
+	{
+		// Create course root folder, with default read permissions for course members
+		var rootFolder = new Folder
+		{
+			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
+			CourseId = courseId,
+			Name = "Root",
+			Type = FolderType.CourseRoot,
+		};
+
+		return rootFolder;
+	}
+
+	public static Folder NewSessionsFolder(long courseId)
 	{
 		// Create course sessions folder, with default read permissions for course members
 		var sessionsFolder = new Folder
 		{
 			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
-			OwnerId = ownerId,
 			CourseId = courseId,
 			Name = "Sessions",
 			Type = FolderType.Sessions
 		};
-
-		// Create course root folder, with default read permissions for course members
-		var rootFolder = new Folder
-		{
-			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
-			OwnerId = ownerId,
-			CourseId = courseId,
-			Name = "Root",
-			Type = FolderType.CourseRoot,
-			SubFolders = new List<Folder>{sessionsFolder}
-		};
-
-		return rootFolder;
+		return sessionsFolder;
 	}
 }
 

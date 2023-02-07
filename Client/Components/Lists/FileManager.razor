@@ -14,7 +14,7 @@
 @inject IJSRuntime JS
 @inject IAccessTokenProvider AccessTokenProvider
 
-<MudPaper Class="@Class" Style="@($"{Style}")" Elevation="@Elevation" Outlined="@Outlined">
+<MudPaper Class="@Class" Style="@Style" Elevation="@Elevation" Outlined="@Outlined">
 	@if (FolderContent is not null)
 	{
 		<MudPaper Height="45px" Outlined="false" Elevation="0"
@@ -557,12 +557,6 @@
 		await Refresh();
 	}
 
-	public async Task DeleteFolder(FolderItem folder)
-	{
-		await StorageService.DeleteFolderAsync(folder.Id);
-		await Refresh();
-	}
-
 	public async Task DeleteSelected()
 	{
 		var request = new DeleteFolderItemsRequest
@@ -606,7 +600,22 @@
 		}
 
 	}
+	
+	public async Task DeleteFolder(FolderItem folder)
+	{
+		try
+		{
+			if (!await DialogService.ShowDeleteConfirmationDialog("Delete folder", "Folder", folder.Name)) return;
+			await StorageService.DeleteFolderAsync(folder.Id);
+			Snackbar.Add("Folder deleted", Severity.Success);
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to delete folder {folder.Name}", Severity.Success);
+		}
+		await Refresh();
 
+	}
 
 	public async Task DeleteFile(FileItem file)
 	{
@@ -618,7 +627,7 @@
 		}
 		catch
 		{
-			Snackbar.Add("Failed to delete file", Severity.Success);
+			Snackbar.Add($"Failed to delete file {file.FullName}", Severity.Success);
 		}
 		await Refresh();
 	}

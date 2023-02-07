@@ -59,7 +59,7 @@ public record FileItem(
 public record FolderSettings(
 	long Id,
 	string Name,
-	long OwnerId,
+	long? OwnerId,
 	long CourseId,
 	FolderType Type,
 	FolderPermission CoursePermission,
@@ -117,7 +117,7 @@ public static class FolderTypeExtensions
 		return type switch
 		{
 			FolderType.CourseRoot => "Course Root",
-			FolderType.Sessions => "Sessions",
+			FolderType.Sessions => "Session recordings",
 			FolderType.Sheets => "Sheets",
 			FolderType.Recordings => "Recordings",
 			FolderType.Video => "Video",

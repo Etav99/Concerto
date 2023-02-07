@@ -3,7 +3,6 @@ using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
-using User = Concerto.Shared.Models.Dto.User;
 
 namespace Concerto.Server.Services;
 
@@ -24,13 +23,13 @@ public class UserService
 		return user?.Id;
 	}
 
-	public async Task<User?> GetUser(long userId)
+	public async Task<Dto.User?> GetUser(long userId)
 	{
 		var user = await _context.Users.FindAsync(userId);
 		return user?.ToViewModel();
 	}
 
-	public async Task<User?> GetUser(Guid subjectId)
+	public async Task<Dto.User?> GetUser(Guid subjectId)
 	{
 		var user = await _context.Users.Where(u => u.SubjectId == subjectId).FirstOrDefaultAsync();
 		return user?.ToViewModel();
@@ -64,7 +63,7 @@ public class UserService
 		return user.Id;
 	}
 
-	public async Task<IEnumerable<User>> GetUsers(long userId)
+	public async Task<IEnumerable<Dto.User>> GetUsers(long userId)
 	{
 		var users = await _context.Users
 			.Where(u => u.Id != userId)
@@ -73,7 +72,7 @@ public class UserService
 		return users;
 	}
 
-	public async Task<IEnumerable<User>> SearchWithoutUser(long userId, string searchString)
+	public async Task<IEnumerable<Dto.User>> SearchWithoutUser(long userId, string searchString)
 	{
 		return await _context.Users
 			.Where(u => u.Id != userId && (EF.Functions.ILike(u.Username, $"%{searchString}%")
@@ -83,7 +82,7 @@ public class UserService
 			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<User>> Search(string searchString)
+	public async Task<IEnumerable<Dto.User>> Search(string searchString)
 	{
 		return await _context.Users
 			.Where(u => EF.Functions.ILike(u.Username, $"%{searchString}%")

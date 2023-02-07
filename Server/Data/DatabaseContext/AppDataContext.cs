@@ -76,7 +76,7 @@ public class AppDataContext : DbContext
 		modelBuilder.Entity<Folder>()
 			.HasOne(f => f.Owner)
 			.WithMany()
-			.IsRequired()
+			.IsRequired(false)
 			.HasForeignKey(c => c.OwnerId)
 			.OnDelete(DeleteBehavior.SetNull);
 

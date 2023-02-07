@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Concerto.Client;
 using Concerto.Client.Services;
+using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -64,6 +65,13 @@ builder.Services.AddOidcAuthentication(options =>
 		options.UserOptions.RoleClaim = "role";
 	})
 	.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
+
+builder.Services.AddAuthorizationCore(options =>
+{
+	options.AddPolicy("AllowUnconfirmed", AuthorizationPolicies.IsAuthenticated());
+	options.AddPolicy("UnconfirmedOnly", AuthorizationPolicies.IsNotConfirmedPolicy());
+	options.DefaultPolicy = AuthorizationPolicies.IsConfirmedPolicy();
+});
 
 
 await builder.Build().RunAsync();

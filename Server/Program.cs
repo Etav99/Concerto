@@ -5,7 +5,9 @@ using Concerto.Server.Hubs;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Server.Settings;
+using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -72,18 +74,19 @@ builder.Services.AddAuthentication(options =>
 						var accessToken = context.Request.Query["access_token"];
 						if (!string.IsNullOrEmpty(accessToken))
 						{
-							// logger.LogDebug("Token set from query");
 							context.Token = accessToken;
 						}
 					}
-
 					return Task.CompletedTask;
 				}
 			};
 		}
 	);
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+	options.DefaultPolicy = AuthorizationPolicies.IsConfirmedPolicy();
+});
 
 
 // Configure database context

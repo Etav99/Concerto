@@ -1,4 +1,5 @@
 ﻿using Concerto.Server.Services;
+using Concerto.Shared.Extensions;
 using Nito.AsyncEx;
 
 namespace Concerto.Server.Middlewares;
@@ -15,13 +16,13 @@ public class UserIdMapperMiddleware
 
 	public async Task InvokeAsync(HttpContext httpContext, UserService userService)
 	{
-		if (httpContext.User.Identity?.IsAuthenticated ?? false)
+		if (httpContext.User.Identity?.IsAuthenticated ?? false && httpContext.User.IsConfirmed())
 		{
 			using (await _mutex.LockAsync())
 			{
 				var userId = await userService.GetUserIdAndUpdate(httpContext.User);
 				httpContext.Items["AppUserId"] = userId;
-			}	
+			}
 		}
 
 		await _next(httpContext);

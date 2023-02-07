@@ -1,0 +1,28 @@
+﻿@page "/admin"
+@using Concerto.Client.Services;
+@using Microsoft.AspNetCore.Components.Authorization;
+
+
+@inject NavigationManager NavigationManager
+@inject HttpClient Http;
+@inject IBreadcrumbsService BreadcrumbsService
+@inject ICourseService CourseService;
+
+<PageTitle>Admin panel</PageTitle>
+
+	<MudTabs @ref="_tabs" Outlined="true" Position="Position.Top"
+	         ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
+
+		<MudTabPanel Text="Pending users">
+
+		</MudTabPanel>
+
+		<MudTabPanel Text="All users">
+
+		</MudTabPanel>
+
+	</MudTabs>
+
+@code {
+	MudTabs? _tabs;
+}

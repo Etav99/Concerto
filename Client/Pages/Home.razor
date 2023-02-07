@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Concerto.Client.Services;
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inject IBreadcrumbsService BreadcrumbsService
 
@@ -8,6 +9,11 @@
 <div class="pa-4">
 	<MudText Typo="Typo.h3" GutterBottom="true">Home</MudText>
 	<MudText Class="mb-8">Welcome to Concerto</MudText>
+
+	<AuthorizeView Policy="UnconfirmedOnly">
+		<MudAlert Severity="Severity.Warning">An administrator must verify your account before accessing Concerto. Please come back later or contact your administrator.</MudAlert>
+	</AuthorizeView>
+
 </div>
 
 @code {

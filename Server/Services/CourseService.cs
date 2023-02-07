@@ -50,13 +50,15 @@ public class CourseService
 		await _context.Courses.AddAsync(course);
 		await _context.SaveChangesAsync();
 
-		var rootFolder = Folder.NewRoot(course.Id, userId);
+		var rootFolder = Folder.NewRoot(course.Id);
+		var sessionsFolder = Folder.NewSessionsFolder(course.Id);
 
 		await _context.Folders.AddAsync(rootFolder);
+		await _context.Folders.AddAsync(sessionsFolder);
 		await _context.SaveChangesAsync();
 
 		course.RootFolderId = rootFolder.Id;
-		course.SessionsFolderId = rootFolder.SubFolders.Where(f => f.Type is FolderType.Sessions).Single().Id;
+		course.SessionsFolderId = sessionsFolder.Id;
 		
 		await _context.SaveChangesAsync();
 
@@ -182,10 +184,13 @@ public class CourseService
 		if (course == null) return false;
 		
 		await _context.Entry(course).Reference(c => c.RootFolder).LoadAsync();
-		var rootFolder = course.RootFolder;
+		await _context.Entry(course).Reference(c => c.SessionsFolder).LoadAsync();
 		
-		if(rootFolder != null)
-			await _storageService.DeleteFolder(rootFolder.Id);
+		if(course.RootFolder != null)
+			await _storageService.DeleteFolder(course.RootFolder.Id);
+
+		if (course.SessionsFolder != null)
+			await _storageService.DeleteFolder(course.SessionsFolder.Id);
 
 		_context.Remove(course);
 		await _context.SaveChangesAsync();

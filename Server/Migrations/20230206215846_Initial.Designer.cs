@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230206180902_Initial")]
+    [Migration("20230206215846_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -130,7 +130,7 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("OwnerId")
+                    b.Property<long?>("OwnerId")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("ParentId")
@@ -217,7 +217,8 @@ namespace Concerto.Server.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("FolderId");
+                    b.HasIndex("FolderId")
+                        .IsUnique();
 
                     b.ToTable("Sessions");
                 });
@@ -385,8 +386,7 @@ namespace Concerto.Server.Migrations
                     b.HasOne("Concerto.Server.Data.Models.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Concerto.Server.Data.Models.Folder", "Parent")
                         .WithMany("SubFolders")
@@ -450,9 +450,9 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("Concerto.Server.Data.Models.Folder", "Folder")
-                        .WithMany()
-                        .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne()
+                        .HasForeignKey("Concerto.Server.Data.Models.Session", "FolderId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Course");

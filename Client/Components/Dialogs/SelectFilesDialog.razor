@@ -14,9 +14,9 @@
 	<DialogContent>
 		@if (!Loading)
 		{
-			<div style="display: grid; grid-template-rows: min-content 1fr; height: calc(100vh - 134px)">
+			<div style="height: calc(100vh - 134px)">
 
-				<div style="min-height: 48px; max-height: 84px; overflow: scroll;">
+				<div style="height: 84px; overflow: scroll;">
 					Selected Files:
 					@foreach (var file in _selectedItems.OfType<FileItem>())
 					{
@@ -24,7 +24,7 @@
 					}
 				</div>
 				
-				<FileManager Class="" Style="height: calc(100%)" Outlined="true" Elevation="0"
+				<FileManager Class="" Style="height: calc(100% - 84px)" Outlined="true" Elevation="0"
 						 SelectFilesMode="true" SelectedItems="_selectedItems" OnSelectedItemsChanged="() => StateHasChanged()" InitialFolderId="_course!.RootFolderId" />
 			</div>
 		}

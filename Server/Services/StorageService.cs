@@ -63,7 +63,17 @@ public class StorageService
         await _context.Entry(folder).Collection(c => c.SubFolders).LoadAsync();
         await _context.Entry(folder).Collection(c => c.Files).LoadAsync();
 
-        var subFolders = new List<Dto.FolderItem>();
+        // get sessions folder if course root
+		if (folder.IsCourseRoot)
+		{
+			var course = await _context.Courses.FindAsync(folder.CourseId);
+			if (course == null) return null;
+			await _context.Entry(course).Reference(c => c.SessionsFolder).LoadAsync();
+			if (course.SessionsFolder == null) return null;
+			folder.SubFolders.Add(course.SessionsFolder);
+        }
+
+		var subFolders = new List<Dto.FolderItem>();
         foreach (var subFolder in folder.SubFolders)
             if (isAdmin)
             {
@@ -77,7 +87,7 @@ public class StorageService
                 subFolders.Add(subFolder.ToFolderItem(canWrite, canEdit, canDelete));
             }
 
-        var files = new List<Dto.FileItem>();
+		var files = new List<Dto.FileItem>();
         foreach (var file in folder.Files)
         {
             var canManageFile = isAdmin || await CanManageFile(userId, file.Id);
@@ -599,6 +609,7 @@ public class StorageService
         copiedFolder.ParentId = null;
         copiedFolder.CourseId = courseId;
         if (newOwner.HasValue) copiedFolder.OwnerId = newOwner.Value;
+        if (copiedFolder.Type is FolderType.Sessions) copiedFolder.Type = FolderType.Recordings;
     }
 
     internal async Task MoveFiles(IEnumerable<long> fileIds, long destinationFolderId)

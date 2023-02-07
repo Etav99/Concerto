@@ -103,7 +103,7 @@ namespace Concerto.Server.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
-                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    OwnerId = table.Column<long>(type: "bigint", nullable: true),
                     ParentId = table.Column<long>(type: "bigint", nullable: true),
                     CoursePermissionType = table.Column<int>(name: "CoursePermission_Type", type: "integer", nullable: false),
                     CoursePermissionInherited = table.Column<bool>(name: "CoursePermission_Inherited", type: "boolean", nullable: false)
@@ -187,7 +187,7 @@ namespace Concerto.Server.Migrations
                         column: x => x.FolderId,
                         principalTable: "Folders",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -332,7 +332,8 @@ namespace Concerto.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_FolderId",
                 table: "Sessions",
-                column: "FolderId");
+                column: "FolderId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UploadedFiles_FolderId",
