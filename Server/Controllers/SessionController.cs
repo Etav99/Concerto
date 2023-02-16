@@ -26,11 +26,10 @@ public class SessionController : ControllerBase
 
 	private long UserId => HttpContext.UserId();
 
-	[Authorize(Roles = "teacher")]
 	[HttpPost]
 	public async Task<ActionResult<long>> CreateSession([FromBody] CreateSessionRequest request)
 	{
-		if (!await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
+		if (!await _courseService.CanManageCourseSessions(request.CourseId, UserId)) return Forbid();
 		
 		var sessionId = await _sessionService.CreateSession(request, UserId);
 		if (sessionId is not null) return Ok(sessionId);

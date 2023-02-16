@@ -3,7 +3,7 @@
 @using Concerto.Shared.Models.Dto;
 @inject IJSRuntime JS
 @inject IStorageService StorageService 
-@implements IDisposable
+@implements IAsyncDisposable
 
 <style>
 	.container {
@@ -64,6 +64,7 @@
 					{
 						<option value="@input.Id">@input.Name</option>
 					}
+					<option value="none">None</option>
 				</select>
 			</div>
 		}
@@ -108,7 +109,7 @@
 	{
 		var audioDevices = await GetAudioInputs();
 		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
-		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : null;
+		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : "none";
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -157,8 +158,10 @@
 		audioInputs = names.Zip(ids, (name, id) => (name, id)).ToArray();
 	}
 
-	public void Dispose()
+	public async ValueTask DisposeAsync()
 	{
+		if(isRecording)
+            await StopRecording();
 		_dotNetObjectReference?.Dispose();
 	}
 

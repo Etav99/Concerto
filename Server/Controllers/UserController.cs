@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
+using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,35 +60,35 @@ public class UserController : ControllerBase
 		return await _userService.SearchWithoutUser(UserId, searchString);
 	}
 
-	[Authorize(Roles = "admin")]
+	[Authorize(Policy = AuthorizationPolicies.IsAdmin.Name)]
 	[HttpGet]
 	public async Task<IEnumerable<Dto.UserIdentity>> GetUnverifiedUserIdentities()
 	{
 		return await _userService.GetUnverifiedUserIdentities();
 	}
 
-	[Authorize(Roles = "admin")]
+	[Authorize(Policy = AuthorizationPolicies.IsAdmin.Name)]
 	[HttpGet]
 	public async Task<IEnumerable<Dto.UserIdentity>> GetUserIdentities()
 	{
 		return await _userService.GetUserIdentities(UserId);
 	}
 	
-	[Authorize(Roles = "admin")]
+	[Authorize(Policy = AuthorizationPolicies.IsAdmin.Name)]
 	[HttpPost]
 	public async Task VerifiyUser(Guid subjectId)
 	{
 		await _userService.VerifyUser(subjectId);
 	}
 
-	[Authorize(Roles = "admin")]
+	[Authorize(Policy = AuthorizationPolicies.IsAdmin.Name)]
 	[HttpPost]
 	public async Task SetUserRole(Guid subjectId, Role role)
 	{
 		await _userService.SetUserRole(subjectId, role);
 	}
 
-	[Authorize(Roles = "admin")]
+	[Authorize(Policy = AuthorizationPolicies.IsAdmin.Name)]
 	[HttpDelete]
 	public async Task DeleteUser(Guid subjectId)
 	{

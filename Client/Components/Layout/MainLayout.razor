@@ -28,7 +28,7 @@
 		<MudAppBar Elevation="0" Dense="true">
 			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())" />
 			<NavigationToolbar />
-			<AuthorizeView Policy="@AuthorizationPolicies.IsNotVerified.Name">
+			<AuthorizeView Policy="@AuthorizationPolicies.IsAuthenticated.Name">
 				<Authorized>
 					<UploadManager />
 					<MudMenu Dense="true" AnchorOrigin="Origin.BottomRight">

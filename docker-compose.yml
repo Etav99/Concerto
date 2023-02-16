@@ -1,2 +1,64 @@
 version: '3.4'
 
+volumes:
+  postgres_data:
+      driver: local
+  pgadmin_data:
+  keycloak_data:
+  concerto_files:
+
+services:
+
+
+  postgres:
+      image: postgres:15.0
+      container_name: Postgres
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+        POSTGRES_USER: postgres
+      ports:
+        - 5432:5432
+
+  pgadmin:
+      container_name: pgadmin
+      image: dpage/pgadmin4
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@admin.com
+        PGADMIN_DEFAULT_PASSWORD: admin
+      ports:
+        - 7100:80
+      volumes:
+        - pgadmin_data:/var/lib/pgadmin
+
+  keycloak:
+      image: quay.io/keycloak/keycloak:20.0.3
+      container_name: keycloak
+      environment:
+        KC_PROXY: "edge"
+        KC_HTTP_ENABLED: "true"
+        KC_HOSTNAME_PATH: /concerto/keycloak
+        KC_HTTP_RELATIVE_PATH: /concerto/keycloak
+
+
+        KC_HOSTNAME_URL: "http://localhost:7200/concerto/keycloak"
+        KC_HOSTNAME_STRICT_HTTPS: "false"
+        KC_HOSTNAME_ADMIN_URL: "http://localhost:7200/concerto/keycloak"
+        
+        KEYCLOAK_ADMIN: admin
+        KEYCLOAK_ADMIN_PASSWORD: h96lazwA9lnFUhza6M8r0jOW2d
+        
+        KC_DB: postgres
+        KC_DB_PASSWORD: E20zX3yraj6AJlW0jq0Y0d3wQS
+        KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+        KC_DB_USERNAME: postgres
+      ports:
+        - 7200:8080
+      depends_on:
+        - postgres
+      volumes:
+        - keycloak_data:/var/lib/keycloak/data
+      command: start

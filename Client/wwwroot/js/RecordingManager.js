@@ -89,10 +89,12 @@ class RecordingManager
         }
         
         // mix audio from screen and microphone
-        if (selectedAudioInputId && selectedAudioInputId.length > 0)
-            this.micMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: selectedAudioInputId } });
-        else
-            this.micMediaStream = await navigator.mediaDevices.getUserMedia({audio: true, video: false });
+        if (selectedAudioInputId != "none") {
+            if (selectedAudioInputId && selectedAudioInputId.length > 0)
+                this.micMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: selectedAudioInputId } });
+            else
+                this.micMediaStream = await navigator.mediaDevices.getUserMedia({audio: true, video: false });
+        }
 
         try {
             this.micInput = this.audioContext.createMediaStreamSource(this.micMediaStream);
@@ -149,19 +151,19 @@ class RecordingManager
         this.recorder.onstop = () =>
         {
             this.stream?.getTracks().forEach((track) => track.stop());
-            recordingManager.screenMediaStream.getTracks().forEach((track) => track.stop());
-            recordingManager.micMediaStream.getTracks().forEach((track) => track.stop());
+            recordingManager.screenMediaStream?.getTracks().forEach((track) => track.stop());
+            recordingManager.micMediaStream?.getTracks().forEach((track) => track.stop());
             recordingManager.videoFileWorker.postMessage(["e"]);
         };
 
         // stop recording on stream inactive
-        this.screenMediaStream.getVideoTracks().forEach((track) => {
+        this.screenMediaStream?.getVideoTracks().forEach((track) => {
             track.onended = async () => {
                 await recordingManager.stopRecording();
             };
         });
         
-        this.micMediaStream.getAudioTracks().forEach((track) => {
+        this.micMediaStream?.getAudioTracks().forEach((track) => {
             track.onended = async () => {
                 await recordingManager.stopRecording();
             };

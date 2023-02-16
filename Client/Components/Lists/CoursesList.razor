@@ -21,7 +21,7 @@ else
 {
 	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<CourseListItem, bool>(CourseFilter)"
 		  Style="@TableStyle" Class="@Class" Height="100%" FixedHeader="true" FixedFooter="true" Outlined="true"
-	          RowsPerPage="PageSize.Default">
+		  RowsPerPage="PageSize.Default" RowStyle="cursor: pointer;" OnRowClick="OnRowClick">
 		<ToolBarContent>
 			<MudText Class="mr-2" Typo="Typo.subtitle1">Your courses</MudText>
 			<MudSpacer/>
@@ -146,9 +146,9 @@ else
 		await Initialize();
 	}
 
-	private void SelectCourse(CourseListItem course)
+	private async Task SelectCourse(CourseListItem course)
 	{
-		OnCourseSelected.InvokeAsync(course.Id);
+		await OnCourseSelected.InvokeAsync(course.Id);
 	}
 
 	private async Task DeleteCourse(CourseListItem course)
@@ -166,9 +166,9 @@ else
 		}
 	}
 
-	private void OnRowClick(TableRowClickEventArgs<CourseListItem> rowClick)
+	private async Task OnRowClick(TableRowClickEventArgs<CourseListItem> rowClick)
 	{
-		SelectCourse(rowClick.Item);
+		await SelectCourse(rowClick.Item);
 	}
 
 	private async Task CreateCourse()

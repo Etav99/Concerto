@@ -14,9 +14,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AdditionalComposeFilePaths>compose/docker-compose.base.yml;compose/docker-compose.base.override.yml</AdditionalComposeFilePaths>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProxy|AnyCPU'">
-    <AdditionalComposeFilePaths>compose/docker-compose.proxy.yml;compose/docker-compose.proxy.override.yml</AdditionalComposeFilePaths>
-  </PropertyGroup>
   <ItemGroup>
     <None Include="compose/docker-compose.base.override.yml">
       <DependentUpon>compose/docker-compose.base.yml</DependentUpon>
@@ -30,6 +27,7 @@
     <None Include="compose/docker-compose.base.yml">
       <DependentUpon>compose/docker-compose.yml</DependentUpon>
     </None>
+    <None Include="docker-compose.override.yml" />
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="nginx\Dockerfile" />

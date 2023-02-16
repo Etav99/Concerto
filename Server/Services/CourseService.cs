@@ -2,6 +2,7 @@
 using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Concerto.Server.Services;
 

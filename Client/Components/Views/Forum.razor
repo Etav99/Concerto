@@ -298,6 +298,7 @@ else
 	private void CreatePost()
 	{
 		_createPostRequest = new CreatePostRequest(CourseId);
+		_createPostFiles = new(new FolderContentItemIdEqualityComparer());
 	}
 
 	private void CancelCreatePost()
