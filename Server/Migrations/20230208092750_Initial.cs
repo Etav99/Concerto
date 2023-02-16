@@ -59,7 +59,6 @@ namespace Concerto.Server.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    OwnerId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     RootFolderId = table.Column<long>(type: "bigint", nullable: true),
                     SessionsFolderId = table.Column<long>(type: "bigint", nullable: true)

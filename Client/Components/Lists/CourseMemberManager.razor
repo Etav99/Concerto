@@ -1,4 +1,5 @@
 ﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions;
 @using Concerto.Shared.Models.Dto
 @using Concerto.Client.Services
 @using Concerto.Client.Components.Input
@@ -7,7 +8,7 @@
 
 	<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
 			  RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
-			  RowsPerPage="25" 
+			  RowsPerPage="PageSize.Default" 
 			  SortLabel="Sort By" Dense="true" Hover="true"  Outlined="true" FixedFooter="true" FixedHeader="true"
 			  Height="100%" Class="@Class" Style="@TableStyle">
 
@@ -134,7 +135,7 @@
 		</FooterContent>
 
 		<PagerContent>
-			<MudTablePager Style="" Class=""  PageSizeOptions="new[] { 25, 50, 100 }"/>
+			<MudTablePager Style="" Class=""  PageSizeOptions="PageSize.DefaultOptions"/>
 		</PagerContent>
 
 	</MudTable>

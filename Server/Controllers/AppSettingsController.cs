@@ -14,6 +14,7 @@ public class AppSettingsController : ControllerBase
 		var x = new ClientAppSettings
 		{
 			AuthorityUrl = AppSettings.Oidc.ClientAuthority,
+			AdminConsoleUrl = AppSettings.IdentityProvider.AdminConsoleUrl,
 			AccountManagementUrl = AppSettings.IdentityProvider.AccountConsoleUrl,
 			PostLogoutUrl = AppSettings.Oidc.ClientPostLogoutRedirectUrl,
 			FileSizeLimit = AppSettings.Storage.FileSizeLimit,

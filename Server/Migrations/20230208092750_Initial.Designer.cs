@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230206215846_Initial")]
+    [Migration("20230208092750_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -76,9 +76,6 @@ namespace Concerto.Server.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<long>("OwnerId")
-                        .HasColumnType("bigint");
 
                     b.Property<long?>("RootFolderId")
                         .HasColumnType("bigint");
@@ -365,7 +362,7 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("Concerto.Server.Data.Models.User", "User")
-                        .WithMany("CoursesUser")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -551,11 +548,6 @@ namespace Concerto.Server.Migrations
             modelBuilder.Entity("Concerto.Server.Data.Models.Post", b =>
                 {
                     b.Navigation("Comments");
-                });
-
-            modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
-                {
-                    b.Navigation("CoursesUser");
                 });
 #pragma warning restore 612, 618
         }

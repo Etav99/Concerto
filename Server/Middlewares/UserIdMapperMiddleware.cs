@@ -16,7 +16,7 @@ public class UserIdMapperMiddleware
 
 	public async Task InvokeAsync(HttpContext httpContext, UserService userService)
 	{
-		if (httpContext.User.Identity?.IsAuthenticated ?? false && httpContext.User.IsConfirmed())
+		if (httpContext.User.Identity?.IsAuthenticated ?? false && httpContext.User.IsVerified())
 		{
 			using (await _mutex.LockAsync())
 			{

@@ -144,7 +144,7 @@ else
 
 	private async Task Delete()
 	{
-		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", CourseSettings!.Name, true)) return;
+		if (!await DialogService.ShowConfirmationDialog("Delete course", "delete", "course", CourseSettings!.Name, true)) return;
 		try
 		{
 			await CourseService.DeleteCourseAsync(CourseSettings.Id);

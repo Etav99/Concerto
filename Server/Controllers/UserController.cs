@@ -24,7 +24,7 @@ public class UserController : ControllerBase
 	private long UserId => HttpContext.UserId();
 
 	[HttpGet]
-	public async Task<User?> GetUser([FromQuery] long userId)
+	public async Task<Dto.User?> GetUser([FromQuery] long userId)
 	{
 		return await _userService.GetUser(userId);
 	}
@@ -42,21 +42,56 @@ public class UserController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<User?> GetCurrentUser()
+	public async Task<Dto.User?> GetCurrentUser()
 	{
 		return await _userService.GetUser(UserId);
 	}
 
 	[HttpGet]
-	public async Task<IEnumerable<User>> GetUsers()
+	public async Task<IEnumerable<Dto.User>> GetUsers()
 	{
 		return await _userService.GetUsers(UserId);
 	}
 	
 	[HttpGet]
-	public async Task<IEnumerable<User>> Search([FromQuery] string searchString)
+	public async Task<IEnumerable<Dto.User>> Search([FromQuery] string searchString)
 	{
 		return await _userService.SearchWithoutUser(UserId, searchString);
+	}
+
+	[Authorize(Roles = "admin")]
+	[HttpGet]
+	public async Task<IEnumerable<Dto.UserIdentity>> GetUnverifiedUserIdentities()
+	{
+		return await _userService.GetUnverifiedUserIdentities();
+	}
+
+	[Authorize(Roles = "admin")]
+	[HttpGet]
+	public async Task<IEnumerable<Dto.UserIdentity>> GetUserIdentities()
+	{
+		return await _userService.GetUserIdentities(UserId);
+	}
+	
+	[Authorize(Roles = "admin")]
+	[HttpPost]
+	public async Task VerifiyUser(Guid subjectId)
+	{
+		await _userService.VerifyUser(subjectId);
+	}
+
+	[Authorize(Roles = "admin")]
+	[HttpPost]
+	public async Task SetUserRole(Guid subjectId, Role role)
+	{
+		await _userService.SetUserRole(subjectId, role);
+	}
+
+	[Authorize(Roles = "admin")]
+	[HttpDelete]
+	public async Task DeleteUser(Guid subjectId)
+	{
+		await _userService.DeleteUser(subjectId);
 	}
 }
 

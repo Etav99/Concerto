@@ -24,7 +24,6 @@ public class CourseService
 		// Create course
 		var course = new Data.Models.Course
 		{
-			OwnerId = userId,
 			Name = request.Name,
 			CreatedDate = DateTime.UtcNow
 		};

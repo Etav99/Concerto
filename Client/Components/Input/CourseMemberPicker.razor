@@ -1,12 +1,13 @@
 ﻿@inject IUserService UserService
 @using Concerto.Client.Components.Layout;
 @using Concerto.Client.Services
+@using Concerto.Client.Extensions
 @using Concerto.Shared.Models.Dto
 @inherits MudComponentBase
 
 
 	<MudTable @ref="table" T="User" Items="Users" MultiSelection="true" @bind-SelectedItems="SelectedUsers" Filter="new Func<User, bool>(Filter)"
-			  RowsPerPage="50" Loading="Loading" RowClassFunc="RowClassFunc"
+			  RowsPerPage="PageSize.Default"
 			  SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
 			 Style="@TableStyle" Class="@Class" Height="@TableContentHeight" RowStyle="text-align: right;">
 
@@ -63,21 +64,11 @@
 		</RowTemplate>
 
 		<FooterContent>
-			@if (_editing)
-			{
-				<MudTd DataLabel="">
-					<MudCheckBox Dense="true" Disabled="true" Checked="Users.Count == SelectedUsers.Count"/>
-				</MudTd>
 				<MudTd colspan="4">Select All</MudTd>
-			}
-			else
-			{
-				<MudTd colspan="4">Select All</MudTd>
-			}
 		</FooterContent>
 
 		<PagerContent>
-			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
+			<MudTablePager PageSizeOptions="PageSize.DefaultOptions"/>
 		</PagerContent>
 
 	</MudTable>
@@ -106,8 +97,6 @@
 	private HashSet<User> Users { get; set; } = new();
 
 	private string _searchString = "";
-
-	bool _editing = false;
 
 	MudTable<User>? table;
 

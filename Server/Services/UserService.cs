@@ -2,6 +2,7 @@
 using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
 using Concerto.Shared.Extensions;
+using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Services;
@@ -9,12 +10,14 @@ namespace Concerto.Server.Services;
 public class UserService
 {
 	private readonly AppDataContext _context;
+	private readonly IdentityManagerService _identityManagerService;
 	private readonly ILogger<UserService> _logger;
 
-	public UserService(ILogger<UserService> logger, AppDataContext context)
+	public UserService(ILogger<UserService> logger, AppDataContext context, IdentityManagerService identityManagerService)
 	{
 		_logger = logger;
 		_context = context;
+		_identityManagerService = identityManagerService;
 	}
 
 	public async Task<long?> GetUserId(Guid subjectId)
@@ -90,6 +93,51 @@ public class UserService
 			)
 			.Select(u => u.ToViewModel())
 			.ToListAsync();
+	}
+
+	public async Task<IEnumerable<Dto.UserIdentity>> GetUnverifiedUserIdentities()
+	{
+		return await _identityManagerService.GetUnverifiedUsers();
+	}
+	
+	public async Task<IEnumerable<Dto.UserIdentity>> GetUserIdentities(long userId)
+	{
+		var user = await _context.Users.FindAsync(userId);
+		if (user is null)
+			return Enumerable.Empty<Dto.UserIdentity>();
+		return await _identityManagerService.GetUsers(user.SubjectId);
+	}
+	
+	public async Task VerifyUser(Guid subjectId)
+	{
+		await _identityManagerService.VerifyUser(subjectId);
+	}
+
+	public async Task DeleteUser(long userId)
+	{
+		var user = await _context.Users.FindAsync(userId);
+		if (user is not null)
+		{
+			await _identityManagerService.DeleteUser(user.SubjectId);
+			_context.Users.Remove(user);
+			await _context.SaveChangesAsync();
+		}
+	}
+
+	public async Task DeleteUser(Guid subjectId)
+	{
+		await _identityManagerService.DeleteUser(subjectId);
+		var user = _context.Users.Where(u => u.SubjectId == subjectId).FirstOrDefault();
+		if (user is not null)
+		{
+			_context.Users.Remove(user);
+			await _context.SaveChangesAsync();
+		}
+	}
+
+	public async Task SetUserRole(Guid subjectId, Role role)
+	{
+		await _identityManagerService.SetRole(subjectId, role);
 	}
 }
 

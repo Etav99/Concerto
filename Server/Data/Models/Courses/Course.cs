@@ -6,7 +6,6 @@ public class Course : Entity
 {
 	public string Name { get; set; } = string.Empty;
 	public string Description { get; set; } = string.Empty;
-	public long OwnerId { get; set; }
 
 	public DateTime CreatedDate { get; set; }
 	public virtual ICollection<CourseUser> CourseUsers { get; set; } = null!;

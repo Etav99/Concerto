@@ -74,9 +74,6 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("OwnerId")
-                        .HasColumnType("bigint");
-
                     b.Property<long?>("RootFolderId")
                         .HasColumnType("bigint");
 
@@ -362,7 +359,7 @@ namespace Concerto.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("Concerto.Server.Data.Models.User", "User")
-                        .WithMany("CoursesUser")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -548,11 +545,6 @@ namespace Concerto.Server.Migrations
             modelBuilder.Entity("Concerto.Server.Data.Models.Post", b =>
                 {
                     b.Navigation("Comments");
-                });
-
-            modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
-                {
-                    b.Navigation("CoursesUser");
                 });
 #pragma warning restore 612, 618
         }

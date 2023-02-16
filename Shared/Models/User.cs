@@ -2,16 +2,17 @@
 
 namespace Concerto.Shared.Models.Dto;
 
-public record User
+public record User (long Id, string Username, string FirstName, string LastName)
 {
-	public long Id { get; init; }
-	public string Username { get; init; }
-	public string FirstName { get; init; }
-	public string LastName { get; init; }
-
 	public string FullName => $"{FirstName} {LastName}";
 	public string Initials => $"{FirstName.FirstOrDefault()}{LastName.FirstOrDefault()}";
 }
+
+public record UserIdentity(Guid SubjectId, string Username, string FirstName, string LastName, string Email, bool EmailVerified, Role Role)
+{
+	public string FullName => $"{FirstName} {LastName}";
+}
+
 
 public class UserIdEqualityComparer : IEqualityComparer<User>
 {
@@ -26,4 +27,10 @@ public class UserIdEqualityComparer : IEqualityComparer<User>
 	}
 }
 
-
+public enum Role
+{
+	Unverified,
+	User,
+	Teacher,
+	Admin,
+}

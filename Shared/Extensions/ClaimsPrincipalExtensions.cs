@@ -19,9 +19,9 @@ public static class ClaimsPrincipalExtensions
 		return user.IsInRole("user");
 	}
 
-	public static bool IsConfirmed(this ClaimsPrincipal user)
+	public static bool IsVerified(this ClaimsPrincipal user)
 	{
-		return !user.IsInRole("new");
+		return !user.IsInRole("unverified");
 	}
 
 	public static long? GetUserId(this ClaimsPrincipal user)

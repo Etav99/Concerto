@@ -122,7 +122,7 @@
 
 	private async Task DeleteSession(SessionListItem session)
 	{
-		if (!await DialogService.ShowDeleteConfirmationDialog("Delete session", "session", session.Name, true)) return;
+		if (!await DialogService.ShowConfirmationDialog("Delete session", "delete", "session", session.Name, true)) return;
 		try
 		{
 			await SessionService.DeleteSessionAsync(session.Id);

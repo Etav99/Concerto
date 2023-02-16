@@ -1,6 +1,7 @@
 ﻿@using Concerto.Client.Components.Layout;
 @using Concerto.Client.Extensions
 @using Concerto.Client.Services
+@using Concerto.Shared.Extensions;
 @using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Components.Authorization
 @using Concerto.Client.Components.Dialogs
@@ -20,7 +21,7 @@ else
 {
 	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<CourseListItem, bool>(CourseFilter)"
 		  Style="@TableStyle" Class="@Class" Height="100%" FixedHeader="true" FixedFooter="true" Outlined="true"
-	          RowsPerPage="25" OnRowClick="OnRowClick" RowStyle="cursor: pointer;" AllowUnsorted="false">
+	          RowsPerPage="PageSize.Default">
 		<ToolBarContent>
 			<MudText Class="mr-2" Typo="Typo.subtitle1">Your courses</MudText>
 			<MudSpacer/>
@@ -34,7 +35,7 @@ else
 					<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
 					@if (ManagementEnabled)
 					{
-						<AuthorizeView Roles="teacher">
+						<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name">
 							<MudIconButton DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false" />
 						</AuthorizeView>
 					}
@@ -52,7 +53,7 @@ else
 
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Roles="teacher">
+							<AuthorizeView Policy="@AuthorizationPolicies.IsAdmin.Name">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
 									  OnClick="CreateCourse" OnTouch="CreateCourse" Disabled="false">
 									Create course
@@ -90,7 +91,7 @@ else
 						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnTouch="() => SelectCourse(context)" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Roles="teacher" Context="auth">
+							<AuthorizeView Policy="@AuthorizationPolicies.IsAdmin.Name" Context="auth">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}
@@ -100,7 +101,7 @@ else
 			</MudTd>
 		</RowTemplate>
 		<PagerContent>
-			<MudTablePager PageSizeOptions="new[] { 25, 50, 100 }"/>
+			<MudTablePager PageSizeOptions="PageSize.DefaultOptions"/>
 		</PagerContent>
 	</MudTable>
 }
@@ -152,7 +153,7 @@ else
 
 	private async Task DeleteCourse(CourseListItem course)
 	{
-		if (!await DialogService.ShowDeleteConfirmationDialog("Delete course", "course", course.Name, true)) return;
+		if (!await DialogService.ShowConfirmationDialog("Delete course","delete", "course", course.Name, true)) return;
 		try
 		{
 			await CourseService.DeleteCourseAsync(course.Id);

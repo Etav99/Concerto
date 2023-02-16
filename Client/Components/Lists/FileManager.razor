@@ -605,7 +605,7 @@
 	{
 		try
 		{
-			if (!await DialogService.ShowDeleteConfirmationDialog("Delete folder", "Folder", folder.Name)) return;
+			if (!await DialogService.ShowConfirmationDialog("Delete folder", "delete", "Folder", folder.Name)) return;
 			await StorageService.DeleteFolderAsync(folder.Id);
 			Snackbar.Add("Folder deleted", Severity.Success);
 		}
@@ -621,7 +621,7 @@
 	{
 		try
 		{
-			if (!await DialogService.ShowDeleteConfirmationDialog("Delete file", "file", file.Name)) return;
+			if (!await DialogService.ShowConfirmationDialog("Delete file", "delete", "file", file.Name)) return;
 			await StorageService.DeleteFileAsync(file.Id);
 			Snackbar.Add("File deleted", Severity.Success);
 		}

@@ -1,4 +1,5 @@
-﻿@using Concerto.Shared.Models.Dto;
+﻿@using Concerto.Shared.Extensions;
+@using Concerto.Shared.Models.Dto;
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Microsoft.Extensions.Options
 @using Concerto.Client.Services
@@ -27,7 +28,7 @@
 		<MudAppBar Elevation="0" Dense="true">
 			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())" />
 			<NavigationToolbar />
-			<AuthorizeView Policy="AllowUnconfirmed">
+			<AuthorizeView Policy="@AuthorizationPolicies.IsNotVerified.Name">
 				<Authorized>
 					<UploadManager />
 					<MudMenu Dense="true" AnchorOrigin="Origin.BottomRight">

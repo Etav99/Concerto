@@ -224,6 +224,18 @@ public static class FolderContentItemExtensions
 
 		return $"{(float)size / 1073741824:F2} GB";
 	}
+
+	public static string ToDisplayString(this Role role)
+	{
+		return role switch
+		{
+			Role.Admin => "Administrator",
+			Role.Teacher => "Teacher",
+			Role.User => "User",
+			Role.Unverified => "Unverified",
+			_ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
+		};
+	}
 }
 
 

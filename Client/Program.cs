@@ -68,9 +68,12 @@ builder.Services.AddOidcAuthentication(options =>
 
 builder.Services.AddAuthorizationCore(options =>
 {
-	options.AddPolicy("AllowUnconfirmed", AuthorizationPolicies.IsAuthenticated());
-	options.AddPolicy("UnconfirmedOnly", AuthorizationPolicies.IsNotConfirmedPolicy());
-	options.DefaultPolicy = AuthorizationPolicies.IsConfirmedPolicy();
+	options.AddPolicy(AuthorizationPolicies.IsAuthenticated.Name, AuthorizationPolicies.IsAuthenticated.Policy());
+	options.AddPolicy(AuthorizationPolicies.IsVerified.Name, AuthorizationPolicies.IsVerified.Policy());
+	options.AddPolicy(AuthorizationPolicies.IsNotVerified.Name, AuthorizationPolicies.IsNotVerified.Policy());
+	options.AddPolicy(AuthorizationPolicies.IsAdmin.Name, AuthorizationPolicies.IsAdmin.Policy());
+	options.AddPolicy(AuthorizationPolicies.IsTeacher.Name, AuthorizationPolicies.IsTeacher.Policy());
+	options.DefaultPolicy = AuthorizationPolicies.IsVerified.Policy();
 });
 
 

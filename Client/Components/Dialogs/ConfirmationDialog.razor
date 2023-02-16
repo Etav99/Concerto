@@ -8,12 +8,12 @@
 		</MudContainer>
 		@if (Confirmation)
 		{
-			<MudSwitch @bind-Checked="@userSure" Label="I'm sure." Color="Color.Error"/>
+			<MudSwitch @bind-Checked="@userSure" Label="I'm sure." Color="Color.Warning"/>
 		}
 	</DialogContent>
 	<DialogActions>
-		<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
-		<MudButton Variant="Variant.Filled" Disabled="Confirmation && !userSure" Color="Color.Error" OnClick="Delete">Delete</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">No</MudButton>
+		<MudButton Variant="Variant.Filled" Disabled="Confirmation && !userSure" Color="Color.Success" OnClick="Delete">Yes</MudButton>
 	</DialogActions>
 </MudDialog>
 

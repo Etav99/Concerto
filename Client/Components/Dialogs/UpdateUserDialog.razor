@@ -1,0 +1,83 @@
+﻿@using Concerto.Client.Extensions;
+@using Concerto.Client.Services
+@using Concerto.Shared.Models.Dto
+@using Concerto.Client.Components.Input
+@inject HttpClient Http
+@inject IUserService UserService
+@inject ISnackbar Snackbar
+
+@inherits DialogAutoFullscreen
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6" Class="mr-8">
+			<MudIcon Class="text-icon" Icon="@Icons.Material.Filled.Settings"/>
+			User settings
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+        <MudStack Spacing="2">
+
+			<MudStack Justify="Justify.Center" Spacing="0">
+				<MudText Typo="Typo.caption">Name</MudText>
+				<MudText Class="pl-1" Typo="Typo.body1">@user.FullName</MudText>
+			</MudStack>
+
+			<MudStack Justify="Justify.Center" Spacing="0">
+				<MudText Typo="Typo.caption">Username</MudText>
+				<MudText Class="pl-1"  Typo="Typo.body1">@user.Username</MudText>
+			</MudStack>
+
+			<MudStack Justify="Justify.Center" Spacing="0">
+				<MudText Typo="Typo.caption">Email</MudText>
+				<MudText Class="pl-1" Typo="Typo.body1">@user.Email</MudText>
+			</MudStack>
+
+			<MudSelect @bind-Value="newRole" Margin="Margin.Dense" Variant="Variant.Outlined" Label="Role">
+				<MudSelectItem Value="Role.User">@Role.User.ToDisplayString()</MudSelectItem>
+				<MudSelectItem Value="Role.Teacher">@Role.Teacher.ToDisplayString()</MudSelectItem>
+                <MudSelectItem Value="Role.Admin">@Role.Admin.ToDisplayString()</MudSelectItem>
+			</MudSelect>
+
+        </MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Success" Variant="Variant.Filled" Disabled="!Changed" OnClick="Submit">Update</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[Parameter]
+	public UserIdentity user { get; set; } = null!;
+
+	Role newRole;
+
+	protected override void OnParametersSet()
+	{
+		newRole = user.Role;
+	}
+
+	private bool Changed => newRole != user.Role;
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
+	private async Task Submit()
+	{
+		try
+		{
+			await UserService.SetUserRoleAsync(user.SubjectId, newRole);
+			Snackbar.Add($"User {user.FullName} updated", Severity.Success);
+			Dialog.Close();
+		}
+		catch (UserException)
+        {
+            Snackbar.Add("Failed to update user", Severity.Error);
+        }
+	}
+
+}

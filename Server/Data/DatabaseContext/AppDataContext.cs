@@ -50,7 +50,7 @@ public class AppDataContext : DbContext
 		modelBuilder
 			.Entity<CourseUser>()
 			.HasOne(cu => cu.User)
-			.WithMany(c => c.CoursesUser)
+			.WithMany()
 			.HasForeignKey(cu => cu.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
@@ -139,96 +139,6 @@ public class AppDataContext : DbContext
 			.HasMany(uf => uf.ReferencedFiles)
 			.WithMany();
 		
-
-		/*        // Data seed
-		        modelBuilder.Entity<User>()
-		            .HasData(
-		                new User { Id = 1, FirstName = "Jan", LastName = "Administracyjny", Username = "admin", SubjectId = Guid.Parse("95f418ac-e38f-41ec-a2ad-828bdd3895d0") },
-		                new User { Id = 2, FirstName = "Piotr", LastName = "Testowy", Username = "user2", SubjectId = Guid.Parse("954af482-22dd-483f-ac99-975144f85a04") },
-		                new User { Id = 3, FirstName = "Jacek", LastName = "Testowy", Username = "user3", SubjectId = Guid.Parse("c786cbc3-9924-410f-bcdb-75a2469107be") },
-		                new User { Id = 4, FirstName = "John", LastName = "Smith", Username = "user4", SubjectId = Guid.Parse("f2c0a648-82bb-44a9-908e-8006577cb276") }
-		            );
-
-		        modelBuilder.Entity<Contact>()
-		            .HasData(
-		                new Contact { User1Id = 1, User2Id = 2, Status = ContactStatus.Accepted },
-		                new Contact { User1Id = 1, User2Id = 3, Status = ContactStatus.Accepted },
-		                new Contact { User1Id = 1, User2Id = 4, Status = ContactStatus.Accepted },
-		                new Contact { User1Id = 2, User2Id = 3, Status = ContactStatus.Accepted },
-		                new Contact { User1Id = 2, User2Id = 4, Status = ContactStatus.Accepted },
-		                new Contact { User1Id = 3, User2Id = 4, Status = ContactStatus.Accepted }
-		            );
-
-
-		        modelBuilder.Entity<ConversationUser>()
-		            .HasData(
-		                new ConversationUser { ConversationId = 1, UserId = 1 },
-		                new ConversationUser { ConversationId = 1, UserId = 2 },
-		                new ConversationUser { ConversationId = 2, UserId = 1 },
-		                new ConversationUser { ConversationId = 2, UserId = 3 },
-		                new ConversationUser { ConversationId = 3, UserId = 1 },
-		                new ConversationUser { ConversationId = 3, UserId = 4 },
-		                new ConversationUser { ConversationId = 4, UserId = 2 },
-		                new ConversationUser { ConversationId = 4, UserId = 3 },
-		                new ConversationUser { ConversationId = 5, UserId = 2 },
-		                new ConversationUser { ConversationId = 5, UserId = 4 },
-		                new ConversationUser { ConversationId = 6, UserId = 3 },
-		                new ConversationUser { ConversationId = 6, UserId = 4 },
-
-		                // Course 1
-		                new ConversationUser { ConversationId = 7, UserId = 1 },
-		                new ConversationUser { ConversationId = 7, UserId = 2 },
-		                new ConversationUser { ConversationId = 7, UserId = 3 },
-
-		                // Course 2
-		                new ConversationUser { ConversationId = 8, UserId = 1 },
-		                new ConversationUser { ConversationId = 8, UserId = 4 }
-		            );
-
-		        modelBuilder
-		            .Entity<Course>()
-		            .HasData(
-		                new Course { Id = 1, OwnerId = 1, Name = "Course 1", ConversationId = 7 },
-		                new Course { Id = 2, OwnerId = 1, Name = "Course 2", ConversationId = 8 }
-		            );
-
-		        modelBuilder
-		             .Entity<CourseUser>()
-		             .HasData(
-		                 // Course 1
-		                 new CourseUser { CourseId = 1, UserId = 1 },
-		                 new CourseUser { CourseId = 1, UserId = 2 },
-		                 new CourseUser { CourseId = 1, UserId = 3 },
-
-		                 // Course 2
-		                 new CourseUser { CourseId = 2, UserId = 1 },
-		                 new CourseUser { CourseId = 2, UserId = 4 }
-		             );
-
-		        modelBuilder
-		            .Entity<Conversation>()
-		            .HasData(
-		                new Conversation { Id = 1, IsPrivate = true },
-		                new Conversation { Id = 2, IsPrivate = true },
-		                new Conversation { Id = 3, IsPrivate = true },
-		                new Conversation { Id = 4, IsPrivate = true },
-		                new Conversation { Id = 5, IsPrivate = true },
-		                new Conversation { Id = 6, IsPrivate = true },
-		                new Conversation { Id = 7, IsPrivate = false },
-		                new Conversation { Id = 8, IsPrivate = false }
-		            );
-
-
-		        modelBuilder
-		            .Entity<ChatMessage>()
-		            .HasData(
-		                new ChatMessage { Id = 1, SenderId = 1, ConversationId = 1, Content = "Test message 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-5) },
-		                new ChatMessage { Id = 2, SenderId = 1, ConversationId = 1, Content = "Test message 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-3) },
-		                new ChatMessage { Id = 3, SenderId = 2, ConversationId = 1, Content = "Test reply 1", SendTimestamp = DateTime.UtcNow.AddMinutes(-2) },
-		                new ChatMessage { Id = 4, SenderId = 2, ConversationId = 1, Content = "Test reply 2", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) },
-		                new ChatMessage { Id = 5, SenderId = 1, ConversationId = 1, Content = "Test message 3", SendTimestamp = DateTime.UtcNow.AddMinutes(-1) }
-		            );*/
-
 		base.OnModelCreating(modelBuilder);
 	}
 }

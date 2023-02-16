@@ -1,0 +1,167 @@
+﻿@using Concerto.Client.Components.Layout;
+@using Concerto.Client.Extensions;
+@using Concerto.Client.Services;
+@using Concerto.Shared.Models.Dto;
+@inject IUserService UserService
+@inject IDialogService DialogService
+@inherits MudComponentBase
+
+<MudTable T="UserIdentity" Items="Users" Loading="Loading"
+		  Height="100%" Class="@Class" Style="@($"display: grid; grid-template-rows: min-content 1fr min-content; {Style}")" RowsPerPage="PageSize.Default" Filter="new Func<UserIdentity, bool>(UserFilter)"
+		  FixedHeader="true" FixedFooter="true" Outlined="true" Hover="true" Elevation="0">
+
+	<ToolBarContent>
+		<MudText Class="mr-2" Typo="Typo.subtitle1">Users</MudText>
+		<MudSpacer />
+		<MudTextField @bind-Value="_searchString" Immediate="true" DebounceInterval="200" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+					  Class="mt-0 mr-2" Style="" />
+		<MudSpacer />
+	</ToolBarContent>
+
+	<ColGroup>
+		<col />
+		<col />
+		<col />
+		<col />
+		<col />
+		<col />
+	</ColGroup>
+
+	<HeaderContent>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<UserIdentity, object>(x => x.FirstName)">Name</MudTableSortLabel>
+		</MudTh>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<UserIdentity, object>(x => x.LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
+		</MudTh>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<UserIdentity, object>(x => x.Username)">Username</MudTableSortLabel>
+		</MudTh>
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<UserIdentity, object>(x => x.Email)">Email</MudTableSortLabel>
+		</MudTh>
+
+		<MudTh>
+			<MudTableSortLabel SortBy="new Func<UserIdentity, object>(x => x.Role.ToDisplayString())">Role</MudTableSortLabel>
+		</MudTh>
+
+		<MudTh>
+			Actions
+		</MudTh>
+
+	</HeaderContent>
+
+	<RowTemplate>
+		<MudTd DataLabel="Name">@context.FirstName</MudTd>
+		<MudTd DataLabel="Surname">@context.LastName</MudTd>
+		<MudTd DataLabel="Username">@context.Username</MudTd>
+		<MudTd DataLabel="Email" Style="">
+			@if(context.EmailVerified)
+			{
+				<MudIcon Class="text-icon" Size="Size.Small" Color="Color.Success"  Icon="@Icons.Material.Filled.Verified" />
+			}
+			else
+			{
+				<MudIcon Class="text-icon" Size="Size.Small" Color="Color.Error" Icon="@Icons.Material.Filled.Error" />
+			}
+			@context.Email
+		</MudTd>
+
+
+		<MudTd DataLabel="Role" Style="">
+			@if (context.Role is Role.Unverified)
+			{
+				<MudIcon Class="text-icon" Size="Size.Small" Color="Color.Error" Icon="@Icons.Material.Filled.Error" />
+			}
+			else
+			{
+				<MudIcon Class="text-icon" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.VerifiedUser" />
+			}
+			@context.Role.ToDisplayString()
+		</MudTd>
+
+		<MudTd DataLabel="Actions">
+
+			@if(Unverified && context.Role == Role.Unverified)
+			{
+				<MudIconButton Disabled="!context.EmailVerified"  Variant="Variant.Filled" Color="Color.Success" DisableElevation="true" Icon="@Icons.Material.Filled.Check"
+						   OnClick="async () => await VerifyUser(context)"  />
+				<MudIconButton Variant="Variant.Filled" Color="Color.Error" DisableElevation="true" Icon="@Icons.Material.Filled.Close"
+						   OnClick="async () => await DeleteUser(context)"  />
+			}
+			else
+			{
+				<MudIconButton Variant="Variant.Filled" Color="Color.Info" DisableElevation="true" Icon="@Icons.Material.Filled.Settings"
+						   OnClick="async () => await UpdateUser(context)" />
+				<MudIconButton Variant="Variant.Filled" Color="Color.Error" DisableElevation="true" Icon="@Icons.Material.Filled.PersonRemove"
+						   OnClick="async () => await DeleteUser(context)" />
+			}
+		</MudTd>
+	</RowTemplate>
+
+	<PagerContent>
+		<MudTablePager PageSizeOptions="PageSize.DefaultOptions" />
+	</PagerContent>
+
+</MudTable>
+
+
+@code {
+	[CascadingParameter] public LayoutState LayoutState { get; set; } = new LayoutState();
+
+	bool Loading => _users is null;
+
+	[Parameter] public bool Unverified { get; set; } = false;
+
+	private List<UserIdentity>? _users;
+	private List<UserIdentity> Users => _users ?? new();
+	private string _searchString = string.Empty;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await Load();
+	}
+
+	private async Task Load()
+	{
+		_users = Unverified 
+			? (await UserService.GetUnverifiedUserIdentitiesAsync()).ToList()
+			: (await UserService.GetUserIdentitiesAsync()).ToList();
+	}
+
+	private async Task VerifyUser(UserIdentity user)
+	{
+		if (!await DialogService.ShowConfirmationDialog("Verify user", "confirm", "user", $"{user.FullName} ({user.Username}) ({user.Email})"))
+			return;
+		await UserService.VerifiyUserAsync(user.SubjectId);
+		await Load();
+	}
+
+	private async Task DeleteUser(UserIdentity user)
+	{
+		if (!await DialogService.ShowConfirmationDialog("Delete user", "delete", "user", $"{user.FullName} ({user.Username}) ({user.Email})", true))
+			return;
+		await UserService.DeleteUserAsync(user.SubjectId);
+		await Load();
+	}
+
+	private async Task UpdateUser(UserIdentity user)
+	{
+		if(await DialogService.ShowUpdateUserDialog(user))
+			await Load();
+	}
+
+	private bool UserFilter(UserIdentity user)
+	{
+		if (string.IsNullOrEmpty(_searchString))
+			return true;
+		else if (user.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		else if (user.Username.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		else if (user.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		else
+			return false;
+	}
+}

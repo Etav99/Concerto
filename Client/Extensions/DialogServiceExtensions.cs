@@ -7,16 +7,17 @@ namespace Concerto.Client.Extensions;
 
 public static class DialogServiceExtensions
 {
-	public static async Task<bool> ShowDeleteConfirmationDialog(
+	public static async Task<bool> ShowConfirmationDialog(
 		this IDialogService dialogService,
 		string title,
+		string action,
 		string itemType,
 		string itemName,
 		bool additionalConfirmation = false
 	)
 	{
 		var item = string.IsNullOrEmpty(itemType) ? itemName : $"{itemType} '{itemName}'";
-		var text = $"Are you sure you want to delete {item}?";
+		var text = $"Are you sure you want to {action} {item}?";
 		var parameters = new DialogParameters { ["Text"] = text, ["Confirmation"] = additionalConfirmation };
 		var result = await dialogService.Show<ConfirmationDialog>(title, parameters).Result;
 		if (result.Canceled) return false;
@@ -106,6 +107,17 @@ public static class DialogServiceExtensions
 			["CourseId"] = courseId
 		};
 		var result = await dialogService.Show<PostsRelatedToFileDialog>($"Posts related to {file.FullName}", parameters, options).Result;
+		if (result.Canceled) return false;
+		return true;
+	}
+
+	public static async Task<bool> ShowUpdateUserDialog(this IDialogService dialogService, UserIdentity user)
+	{
+		var parameters = new DialogParameters
+		{
+			["User"] = user
+		};
+		var result = await dialogService.Show<UpdateUserDialog>($"Update user", parameters).Result;
 		if (result.Canceled) return false;
 		return true;
 	}

@@ -1,4 +1,5 @@
 ﻿@using Concerto.Client.Services
+@using Concerto.Shared.Extensions;
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IJSRuntime JSRuntime
 @inject ICourseService CourseService
@@ -7,7 +8,7 @@
 <MudNavMenu>
 	<MudText Class="px-4" Typo="Typo.h6">Menu</MudText>
 	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-	<AuthorizeView Roles="administrator">
+	<AuthorizeView Policy="@AuthorizationPolicies.IsAdmin.Name">
 		<MudNavLink Href="admin" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin panel</MudNavLink>
 	</AuthorizeView>
 	<AuthorizeView >

@@ -407,7 +407,7 @@ else
 	{
 		try
 		{
-			if (!await DialogService.ShowDeleteConfirmationDialog("Delete post", "post", post.Title)) return;
+			if (!await DialogService.ShowConfirmationDialog("Delete post", "delete", "post", post.Title)) return;
 			await ForumService.DeletePostAsync(post.Id);
 			var postToDeleteIndex = Posts?.FindIndex(p => p.Id == post.Id);
 			if (postToDeleteIndex != null) Posts?.RemoveAt(postToDeleteIndex.Value);
@@ -423,7 +423,7 @@ else
 	{
 		try
 		{
-			if (!await DialogService.ShowDeleteConfirmationDialog("Delete comment", "comment", "")) return;
+			if (!await DialogService.ShowConfirmationDialog("Delete comment", "delete", "comment", "")) return;
 			await ForumService.DeleteCommentAsync(comment.Id);
 			var post = Posts?.FirstOrDefault(p => p.Id == comment.PostId);
 			post?.deleteComment(comment);

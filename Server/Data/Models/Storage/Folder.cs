@@ -1,5 +1,4 @@
-﻿using Concerto.Client.Pages;
-using Concerto.Shared.Models.Dto;
+﻿using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.Models;
