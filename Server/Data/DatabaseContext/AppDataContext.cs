@@ -1,5 +1,4 @@
 ﻿using Concerto.Server.Data.Models;
-using Concerto.Server.Data.Models.Storage;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.DatabaseContext;
@@ -138,7 +137,7 @@ public class AppDataContext : DbContext
 		modelBuilder.Entity<Post>()
 			.HasMany(uf => uf.ReferencedFiles)
 			.WithMany();
-		
+
 		base.OnModelCreating(modelBuilder);
 	}
 }

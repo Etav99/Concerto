@@ -59,7 +59,7 @@ public record FileItem(
 public record FolderSettings(
 	long Id,
 	string Name,
-	long? OwnerId,
+	Guid? OwnerId,
 	long CourseId,
 	FolderType Type,
 	FolderPermission CoursePermission,
@@ -118,7 +118,7 @@ public static class FolderTypeExtensions
 		{
 			FolderType.CourseRoot => "Course Root",
 			FolderType.Sessions => "Session recordings",
-			FolderType.Sheets => "Sheets",
+			FolderType.Sheets => "Music scores",
 			FolderType.Recordings => "Recordings",
 			FolderType.Video => "Video",
 			FolderType.Audio => "Audio",
@@ -150,22 +150,22 @@ public record UpdateFolderRequest : EntityModel
 
 public record MoveFolderItemsRequest
 {
-	public IEnumerable<long> FolderIds { get; set; }
-	public IEnumerable<long> FileIds { get; set; }
+	public IEnumerable<long> FolderIds { get; set; } = null!;
+	public IEnumerable<long> FileIds { get; set; } = null!;
 	public long DestinationFolderId { get; set; }
 }
 
 public record CopyFolderItemsRequest
 {
-	public IEnumerable<long> FolderIds { get; set; }
-	public IEnumerable<long> FileIds { get; set; }
+	public IEnumerable<long> FolderIds { get; set; } = null!;
+	public IEnumerable<long> FileIds { get; set; } = null!;
 	public long DestinationFolderId { get; set; }
 }
 
 public record DeleteFolderItemsRequest
 {
-	public IEnumerable<long> FolderIds { get; set; }
-	public IEnumerable<long> FileIds { get; set; }
+	public IEnumerable<long> FolderIds { get; set; } = null!;
+	public IEnumerable<long> FileIds { get; set; } = null!;
 }
 
 public class FileChunkMetadata
@@ -173,9 +173,9 @@ public class FileChunkMetadata
 	[JsonProperty("Offset")]
 	public long Offset { get; set; }
 	[JsonProperty("FileSize")]
-	public long FileSize {get; set; }
+	public long FileSize { get; set; }
 	[JsonProperty("FolderId")]
-	public long FolderId {get; set;}
+	public long FolderId { get; set; }
 	[JsonProperty("Guid")]
 	public Guid Guid { get; set; }
 }

@@ -1,13 +1,9 @@
-﻿@using Concerto.Client.Extensions
-@using Concerto.Client.Services;
-@using Concerto.Shared.Models.Dto
-@using System.Net.Http.Headers
-@inject ISnackbar Snackbar
-@inject HttpClient Http
-@inject IAppSettingsService AppSettingsService
-@inject IDialogService DialogService
-@inject IStorageService StorageService
+﻿@using System.Net.Http.Headers
 
+@inherits DialogAutoFullscreen
+
+@inject ISnackbar Snackbar
+@inject IStorageService StorageService
 
 <MudDialog Style="max-width: 100vw">
 	<DialogContent>
@@ -16,7 +12,7 @@
 						   Hidden="false" Class="@DragClass" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
 						   @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
 				<ButtonTemplate>
-					<div style="height: 200px; overflow: ;">
+					<div style="height: 200px;">
 						<MudText Style="position: sticky;" Typo="Typo.h6">
 							Click here or drag files
 						</MudText>
@@ -38,10 +34,6 @@
 </MudDialog>
 
 @code {
-
-	[CascadingParameter]
-	MudDialogInstance Dialog { get; set; } = null!;
-
 	[Parameter]
 	public long FolderId { get; set; }
 

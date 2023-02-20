@@ -1,17 +1,11 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Extensions
-@using Concerto.Client.Services
-@using Concerto.Shared.Extensions;
-@using Concerto.Shared.Models.Dto
-@using Microsoft.AspNetCore.Components.Authorization
-@using Concerto.Client.Components.Dialogs
-@inject NavigationManager NavigationManager
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@inherits MudComponentBase
+
 @inject IDialogService DialogService
-@inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
 @inject ICourseService CourseService
 
-@inherits MudComponentBase
 
 @if (Loading)
 {
@@ -53,7 +47,7 @@ else
 
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Policy="@AuthorizationPolicies.IsAdmin.Name">
+							<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
 									  OnClick="CreateCourse" OnTouch="CreateCourse" Disabled="false">
 									Create course
@@ -91,7 +85,7 @@ else
 						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnTouch="() => SelectCourse(context)" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Policy="@AuthorizationPolicies.IsAdmin.Name" Context="auth">
+							<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name" Context="auth">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Concerto.Shared.Models.Dto;
+﻿using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concerto.Server.Data.Models;
 
@@ -11,7 +11,7 @@ public class Session : Entity
 	public DateTime ScheduledDate { get; set; }
 	public long CourseId { get; set; }
 	public Course Course { get; set; } = null!;
-	
+
 	public long FolderId { get; set; }
 	public Folder Folder { get; set; } = null!;
 

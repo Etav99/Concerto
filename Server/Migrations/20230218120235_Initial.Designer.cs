@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230216121409_Initial")]
+    [Migration("20230218120235_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -33,8 +33,8 @@ namespace Concerto.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AuthorId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -97,8 +97,8 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("CourseId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -127,8 +127,8 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long?>("OwnerId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("uuid");
 
                     b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
@@ -155,8 +155,8 @@ namespace Concerto.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AuthorId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -239,8 +239,8 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("OwnerId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
 
                     b.Property<long>("Size")
                         .HasColumnType("bigint");
@@ -258,11 +258,9 @@ namespace Concerto.Server.Migrations
 
             modelBuilder.Entity("Concerto.Server.Data.Models.User", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -272,25 +270,19 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubjectId")
-                        .IsUnique();
-
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.UserFolderPermission", b =>
                 {
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
@@ -484,8 +476,8 @@ namespace Concerto.Server.Migrations
 
                     b.OwnsOne("Concerto.Server.Data.Models.FolderPermission", "Permission", b1 =>
                         {
-                            b1.Property<long>("UserFolderPermissionUserId")
-                                .HasColumnType("bigint");
+                            b1.Property<Guid>("UserFolderPermissionUserId")
+                                .HasColumnType("uuid");
 
                             b1.Property<long>("UserFolderPermissionFolderId")
                                 .HasColumnType("bigint");

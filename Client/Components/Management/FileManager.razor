@@ -1,18 +1,11 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Extensions
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using Concerto.Client.Components.Dialogs
-@implements IDisposable
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
 @inherits MudPaper;
-@inject HttpClient Http
+@implements IDisposable
+
 @inject IDialogService DialogService
 @inject IStorageService StorageService
-@inject IUserService UserService
 @inject ISnackbar Snackbar;
-@inject IJSRuntime JS
-@inject IAccessTokenProvider AccessTokenProvider
 
 <MudPaper Class="@Class" Style="@Style" Elevation="@Elevation" Outlined="@Outlined">
 	@if (FolderContent is not null)
@@ -137,7 +130,7 @@
 
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
 									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-									  Disabled="@(!CanCopySelected)">
+									  Disabled="@(!CanDeleteSelected)">
 									Delete selected
 								</MudMenuItemW>
 							}
@@ -254,7 +247,7 @@
 
 									<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
 									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-									  Disabled="@(!CanCopySelected)">
+									  Disabled="@(!CanDeleteSelected)">
 										Delete selected
 									</MudMenuItemW>
 								}
@@ -338,7 +331,7 @@
 
 										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteSweep"
 									  OnClick="async () => await DeleteSelected()" OnTouch="async () => await DeleteSelected()"
-									  Disabled="@(!CanCopySelected)">
+									  Disabled="@(!CanDeleteSelected)">
 											Delete selected
 										</MudMenuItemW>
 									}
@@ -689,9 +682,12 @@
 			await ToggleSelectedItem(item);
 			return;
 		}
-		else if (item is FolderItem folder)
+		else
 		{
-			await OpenFolder(folder);
+			if (item is FolderItem folder)
+				await OpenFolder(folder);
+			else if (item is FileItem file)
+				await DownloadFile(file);
 		}
 	}
 

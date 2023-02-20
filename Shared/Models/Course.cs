@@ -21,7 +21,7 @@ public record CourseSettings(
 
 public record CourseListItem(long Id, string Name, string Description, DateTime CreatedDate) : EntityModel(Id);
 
-public record CourseUser(long UserId, CourseUserRole Role)
+public record CourseUser(Guid UserId, CourseUserRole Role)
 {
 	public CourseUserRole Role { get; set; } = Role;
 }

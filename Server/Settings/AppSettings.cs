@@ -9,7 +9,7 @@ public static class AppSettings
 		public static bool Docker = EnvironmentHelper.GetVariable("DOTNET_RUNNING_IN_CONTAINER").Equals("true");
 		public static bool Remote = EnvironmentHelper.GetVariable("ASPNETCORE_REMOTE").Equals("true");
 	}
-	
+
 	public static class Storage
 	{
 		public static string StoragePath = EnvironmentHelper.GetVariable("CONCERTO_STORAGE_PATH");

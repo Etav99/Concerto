@@ -1,12 +1,8 @@
-﻿@using Concerto.Client.Extensions;
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Input
-@inject HttpClient Http
-@inject IUserService UserService
+﻿@inherits DialogAutoFullscreen
+
+@inject IAccountClient AccountService
 @inject ISnackbar Snackbar
 
-@inherits DialogAutoFullscreen
 
 <MudDialog>
 	<TitleContent>
@@ -70,7 +66,7 @@
 	{
 		try
 		{
-			await UserService.SetUserRoleAsync(user.SubjectId, newRole);
+			await AccountService.SetUserRoleAsync(user.SubjectId, newRole);
 			Snackbar.Add($"User {user.FullName} updated", Severity.Success);
 			Dialog.Close();
 		}

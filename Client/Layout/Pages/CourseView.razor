@@ -1,17 +1,10 @@
 ﻿@attribute [Authorize]
 @page "/courses/{SelectedCourseId:long}"
-@using Concerto.Client.Components.Views
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using Concerto.Client.Components.Lists
 
 @inject NavigationManager NavigationManager
-@inject HttpClient Http;
 @inject ICourseService CourseService;
+@inject ISnackbar Snackbar;
 @inject IBreadcrumbsService BreadcrumbsService;
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Course</PageTitle>
 
@@ -66,9 +59,17 @@ else
 	{
 		if (SelectedCourse is not null && SelectedCourse.Id == SelectedCourseId) return;
 		_loading = true;
-		SelectedCourse = await CourseService.GetCourseAsync(SelectedCourseId);
+		try
+		{
+			SelectedCourse = await CourseService.GetCourseAsync(SelectedCourseId);
+		}
+		catch (CourseException)
+		{
+			Snackbar.Add("Course not found", Severity.Error);
+			NavigationManager.NavigateTo("courses");
+		}
 		_loading = false;
-		if (SelectedCourse == null) NavigationManager.NavigateTo("courses");
+		if (SelectedCourse != null) 
 		BreadcrumbsService.Set(
 			Icons.Material.Filled.MenuBook,
 			SelectedCourse?.Name ?? string.Empty,

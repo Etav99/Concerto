@@ -1,11 +1,5 @@
-﻿@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Input
-@inject ICourseService CourseService
-@inject ISnackbar Snackbar
-@inject HttpClient Http
+﻿@inject ISnackbar Snackbar
 @inject IStorageService StorageService
-@inject IStorageClient StorageClient
 
 <MudDialog>
 	<DialogContent>
@@ -58,7 +52,7 @@
 
 		try
 		{
-			await StorageClient.CreateFolderAsync(_folderRequest);
+			await StorageService.CreateFolderAsync(_folderRequest);
 			Snackbar.Add("Folder created", Severity.Success);
 			Dialog.Close(DialogResult.Ok(true));
 		}

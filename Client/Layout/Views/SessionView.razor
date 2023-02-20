@@ -1,9 +1,5 @@
 ﻿@attribute [Authorize]
 @page "/courses/{CourseId:long}/sessions/{SelectedSessionId:long}"
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Microsoft.AspNetCore.Authorization
-@using Concerto.Client.Components.Lists
 
 @inject NavigationManager NavigationManager
 @inject IBreadcrumbsService BreadcrumbsService;

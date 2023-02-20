@@ -20,8 +20,8 @@
 	api.addListener("videoConferenceLeft", () => { api.dispose(); startMeeting(parentId, roomName); });
 }
 
-async function startRecording(DotNetMeetingsComponent, selectedAudioInputId, saveInterval = 500) {
-    let recordingManager = new RecordingManager(DotNetMeetingsComponent, saveInterval);
+async function startRecording(DotNetMeetingsComponent, selectedAudioInputId, filenameBase, saveInterval = 500) {
+    let recordingManager = new RecordingManager(DotNetMeetingsComponent, filenameBase, saveInterval);
     await recordingManager.startRecording(selectedAudioInputId);
 }
 

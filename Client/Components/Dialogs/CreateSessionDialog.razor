@@ -1,7 +1,5 @@
-﻿@using Concerto.Shared.Models.Dto
-@inject IDialogService DialogService
-@inject ISnackbar Snackbar
-@inject HttpClient Http
+﻿@inject ISnackbar Snackbar
+@inject ISessionService SessionService
 
 <MudDialog>
 	<DialogContent>
@@ -47,7 +45,7 @@
 			return;
 		}
 
-	// Move to course manager
+		// Move to course manager
 		var createSessionRequest = new CreateSessionRequest
 		{
 			Name = _sessionName,
@@ -55,16 +53,17 @@
 			CourseId = CourseId
 		};
 
-		var response = await Http.PostAsJsonAsync("Session/CreateSession", createSessionRequest);
-		if (response.IsSuccessStatusCode)
+		try
 		{
+			await SessionService.CreateSessionAsync(createSessionRequest);
 			Snackbar.Add("Session created", Severity.Success);
 			Dialog.Close(DialogResult.Ok(true));
 		}
-		else
-		{
+		catch (SessionException)
+        {
 			Snackbar.Add("Failed to create session", Severity.Error);
-		}
+            return;
+        }
 	}
 
 	void Cancel()

@@ -1,19 +1,14 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Lists
+﻿@inherits DialogAutoFullscreen
 @inject ICourseService CourseService
-@inject ISnackbar Snackbar
-@inject HttpClient Http
 @inject IStorageService StorageService
 @inject IDialogService DialogService
-@inherits DialogAutoFullscreen
+@inject ISnackbar Snackbar
 
 <MudDialog>
 	<DialogContent>
 		@if (!Loading)
 		{
-			<MudStack Spacing="0" Style="height: calc(100vh - 134px)" Class="flex-grow-1">
+			<MudStack Spacing="0" Style="height: calc(100vh - 200px)" Class="flex-grow-1">
 				
 				<MudStack Row="true" AlignItems="AlignItems.Center">
 					<MudCheckBox @bind-Checked="ToAnotherCourse">To another course</MudCheckBox>

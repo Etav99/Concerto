@@ -27,7 +27,7 @@
 </style>
 
 <div class="container pa-1">
-	<div class="buttons d-flex ">
+	<div class="buttons d-flex py-1 ">
 
 		<MudFileUpload T="IBrowserFile" FilesChanged="UploadRecording" Accept="video/*" Class="mt-0">
 			<ButtonTemplate>
@@ -46,20 +46,20 @@
 		{
 			@if (!isRecording)
 			{
-				<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
+				<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
 					Start recording
 				</MudButton>
 			}
 			else
 			{
-				<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
+				<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
 					Stop recording
 				</MudButton>
 			}
 
 			<div class="d-flex ">
 				<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
-				<select style="align-self: stretch; flex-shrink: 1;" @bind="_selectedAudioInputId">
+				<select disabled="@isRecording" style="align-self: stretch; flex-shrink: 1;" @bind="_selectedAudioInputId">
 					@foreach (var input in audioInputs)
 					{
 						<option value="@input.Id">@input.Name</option>
@@ -68,9 +68,25 @@
 				</select>
 			</div>
 		}
-
 	</div>
-	<MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
+
+
+	@if (_isMobile.HasValue)
+	{
+		@if (!_isMobile.Value)
+		{
+			<MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
+		}
+		else
+		{
+			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_openInApp">
+				Open meeting in Jitsi Meet app (needs to be installed)
+			</MudButton>
+			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl">
+				Download Jitsi Meet app
+			</MudButton>
+		}
+	}
 </div>
 
 @code {
@@ -89,15 +105,23 @@
 	private string? _selectedAudioInputId;
 
 	bool isRecording = false;
+	bool? _isMobile = false;
+	bool _isIos = false;
+
+	string _meetingPath = string.Empty;
+
+	string _openInApp => _isIos ? $"org.jitsi.meet://meet.jit.si/{_meetingPath}"
+								: $"intent://meet.jit.si/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
+
+	string _downloadJitsiUrl => "https://jitsi.org/downloads/";
 
 	private DotNetObjectReference<Meeting>? _dotNetObjectReference;
-	private IJSObjectReference? mediaRecorder;
 
 	class AudioDevices
 	{
-		public string test { get; set; }
-		public string[] Names { get; set; }
-		public string[] Ids { get; set; }
+		public string test { get; set; } = null!;
+		public string[] Names { get; set; } = null!;
+		public string[] Ids { get; set; } = null!;
 	}
 
 	protected override void OnInitialized()
@@ -105,26 +129,27 @@
 		_dotNetObjectReference = DotNetObjectReference.Create(this);
 	}
 
-	protected override async Task OnInitializedAsync()
+	protected override async Task OnParametersSetAsync()
 	{
+		if (MeetingName == null || Guid == null) return;
+		var guid = Guid.ToString()!.Replace("-", string.Empty);
+		_meetingPath = HttpUtility.UrlPathEncode($"Concerto/{guid}");
+
+		_isMobile = await IsMobile();
+		_isIos = await IsIos();
+		if (_isMobile.Value) return;
+
 		var audioDevices = await GetAudioInputs();
 		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
 		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : "none";
-	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender && MeetingName != null && Guid != null)
-		{
-			var guid = Guid.ToString()!.Replace("-", string.Empty);
-			var name = HttpUtility.UrlPathEncode($"Concerto/{guid}");
-			await JS.InvokeAsync<string>("startMeeting", "jitsi", name);
-		}
+		if (string.IsNullOrEmpty(_meetingPath)) return;
+		await JS.InvokeAsync<string>("startMeeting", "jitsi", _meetingPath);
 	}
 
 	public async Task StartRecording()
 	{
-		await JS.InvokeVoidAsync("startRecording", _dotNetObjectReference, _selectedAudioInputId, 500);
+		await JS.InvokeVoidAsync("startRecording", _dotNetObjectReference, _selectedAudioInputId, MeetingName, 500);
 	}
 
 	public async Task StopRecording()
@@ -150,6 +175,16 @@
 	private async Task<AudioDevices> GetAudioInputs()
 	{
 		return await JS.InvokeAsync<AudioDevices>("getAudioInputs", _dotNetObjectReference);
+	}
+
+	private async Task<bool> IsMobile()
+	{
+		return await JS.InvokeAsync<bool>("isMobile");
+	}
+
+	private async Task<bool> IsIos()
+	{
+		return await JS.InvokeAsync<bool>("isIos");
 	}
 
 	[JSInvokable]

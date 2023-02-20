@@ -1,5 +1,4 @@
-﻿using Concerto.Shared.Models.Dto;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.Models;
 
@@ -7,7 +6,7 @@ namespace Concerto.Server.Data.Models;
 [Index(nameof(FolderId))]
 public class UserFolderPermission
 {
-	public long UserId { get; set; }
+	public Guid UserId { get; set; }
 	public User User { get; set; } = null!;
 
 	public long FolderId { get; set; }
@@ -15,7 +14,7 @@ public class UserFolderPermission
 
 	public FolderPermission Permission { get; set; } = null!;
 
-	public static object ToKey(long UserId, long FolderId)
+	public static object ToKey(Guid UserId, long FolderId)
 	{
 		return new { UserId, FolderId };
 	}

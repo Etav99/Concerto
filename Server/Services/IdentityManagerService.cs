@@ -1,15 +1,12 @@
-﻿using Concerto.Client.Extensions;
-using Concerto.Server.Data.Models;
+﻿using Concerto.Server.Data.Models;
 using Concerto.Server.Settings;
 using Concerto.Shared.Constants;
-using Concerto.Shared.Models.Dto;
 using Newtonsoft.Json;
-using System.Collections.Immutable;
 using System.Data;
-using System.Net;
 using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using Role = Concerto.Shared.Models.Dto.Role;
+
 
 namespace Concerto.Server.Services;
 
@@ -19,12 +16,12 @@ public class IdentityManagerService
 	private readonly HttpClient _httpClient = new HttpClient();
 	private readonly ILogger<IdentityManagerService> _logger;
 
-	private static readonly FormUrlEncodedContent _getTokenRequestContent = new FormUrlEncodedContent (new Dictionary<string, string> {
+	private static readonly FormUrlEncodedContent _getTokenRequestContent = new FormUrlEncodedContent(new Dictionary<string, string> {
 		{ "client_id", AppSettings.Oidc.ServerClientId },
 		{ "client_secret", AppSettings.Oidc.ServerClientSecret },
 		{ "grant_type", "client_credentials" }
 	});
-	
+
 	public IdentityManagerService(ILogger<IdentityManagerService> logger)
 	{
 		_logger = logger;
@@ -48,9 +45,29 @@ public class IdentityManagerService
 		await LogoutUser(subjectId);
 	}
 
+	public async Task<User> UserFromIdentity(Guid subjectId)
+	{
+		await GetApiToken();
+		var url = $"{AppSettings.Oidc.OidcAdminRestApiBaseUrl}/users/{subjectId}";
+		var getUserResponse = await _httpClient.GetAsync(url);
+		var userRepresentation = JsonConvert.DeserializeObject<UserRepresentation>(await getUserResponse.Content.ReadAsStringAsync());
+
+		if (userRepresentation is null)
+			throw new Exception("User not found");
+
+		return new User
+		{
+			Id = subjectId,
+			Username = userRepresentation.Username,
+			FirstName = userRepresentation.FirstName,
+			LastName = userRepresentation.LastName,
+		};
+
+	}
+
 	public async Task SetRole(Guid subjectId, Role role)
 	{
-		switch(role)
+		switch (role)
 		{
 			case Role.Unverified:
 				throw new NotImplementedException();
@@ -83,7 +100,7 @@ public class IdentityManagerService
 		var token = JsonNode.Parse(await getTokenResponse.Content.ReadAsStringAsync());
 		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!["access_token"]!.ToString());
 	}
-	
+
 	private async Task<string> GetGroupId(string groupName)
 	{
 		await GetApiToken();
@@ -92,7 +109,7 @@ public class IdentityManagerService
 		var unverifiedGroupSearchResult = JsonConvert.DeserializeObject<List<GroupRepresentation>>(await unverifiedGroupSearchResponse.Content.ReadAsStringAsync());
 		if (unverifiedGroupSearchResult == null || unverifiedGroupSearchResult.Count == 0)
 			throw new Exception("Group not found");
-		if(unverifiedGroupSearchResult.Count != 1)
+		if (unverifiedGroupSearchResult.Count != 1)
 			throw new Exception("Multiple groups found");
 		return unverifiedGroupSearchResult[0].Id;
 	}
@@ -138,7 +155,7 @@ public class IdentityManagerService
 
 		return JsonConvert.DeserializeObject<List<UserRepresentation>>(await groupUsersResponse.Content.ReadAsStringAsync()) ?? Enumerable.Empty<UserRepresentation>();
 	}
-	
+
 	public async Task<IEnumerable<Dto.UserIdentity>> GetUsers(Guid subjectId)
 	{
 		var unverified = (await GetGroupUsers(Groups.Unverified)).Select(u => u.Id).ToHashSet();
@@ -151,12 +168,12 @@ public class IdentityManagerService
 		usersResult.EnsureSuccessStatusCode();
 
 		var users = JsonConvert.DeserializeObject<List<UserRepresentation>>(await usersResult.Content.ReadAsStringAsync());
-		if(users == null || !users.Any()) return Enumerable.Empty<Dto.UserIdentity>();
+		if (users == null || !users.Any()) return Enumerable.Empty<Dto.UserIdentity>();
 
 		var userIdentities = new List<Dto.UserIdentity>(users.Count);
 		foreach (var user in users)
 		{
-			if(user.Id == subjectId)
+			if (user.Id == subjectId)
 				continue;
 			Role role;
 			if (unverified.Contains(user.Id))
@@ -171,7 +188,7 @@ public class IdentityManagerService
 			var userIdentity = new Dto.UserIdentity(user.Id, user.Username, user.FirstName, user.LastName, user.Email, user.EmailVerified, role);
 			userIdentities.Add(userIdentity);
 		}
-		return userIdentities;	
+		return userIdentities;
 	}
 
 
@@ -183,7 +200,7 @@ public class IdentityManagerService
 	private class UserRepresentation
 	{
 		public Guid Id { get; set; }
-		public string FirstName {get; set;} = null!;
+		public string FirstName { get; set; } = null!;
 		public string LastName { get; set; } = null!;
 		public string Username { get; set; } = null!;
 		public string Email { get; set; } = null!;

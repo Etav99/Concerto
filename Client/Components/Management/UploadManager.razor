@@ -1,5 +1,4 @@
-﻿@using Concerto.Client.Services;
-@implements IDisposable
+﻿@implements IDisposable
 @inject IStorageService StorageService
 
 <MudBadge Style="cursor: pointer; user-select: none;" Content="ActiveUploadsNumber" Color="Color.Info" Overlap="true" Origin="Origin.CenterLeft" OnClick="ToggleOpen" Visible="@(ActiveUploadsNumber > 0)">
@@ -15,8 +14,8 @@
 {
 	<div @onclick="ToggleOpen" style="cursor: pointer; position: fixed; top:0; left: 0; height: 100vh; width: 100vw;" class="z-max">
 		<div @onclick:stopPropagation="true" @ontouchstart:stopPropagation="true" @ontouchend:stopPropagation="true" style="cursor: auto;">
-				<MudTable Items="_items" Context="item" Dense="true" Hover="true" Outlined="true" FixedHeader="true" RowClass=""
-					  Style="position: fixed; top: 48px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 1fr;" Height="100%">
+				<MudTable Items="_items" Context="item" Dense="true" Hover="true" Outlined="true" FixedHeader="true" Elevation="6" RowClass=""
+					  Style="position: fixed; top: 40px; right: 10px; max-height: min(500px, calc(100vh - 64px)); display:grid; grid-template-rows: 1fr;" Height="100%">
 
 					<ToolBarContent>
 						<MudText Typo="Typo.subtitle2" Class="pr-4">@(_items.Any() ? "Uploads" : "No uploads")</MudText>
@@ -30,11 +29,23 @@
 					</ToolBarContent>
 					
 						<ColGroup>
+						@if (LayoutState.Xs)
+						{
+							<col />
+							<col />
+							<col />
+							<col />
+							<col />
+						}
+						else
+						{
 							<col />
 							<col style="min-width: 50px" />
 							<col style="min-width: 100px" />
 							<col />
 							<col />
+						}
+
 						</ColGroup>
 
 						<RowTemplate>

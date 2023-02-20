@@ -21,7 +21,7 @@ public class ForumService
 		_courseService = courseService;
 	}
 
-	internal async Task<Post?> CreatePost(CreatePostRequest request, long userId)
+	internal async Task<Post?> CreatePost(CreatePostRequest request, Guid userId)
 	{
 		var referencedFiles = await _context.UploadedFiles
 			.Where(rf => request.ReferencedFilesIds.Contains(rf.Id))
@@ -40,10 +40,13 @@ public class ForumService
 
 		await _context.Posts.AddAsync(post);
 		await _context.SaveChangesAsync();
+
+		await _context.Entry(post).Reference(p => p.Author).LoadAsync();
+
 		return post.ToViewModel(0, true, true);
 	}
 
-	internal async Task<IEnumerable<Post>> GetPosts(long courseId, long userId, bool isAdmin = false, long? beforeId = null, long? relatedToFileId = null)
+	internal async Task<IEnumerable<Post>> GetPosts(long courseId, Guid userId, bool isAdmin = false, long? beforeId = null, long? relatedToFileId = null)
 	{
 		const int pageSize = 10;
 
@@ -86,7 +89,7 @@ public class ForumService
 			.CountAsync();
 	}
 
-	internal async Task<Post?> UpdatePost(EditPostRequest request, long userId)
+	internal async Task<Post?> UpdatePost(EditPostRequest request, Guid userId)
 	{
 		var post = await _context.Posts.FindAsync(request.PostId);
 		if (post == null) return null;
@@ -105,6 +108,7 @@ public class ForumService
 		var commentsCount = await _context.Entry(post).Collection(p => p.Comments).Query().CountAsync();
 
 		await _context.SaveChangesAsync();
+		await _context.Entry(post).Reference(p => p.Author).LoadAsync();
 		return post.ToViewModel(commentsCount, true, true);
 	}
 
@@ -117,11 +121,15 @@ public class ForumService
 		await _context.SaveChangesAsync();
 	}
 
-	internal async Task<Comment?> CreateComment(CreateCommentRequest request, long userId)
+	internal async Task<Comment?> CreateComment(CreateCommentRequest request, Guid userId)
 	{
 		var comment = new Data.Models.Comment
 		{
-			PostId = request.PostId, AuthorId = userId, Content = request.Content, CreatedAt = DateTime.UtcNow, Edited = false
+			PostId = request.PostId,
+			AuthorId = userId,
+			Content = request.Content,
+			CreatedAt = DateTime.UtcNow,
+			Edited = false
 		};
 
 		await _context.Comments.AddAsync(comment);
@@ -129,7 +137,7 @@ public class ForumService
 		return comment.ToViewModel(true, true);
 	}
 
-	internal async Task<IEnumerable<Comment>> GetComments(long postId, long userId, bool isAdmin = false, long? beforeId = null)
+	internal async Task<IEnumerable<Comment>> GetComments(long postId, Guid userId, bool isAdmin = false, long? beforeId = null)
 	{
 		const int pageSize = 5;
 
@@ -169,7 +177,7 @@ public class ForumService
 		await _context.SaveChangesAsync();
 	}
 
-	internal async Task<bool> CanCommentPost(long userId, long postId)
+	internal async Task<bool> CanCommentPost(Guid userId, long postId)
 	{
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;
@@ -177,7 +185,7 @@ public class ForumService
 		return await _courseService.IsUserCourseMember(userId, post.CourseId);
 	}
 
-	internal async Task<bool> CanEditPost(long userId, long postId)
+	internal async Task<bool> CanEditPost(Guid userId, long postId)
 	{
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;
@@ -185,7 +193,7 @@ public class ForumService
 		return post.AuthorId == userId;
 	}
 
-	internal async Task<bool> CanDeletePost(long userId, long postId)
+	internal async Task<bool> CanDeletePost(Guid userId, long postId)
 	{
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;
@@ -197,7 +205,7 @@ public class ForumService
 		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
 	}
 
-	internal async Task<bool> CanEditComment(long commentId, long userId)
+	internal async Task<bool> CanEditComment(long commentId, Guid userId)
 	{
 		var comment = await _context.Comments.FindAsync(commentId);
 		if (comment == null) return false;
@@ -205,7 +213,7 @@ public class ForumService
 		return comment.AuthorId == userId;
 	}
 
-	internal async Task<bool> CanDeleteComment(long commentId, long userId)
+	internal async Task<bool> CanDeleteComment(long commentId, Guid userId)
 	{
 		var comment = await _context.Comments.FindAsync(commentId);
 		if (comment == null) return false;
@@ -220,7 +228,7 @@ public class ForumService
 		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
 	}
 
-	internal async Task<bool> CanAccessPost(long userId, long postId)
+	internal async Task<bool> CanAccessPost(Guid userId, long postId)
 	{
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;

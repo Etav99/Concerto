@@ -1,5 +1,4 @@
-﻿using Concerto.Server.Extensions;
-using Concerto.Server.Middlewares;
+﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
@@ -16,6 +15,8 @@ public class SessionController : ControllerBase
 	private readonly CourseService _courseService;
 	private readonly ILogger<SessionController> _logger;
 	private readonly SessionService _sessionService;
+	private Guid UserId => HttpContext.UserId();
+
 
 	public SessionController(ILogger<SessionController> logger, CourseService courseService, SessionService sessionService)
 	{
@@ -24,13 +25,11 @@ public class SessionController : ControllerBase
 		_sessionService = sessionService;
 	}
 
-	private long UserId => HttpContext.UserId();
-
 	[HttpPost]
 	public async Task<ActionResult<long>> CreateSession([FromBody] CreateSessionRequest request)
 	{
-		if (!await _courseService.CanManageCourseSessions(request.CourseId, UserId)) return Forbid();
-		
+		if (!User.IsAdmin() && !await _courseService.CanManageCourseSessions(request.CourseId, UserId)) return Forbid();
+
 		var sessionId = await _sessionService.CreateSession(request, UserId);
 		if (sessionId is not null) return Ok(sessionId);
 		return BadRequest();

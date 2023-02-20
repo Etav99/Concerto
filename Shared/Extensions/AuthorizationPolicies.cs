@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Concerto.Shared.Extensions
 {
@@ -50,7 +45,6 @@ namespace Concerto.Shared.Extensions
 			public static AuthorizationPolicy Policy()
 			{
 				return new AuthorizationPolicyBuilder()
-				.RequireAuthenticatedUser()
 				.RequireAssertion(c => c.User.IsAdmin())
 				.Build();
 			}

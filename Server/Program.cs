@@ -7,10 +7,6 @@ using Concerto.Server.Services;
 using Concerto.Server.Settings;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -101,16 +97,16 @@ builder.Services.AddDbContext<AppDataContext>(options =>
 builder.Services.AddScoped<AppDataContext>();
 
 // Configure the HTTP request pipeline.
-if (builder.Environment.IsDevelopment())	
+if (builder.Environment.IsDevelopment())
 {
 	// Allow any origin
-     builder.Services.AddCors(options =>
-     {
-         options.AddPolicy("DevPolicy", builder =>
-          builder.AllowAnyOrigin()
-                 .AllowAnyMethod()
-                 .AllowAnyHeader());
-     });
+	builder.Services.AddCors(options =>
+	{
+		options.AddPolicy("DevPolicy", builder =>
+		 builder.AllowAnyOrigin()
+				.AllowAnyMethod()
+				.AllowAnyHeader());
+	});
 }
 
 var app = builder.Build();
@@ -154,7 +150,7 @@ app.MapFallbackToFile("index.html");
 var diagnosticSource = app.Services.GetRequiredService<DiagnosticListener>();
 using var badRequestListener = new BadRequestEventListener(diagnosticSource, (badRequestExceptionFeature) =>
 {
-    app.Logger.LogError(badRequestExceptionFeature.Error, "Bad request received");
+	app.Logger.LogError(badRequestExceptionFeature.Error, "Bad request received");
 });
 
 await using var scope = app.Services.CreateAsyncScope();
@@ -162,7 +158,7 @@ await using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 {
 	if (db == null) throw new NullReferenceException("Error while getting database context.");
 
-	while(true)
+	while (true)
 	{
 		try
 		{

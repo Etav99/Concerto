@@ -2,11 +2,11 @@
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@inject IUserService UserService
+@inject IAccountClient AccountService
 @inject NavigationManager Navigation
 
 
-<RemoteAuthenticatorView Action="@Action">
+<RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="OnLogInSucceeded">
 	<LogInFailed>
 		<div class="d-flex align-center justify-center" style="height: 100%">
 			<MudText role="alert" Style="text-align: center; margin:auto;" Typo="Typo.h4">@strLogInFailed</MudText>
@@ -49,10 +49,11 @@
 	string strLogOut = "Logging out...";
 	string strLogOutSucceeded = "You have been logged out successfully";
 	string strLoggingIn = "Redirecting you to the login screen...";
-	string strCompletingLoggingIn = "Login successfull. One moment...";
+	string strCompletingLoggingIn = "Login successful. One moment...";
 
-	void OnLogInSucceeded()
+	private async Task OnLogInSucceeded()
 	{
+		await AccountService.AfterLoginAsync();
 	}
 
 	void OnLogOutSucceeded()

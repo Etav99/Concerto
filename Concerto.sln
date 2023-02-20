@@ -10,6 +10,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Concerto.Shared", "Shared\Concerto.Shared.csproj", "{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{C02BB558-DB04-4672-89BF-2B544182607F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{00E425AA-6AB7-4694-A8BE-84236BD2A81E} = {00E425AA-6AB7-4694-A8BE-84236BD2A81E}
+		{31322F3D-815B-4A66-8CD7-743BA8B4305E} = {31322F3D-815B-4A66-8CD7-743BA8B4305E}
+		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC} = {A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,8 +25,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.DebugProxy|Any CPU.ActiveCfg = Debug|Any CPU
-		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.DebugProxy|Any CPU.Build.0 = Debug|Any CPU
+		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.DebugProxy|Any CPU.ActiveCfg = DebugProxy|Any CPU
+		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.DebugProxy|Any CPU.Build.0 = DebugProxy|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -32,14 +37,14 @@ Global
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.DebugProxy|Any CPU.ActiveCfg = Debug|Any CPU
-		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.DebugProxy|Any CPU.Build.0 = Debug|Any CPU
+		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.DebugProxy|Any CPU.ActiveCfg = DebugProxy|Any CPU
+		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.DebugProxy|Any CPU.Build.0 = DebugProxy|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C02BB558-DB04-4672-89BF-2B544182607F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C02BB558-DB04-4672-89BF-2B544182607F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C02BB558-DB04-4672-89BF-2B544182607F}.DebugProxy|Any CPU.ActiveCfg = Release|Any CPU
-		{C02BB558-DB04-4672-89BF-2B544182607F}.DebugProxy|Any CPU.Build.0 = Release|Any CPU
+		{C02BB558-DB04-4672-89BF-2B544182607F}.DebugProxy|Any CPU.ActiveCfg = DebugProxy|Any CPU
+		{C02BB558-DB04-4672-89BF-2B544182607F}.DebugProxy|Any CPU.Build.0 = DebugProxy|Any CPU
 		{C02BB558-DB04-4672-89BF-2B544182607F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C02BB558-DB04-4672-89BF-2B544182607F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

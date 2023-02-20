@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Settings;
 using Concerto.Shared.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concerto.Server.Controllers;
@@ -8,6 +9,7 @@ namespace Concerto.Server.Controllers;
 [ApiController]
 public class AppSettingsController : ControllerBase
 {
+	[AllowAnonymous]
 	[HttpGet]
 	public ActionResult<ClientAppSettings> GetClientAppSettings()
 	{

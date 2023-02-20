@@ -6,7 +6,7 @@ namespace Concerto.Server.Data.Models;
 [Index(nameof(CourseId))]
 public class Post : Entity
 {
-	[Required] public long AuthorId { get; set; }
+	[Required] public Guid AuthorId { get; set; }
 
 	public User Author { get; set; } = null!;
 
@@ -19,7 +19,7 @@ public class Post : Entity
 	[Required] public string Title { get; set; } = null!;
 
 	[Required] public string Content { get; set; } = null!;
-	
+
 
 	public bool Edited { get; set; } = false;
 
@@ -30,7 +30,7 @@ public class Post : Entity
 [Index(nameof(PostId))]
 public class Comment : Entity
 {
-	[Required] public long AuthorId { get; set; }
+	[Required] public Guid AuthorId { get; set; }
 
 	public User Author { get; set; } = null!;
 
@@ -54,7 +54,7 @@ public enum PostType
 public static partial class ViewModelConversions
 {
 	public static Dto.Post ToViewModel(this Post post, int CommentsCount, bool canEdit, bool canDelete)
-	{	
+	{
 		return new Dto.Post(post.Id,
 			Author: post.Author.ToViewModel(),
 			CourseId: post.CourseId,

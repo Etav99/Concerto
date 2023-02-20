@@ -1,4 +1,5 @@
-﻿@using Concerto.Client.Extensions
+﻿@using Concerto.Client.Components
+@using Concerto.Client.Extensions
 @using Concerto.Client.Services
 @using Concerto.Shared.Models.Dto
 @using Microsoft.AspNetCore.Components.Authorization
@@ -35,7 +36,7 @@ else
 
 					<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SendPost()" Disabled="!_createPostRequestValid" Color="Color.Primary">Create post</MudButton>
 					<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelCreatePost" Color="Color.Error">Cancel</MudButton>
-					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
+					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Title" Validation="Validation.NotEmpty" Label="Title" Variant="Variant.Outlined" />
 
 					<div style="min-height: 24px; max-height: 96px; overflow: auto;" class="mt-1 pa-0">
 						Files:
@@ -46,7 +47,7 @@ else
 						<MudIconButton DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="async () => await EditReferencedFiles(_createPostFiles)" />
 					</div>
 
-					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
+					<MudTextField Immediate="true" @bind-Value="_createPostRequest.Content" Validation="Validation.NotEmpty" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 				</MudForm>
 
 			</MudPaper>
@@ -69,7 +70,7 @@ else
 							<MudForm @ref="_editPostForm" @bind-IsValid="@_editPostRequestValid">
 								<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SavePost()" Disabled="!_editPostRequestValid" Color="Color.Primary">Edit post</MudButton>
 								<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelEditPost" Color="Color.Error">Cancel</MudButton>
-								<MudTextField @bind-Value="_editPostRequest.Title" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Title" Variant="Variant.Outlined" />
+								<MudTextField @bind-Value="_editPostRequest.Title" Validation="Validation.NotEmpty" Label="Title" Variant="Variant.Outlined" />
 								<div style="min-height: 24px; max-height: 96px; overflow: auto;" class="mt-1 pa-0">
 									Files:
 									@foreach (var file in _editPostFiles)
@@ -78,7 +79,7 @@ else
 									}
 									<MudIconButton DisableElevation="true" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="async () => await EditReferencedFiles(_editPostFiles)" />
 								</div>
-								<MudTextField @bind-Value="_editPostRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Post content" Variant="Variant.Outlined" Lines="10" />
+								<MudTextField @bind-Value="_editPostRequest.Content" Validation="Validation.NotEmpty" Label="Post content" Variant="Variant.Outlined" Lines="10" />
 							</MudForm>
 						</MudPaper>
 					}
@@ -136,7 +137,7 @@ else
 							<MudForm @ref="_createCommentForm" @bind-IsValid="@_createCommentRequestValid">
 								<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SendComment()" Disabled="!_createCommentRequestValid" Color="Color.Primary">Send comment</MudButton>
 								<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelComment" Color="Color.Error">Cancel</MudButton>
-								<MudTextField @bind-Value="_createCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3" />
+								<MudTextField @bind-Value="_createCommentRequest.Content" Validation="Validation.NotEmpty" Label="Comment" Variant="Variant.Outlined" Lines="3" />
 							</MudForm>
 
 						</MudPaper>
@@ -151,7 +152,7 @@ else
 								<MudForm @ref="_editCommentForm" @bind-IsValid="@_editCommentRequestValid">
 									<MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="async () => await SaveComment()" Disabled="!_editCommentRequestValid" Color="Color.Primary">Send comment</MudButton>
 									<MudButton StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelEditComment" Color="Color.Error">Cancel</MudButton>
-									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="new Func<string, string?>(Validation.NotEmpty)" Label="Comment" Variant="Variant.Outlined" Lines="3" />
+									<MudTextField @bind-Value="_editCommentRequest.Content" Validation="Validation.NotEmpty" Label="Comment" Variant="Variant.Outlined" Lines="3" />
 								</MudForm>
 							</MudPaper>
 						}
@@ -237,8 +238,6 @@ else
 	EditPostRequest? _editPostRequest = null;
 	HashSet<FileItem> _editPostFiles = new(new FolderContentItemIdEqualityComparer());
 	bool _editPostRequestValid;
-
-	long i = 0;
 
 	bool _morePostsAvailable = true;
 

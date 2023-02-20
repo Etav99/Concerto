@@ -1,14 +1,11 @@
 ﻿using Concerto.Client.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
-using static MudBlazor.CategoryTypes;
-using static System.Net.WebRequestMethods;
 
 namespace Concerto.Client.Services;
 
@@ -57,7 +54,7 @@ public class StorageService : StorageClient, IStorageService
         _JS = jS;
     }
 
-	public void QueueFilesToUpload(long folderId, IEnumerable<IBrowserFile> files)
+    public void QueueFilesToUpload(long folderId, IEnumerable<IBrowserFile> files)
     {
         foreach (var file in files)
         {
@@ -70,6 +67,7 @@ public class StorageService : StorageClient, IStorageService
         {
             _isUploading = true;
             ProcessUploadQueue().AndForget();
+            _JS.InvokeVoidAsync("enablePreventWindowClose", "upload").AndForget();
         }
 
         NewQueueItemsEventHandler?.Invoke(this, _items);
@@ -109,6 +107,8 @@ public class StorageService : StorageClient, IStorageService
 
         if (errors.Any()) await _dialogService.ShowInfoDialog("Some files couldn't be uploaded: \n", string.Join("\n", errors));
         else if (anyUploaded) _snackbar.Add("Files uploaded", Severity.Success);
+
+        _JS.InvokeVoidAsync("disablePreventWindowClose", "upload").AndForget();
     }
 
     private async Task UploadQueueFile(UploadQueueItem item)
@@ -128,7 +128,7 @@ public class StorageService : StorageClient, IStorageService
 
             using var cancellation = item.Cancellation;
             await using var fileStream = item.File;
-            
+
             while (uploaded < size)
             {
                 var readBytes = await fileStream.ReadAsync(buffer, 0, buffer.Length, cancellation.Token);

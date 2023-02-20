@@ -1,8 +1,6 @@
 ﻿using Concerto.Server.Settings;
 using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Concerto.Server.Data.Models;
 
@@ -12,7 +10,7 @@ public class UploadedFile : Entity
 	public long FolderId { get; set; }
 	public Folder Folder { get; set; } = null!;
 
-	public long OwnerId { get; set; }
+	public Guid OwnerId { get; set; }
 
 	public long Size { get; set; }
 

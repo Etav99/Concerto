@@ -32,8 +32,9 @@ public class ScheduledTasksService : IHostedService, IDisposable
 	{
 		_tempFilesCleanupTimer?.Dispose();
 	}
-	
-	private async void RemoveExpiredTempFiles(object? state) {
+
+	private async void RemoveExpiredTempFiles(object? state)
+	{
 		try
 		{
 			var tempDir = new DirectoryInfo(AppSettings.Storage.TempPath);
@@ -43,12 +44,13 @@ public class ScheduledTasksService : IHostedService, IDisposable
 
 			foreach (var file in files)
 			{
-				if(file.LastWriteTimeUtc < DateTime.UtcNow - expirationSpan) {
+				if (file.LastWriteTimeUtc < DateTime.UtcNow - expirationSpan)
+				{
 					await file.DeleteAsync();
 				}
 			}
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error while removing expired temp files.");
 		}

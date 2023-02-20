@@ -2,7 +2,7 @@
 
 namespace Concerto.Shared.Models.Dto;
 
-public record User (long Id, string Username, string FirstName, string LastName)
+public record User(Guid Id, string Username, string FirstName, string LastName)
 {
 	public string FullName => $"{FirstName} {LastName}";
 	public string Initials => $"{FirstName.FirstOrDefault()}{LastName.FirstOrDefault()}";

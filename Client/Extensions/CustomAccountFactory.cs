@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Concerto.Client.Extensions;
 
@@ -17,7 +17,7 @@ public class CustomAccountFactory : AccountClaimsPrincipalFactory<RemoteUserAcco
 
         var userIdentity = (ClaimsIdentity)initialUser.Identity;
         var roles = userIdentity.Claims.FirstOrDefault(c => c.Type == "roles")?.Value;
-        if(string.IsNullOrEmpty(roles)) return initialUser;
+        if (string.IsNullOrEmpty(roles)) return initialUser;
 
         var rolesNode = JsonDocument.Parse(roles);
         foreach (var role in rolesNode.RootElement.EnumerateArray())

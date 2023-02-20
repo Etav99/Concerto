@@ -2,7 +2,6 @@
 using Concerto.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
-using System.Diagnostics.Eventing.Reader;
 
 namespace Concerto.Server.Services;
 
@@ -20,7 +19,7 @@ public class CourseService
 	}
 
 	// Create
-	public async Task<long> CreateCourse(Dto.CreateCourseRequest request, long userId)
+	public async Task<long> CreateCourse(Dto.CreateCourseRequest request, Guid userId)
 	{
 		// Create course
 		var course = new Data.Models.Course
@@ -28,7 +27,7 @@ public class CourseService
 			Name = request.Name,
 			CreatedDate = DateTime.UtcNow
 		};
-		
+
 		// Create course users
 		var courseUsers = request.Members.Select(m => m.ToEntity()).ToList();
 		courseUsers.Add(new CourseUser(userId, CourseUserRole.Admin));
@@ -59,7 +58,7 @@ public class CourseService
 
 		course.RootFolderId = rootFolder.Id;
 		course.SessionsFolderId = sessionsFolder.Id;
-		
+
 		await _context.SaveChangesAsync();
 
 		await transaction.CommitAsync();
@@ -68,19 +67,19 @@ public class CourseService
 	}
 
 	// Read
-	public async Task<bool> IsUserCourseMember(long userId, long courseId)
+	public async Task<bool> IsUserCourseMember(Guid userId, long courseId)
 	{
 		var courseUser = await _context.CourseUsers.FindAsync(courseId, userId);
 		return courseUser != null;
 	}
 
-	public async Task<Dto.Course?> GetCourse(long courseId, long userId, bool isAdmin = false)
+	public async Task<Dto.Course?> GetCourse(long courseId, Guid userId, bool isAdmin = false)
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		return course?.ToViewModel(isAdmin || await CanManageCourse(courseId, userId));
 	}
 
-	public async Task<Dto.CourseSettings?> GetCourseSettings(long courseId, long userId, bool isAdmin = false)
+	public async Task<Dto.CourseSettings?> GetCourseSettings(long courseId, Guid userId, bool isAdmin = false)
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		if (course == null)
@@ -111,7 +110,7 @@ public class CourseService
 			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(long userId)
+	public async Task<IEnumerable<Dto.CourseListItem>> GetUserCoursesList(Guid userId)
 	{
 		return await _context.CourseUsers
 			.Where(cu => cu.UserId == userId)
@@ -128,19 +127,19 @@ public class CourseService
 	}
 
 	// Update
-	internal async Task<bool> CanManageCourse(long courseId, long userId)
+	internal async Task<bool> CanManageCourse(long courseId, Guid userId)
 	{
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole == CourseUserRole.Admin;
 	}
-	
-	internal async Task<bool> CanManageCourseSessions(long courseId, long userId)
+
+	internal async Task<bool> CanManageCourseSessions(long courseId, Guid userId)
 	{
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
 	}
-	
-	public async Task<bool> UpdateCourse(Dto.UpdateCourseRequest request, long userId)
+
+	public async Task<bool> UpdateCourse(Dto.UpdateCourseRequest request, Guid userId)
 	{
 		var course = await _context.Courses.FindAsync(request.CourseId);
 		if (course == null) return false;
@@ -150,9 +149,11 @@ public class CourseService
 		await _context.Entry(course).Collection(c => c.CourseUsers).LoadAsync();
 
 		var newCourseUsers = request.Members.Select(member => new CourseUser
-				{
-					CourseId = course.Id, UserId = member.UserId, Role = member.Role.ToEntity()
-				}
+		{
+			CourseId = course.Id,
+			UserId = member.UserId,
+			Role = member.Role.ToEntity()
+		}
 			)
 			.ToList();
 
@@ -172,7 +173,7 @@ public class CourseService
 	}
 
 	// Delete
-	internal async Task<bool> CanDeleteCourse(long courseId, long userId)
+	internal async Task<bool> CanDeleteCourse(long courseId, Guid userId)
 	{
 		var courseRole = (await _context.CourseUsers.FindAsync(courseId, userId))?.Role;
 		return courseRole == CourseUserRole.Admin;
@@ -182,11 +183,11 @@ public class CourseService
 	{
 		var course = await _context.Courses.FindAsync(courseId);
 		if (course == null) return false;
-		
+
 		await _context.Entry(course).Reference(c => c.RootFolder).LoadAsync();
 		await _context.Entry(course).Reference(c => c.SessionsFolder).LoadAsync();
-		
-		if(course.RootFolder != null)
+
+		if (course.RootFolder != null)
 			await _storageService.DeleteFolder(course.RootFolder.Id);
 
 		if (course.SessionsFolder != null)
@@ -194,11 +195,11 @@ public class CourseService
 
 		_context.Remove(course);
 		await _context.SaveChangesAsync();
-	
+
 		return true;
 	}
 
-	internal async Task<long> CloneCourse(Dto.CloneCourseRequest request, long userId)
+	internal async Task<long> CloneCourse(Dto.CloneCourseRequest request, Guid userId)
 	{
 		var course = await _context.Courses.FindAsync(request.CourseId);
 		if (course == null)
@@ -206,7 +207,9 @@ public class CourseService
 
 		var createCourseRequest = new Dto.CreateCourseRequest
 		{
-			Name = request.Name, Description = request.Description, Members = Enumerable.Empty<Dto.CourseUser>()
+			Name = request.Name,
+			Description = request.Description,
+			Members = Enumerable.Empty<Dto.CourseUser>()
 		};
 
 		var courseId = await CreateCourse(createCourseRequest, userId);

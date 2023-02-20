@@ -1,5 +1,4 @@
-﻿using Concerto.Server.Extensions;
-using Concerto.Server.Middlewares;
+﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
@@ -24,7 +23,7 @@ public class ForumController : ControllerBase
 		_courseService = courseService;
 	}
 
-	private long UserId => HttpContext.UserId();
+	private Guid UserId => HttpContext.UserId();
 
 	[HttpPost]
 	public async Task<ActionResult<IEnumerable<Post>>> GetPosts(long courseId, long? beforeId = null, long? relatedToFileId = null)
@@ -75,7 +74,7 @@ public class ForumController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Comment>> UpdateComment([FromBody] EditCommentRequest request)
 	{
-		if (!await _forumService.CanEditComment(UserId, request.CommentId)) return Forbid();
+		if (!await _forumService.CanEditComment(request.CommentId, UserId)) return Forbid();
 		var editedComment = await _forumService.UpdateComment(request);
 		return editedComment != null ? Ok(editedComment) : BadRequest();
 	}

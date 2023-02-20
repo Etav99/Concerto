@@ -1,8 +1,4 @@
-﻿@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Extensions
-@using Concerto.Client.Services
-@using Concerto.Client.Components.Lists
-@inject ICourseService CourseService
+﻿@inject ICourseService CourseService
 @inject IUserService UserService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -33,7 +29,7 @@ else
 		<MudPaper Elevation="0">
 			<MudForm @ref="_courseNameForm" @bind-IsValid="@_courseNameValid">
 				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Title" Immediate="true" Variant="Variant.Outlined"
-						  Validation="new Func<string, string?>(Validation.NotEmpty)" @bind-Value="Request.Name" T="string" Label="Course name"
+						  Validation="Validation.NotEmpty" @bind-Value="Request.Name" T="string" Label="Course name"
 						  Margin="Margin.Dense" />
 			</MudForm>
 		</MudPaper>
@@ -73,7 +69,7 @@ else
 	private HashSet<CourseUser> ChangeDetectionSet { get; set; } = null!;
 	private HashSet<CourseUser> CurrentMembers { get; set; } = null!;
 
-	private Dictionary<long, User> Users { get; set; } = new();
+	private Dictionary<Guid, User> Users { get; set; } = new();
 	private HashSet<CourseUser> AvailableMembers { get; set; } = null!;
 
 

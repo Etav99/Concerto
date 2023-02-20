@@ -1,15 +1,9 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Extensions
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Dialogs
-@inherits MudComponentBase;
+﻿@inherits MudComponentBase;
 
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ICourseService CourseService
 @inject ISessionService SessionService
-@inject HttpClient Http;
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="false" Square="true" Elevation="0" FixedHeader="true" FixedFooter="true"
           Height="100%" Loading="@Loading" Class="@Class" RowStyle="cursor: pointer;"

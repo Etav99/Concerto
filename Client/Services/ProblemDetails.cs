@@ -1,8 +1,6 @@
-﻿using System.Dynamic;
-
-namespace Concerto.Client.Services
+﻿namespace Concerto.Client.Services
 {
-	public class ProblemDetails : Dictionary<object, object>
-	{
-	}
+    public class ProblemDetails : Dictionary<object, object>
+    {
+    }
 }

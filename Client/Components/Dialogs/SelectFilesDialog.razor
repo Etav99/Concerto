@@ -1,20 +1,12 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Extensions;
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Lists
-@inject ICourseService CourseService
+﻿@inject ICourseService CourseService
 @inject ISnackbar Snackbar
-@inject HttpClient Http
-@inject IStorageService StorageService
-@inject IDialogService DialogService
 @inherits DialogAutoFullscreen
 
 <MudDialog>
 	<DialogContent>
 		@if (!Loading)
 		{
-			<div style="height: calc(100vh - 134px)">
+			<div style="height: calc(100vh - 200px)">
 
 				<div style="height: 84px; overflow: scroll;">
 					Selected Files:

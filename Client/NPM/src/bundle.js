@@ -1,1 +1,1 @@
-﻿
+﻿window.isMobile = require('is-mobile');

@@ -1,4 +1,4 @@
-﻿using Concerto.Client.Services;
+﻿using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -6,55 +6,57 @@ namespace Concerto.Client.Services;
 
 public interface IUserService : IUserClient
 {
-	public Task<long?> UserId();
+    public Task<Guid?> UserId();
 }
 
 public class UserService : UserClient, IUserService, IDisposable
 {
-	private readonly AuthenticationStateProvider _authenticationStateProvider;
-	private readonly IAccessTokenProvider _tokenProvider;
-	private Task<AuthenticationState>? _authenticationStateTask;
+    private readonly AuthenticationStateProvider _authenticationStateProvider;
+    private readonly IAccessTokenProvider _tokenProvider;
+    private Task<AuthenticationState>? _authenticationStateTask;
 
-	private long? _userId;
+    private Guid? _userId;
 
-	public UserService(HttpClient httpClient, IAccessTokenProvider tokenProvider, AuthenticationStateProvider authenticationStateProvider)
-		: base(httpClient)
-	{
-		_tokenProvider = tokenProvider;
-		_authenticationStateProvider = authenticationStateProvider;
-		_authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
-	}
+    public UserService(HttpClient httpClient, IAccessTokenProvider tokenProvider, AuthenticationStateProvider authenticationStateProvider)
+        : base(httpClient)
+    {
+        _tokenProvider = tokenProvider;
+        _authenticationStateProvider = authenticationStateProvider;
+        _authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
+    }
 
-	public void Dispose()
-	{
-		_authenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
-	}
+    public void Dispose()
+    {
+        _authenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
+    }
 
-	public async Task<long?> UserId()
-	{
-		if (await IsLoggedIn())
-		{
-			if (_userId != null) return _userId;
-			_userId = await GetCurrentUserIdAsync();
-			return _userId;
-		}
+    public async Task<Guid?> UserId()
+    {
+        if (await IsLoggedIn())
+        {
+            if (_userId != null) return _userId;
+            if (_authenticationStateTask == null) return null;
+            var authenticationState = await _authenticationStateTask;
+            _userId = authenticationState.User.GetSubjectId();
+            return _userId;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	private void AuthenticationStateChanged(Task<AuthenticationState> authenticationState)
-	{
-		_userId = null;
-		_authenticationStateTask = authenticationState;
-	}
+    private void AuthenticationStateChanged(Task<AuthenticationState> authenticationState)
+    {
+        _userId = null;
+        _authenticationStateTask = authenticationState;
+    }
 
-	private async Task<bool> IsLoggedIn()
-	{
-		if (_authenticationStateTask == null) return false;
-		
-		var authenticationState = await _authenticationStateTask;
-		return authenticationState.User.Identity?.IsAuthenticated ?? false;
-	}
+    private async Task<bool> IsLoggedIn()
+    {
+        if (_authenticationStateTask == null) return false;
+
+        var authenticationState = await _authenticationStateTask;
+        return authenticationState.User.Identity?.IsAuthenticated ?? false;
+    }
 }
 
 

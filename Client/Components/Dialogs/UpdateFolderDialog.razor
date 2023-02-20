@@ -1,11 +1,7 @@
-﻿@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Input
+﻿@inherits DialogAutoFullscreen
 @inject ICourseService CourseService
 @inject ISnackbar Snackbar
-@inject HttpClient Http
 @inject IStorageService StorageService
-@inherits DialogAutoFullscreen
 
 <MudDialog>
 	<TitleContent>

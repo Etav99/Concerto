@@ -12,7 +12,7 @@ public class Folder : Entity
 	public long CourseId { get; set; }
 	public Course Course { get; set; } = null!;
 
-	public long? OwnerId { get; set; }
+	public Guid? OwnerId { get; set; }
 	public User? Owner { get; set; }
 
 	public long? ParentId { get; set; }
@@ -23,7 +23,7 @@ public class Folder : Entity
 
 	public FolderPermission CoursePermission { get; set; } = null!;
 	public virtual ICollection<UserFolderPermission> UserPermissions { get; set; } = null!;
-	
+
 	public bool IsCourseRoot => Type is FolderType.CourseRoot;
 	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
 

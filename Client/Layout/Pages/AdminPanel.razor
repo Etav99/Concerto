@@ -1,14 +1,7 @@
 ﻿@page "/admin"
-@using Concerto.Client.Components.Lists
-@using Concerto.Client.Services;
-@using Concerto.Shared.Models.Dto;
-@using Microsoft.AspNetCore.Components.Authorization;
 
+@attribute [Authorize]
 
-@inject NavigationManager NavigationManager
-@inject HttpClient Http;
-@inject IBreadcrumbsService BreadcrumbsService
-@inject ICourseService CourseService
 @inject IAppSettingsService AppSettingsService
 
 <PageTitle>Admin panel</PageTitle>
@@ -31,7 +24,7 @@
 						<MudText Typo="Typo.body2">More</MudText>
 						<MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.OpenInNew" />
 					</MudStack>
-				</MudLink>
+			</MudLink>
 			</TabContent>
 		</MudTabPanel>
 		

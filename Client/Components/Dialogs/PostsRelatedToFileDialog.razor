@@ -1,16 +1,4 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Components.Views
-@using Concerto.Client.Extensions;
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@using Concerto.Client.Components.Lists
-@inject ICourseService CourseService
-@inject ISnackbar Snackbar
-@inject HttpClient Http
-@inject IStorageService StorageService
-@inject IDialogService DialogService
-
-
+﻿@inject ISnackbar Snackbar
 
 <MudDialog>
 		<DialogContent>
@@ -34,8 +22,6 @@
 
 	[Parameter]
 	public FileItem File { get; set; } = null!;
-
-	bool _postsAvailable = false;
 
 	private void OnNoPosts()
 	{

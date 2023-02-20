@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>c02bb558-db04-4672-89bf-2b544182607f</ProjectGuid>
-    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+    <DockerLaunchAction>None</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/concerto/app</DockerServiceUrl>
     <DockerServiceName>concerto.server</DockerServiceName>
   </PropertyGroup>
@@ -13,6 +13,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AdditionalComposeFilePaths>compose/docker-compose.base.yml;compose/docker-compose.base.override.yml</AdditionalComposeFilePaths>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProxy|AnyCPU'">
+    <AdditionalComposeFilePaths>compose/docker-compose.proxy.yml;compose/docker-compose.proxy.override.yml</AdditionalComposeFilePaths>
   </PropertyGroup>
   <ItemGroup>
     <None Include="compose/docker-compose.base.override.yml">

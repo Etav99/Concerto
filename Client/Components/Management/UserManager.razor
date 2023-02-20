@@ -1,10 +1,7 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Extensions;
-@using Concerto.Client.Services;
-@using Concerto.Shared.Models.Dto;
-@inject IUserService UserService
+﻿@inherits MudComponentBase
+
+@inject IAccountClient AccountService
 @inject IDialogService DialogService
-@inherits MudComponentBase
 
 <MudTable T="UserIdentity" Items="Users" Loading="Loading"
 		  Height="100%" Class="@Class" Style="@($"display: grid; grid-template-rows: min-content 1fr min-content; {Style}")" RowsPerPage="PageSize.Default" Filter="new Func<UserIdentity, bool>(UserFilter)"
@@ -125,15 +122,15 @@
 	private async Task Load()
 	{
 		_users = Unverified 
-			? (await UserService.GetUnverifiedUserIdentitiesAsync()).ToList()
-			: (await UserService.GetUserIdentitiesAsync()).ToList();
+			? (await AccountService.GetUnverifiedUserIdentitiesAsync()).ToList()
+			: (await AccountService.GetUserIdentitiesAsync()).Where(u => u.Role is not Role.Unverified).ToList();
 	}
 
 	private async Task VerifyUser(UserIdentity user)
 	{
 		if (!await DialogService.ShowConfirmationDialog("Verify user", "confirm", "user", $"{user.FullName} ({user.Username}) ({user.Email})"))
 			return;
-		await UserService.VerifiyUserAsync(user.SubjectId);
+		await AccountService.VerifiyUserAsync(user.SubjectId);
 		await Load();
 	}
 
@@ -141,7 +138,7 @@
 	{
 		if (!await DialogService.ShowConfirmationDialog("Delete user", "delete", "user", $"{user.FullName} ({user.Username}) ({user.Email})", true))
 			return;
-		await UserService.DeleteUserAsync(user.SubjectId);
+		await AccountService.DeleteUserAsync(user.SubjectId);
 		await Load();
 	}
 

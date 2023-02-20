@@ -1,29 +1,20 @@
-﻿using Concerto.Server.Services;
-using Concerto.Shared.Extensions;
-using Nito.AsyncEx;
+﻿using Concerto.Shared.Extensions;
 
 namespace Concerto.Server.Middlewares;
 
 public class UserIdMapperMiddleware
 {
 	private readonly RequestDelegate _next;
-	private readonly AsyncLock _mutex = new();
 
 	public UserIdMapperMiddleware(RequestDelegate next)
 	{
 		_next = next;
 	}
 
-	public async Task InvokeAsync(HttpContext httpContext, UserService userService)
+	public async Task InvokeAsync(HttpContext httpContext)
 	{
-		if (httpContext.User.Identity?.IsAuthenticated ?? false && httpContext.User.IsVerified())
-		{
-			using (await _mutex.LockAsync())
-			{
-				var userId = await userService.GetUserIdAndUpdate(httpContext.User);
-				httpContext.Items["AppUserId"] = userId;
-			}
-		}
+		if (httpContext.User.Identity?.IsAuthenticated ?? false)
+			httpContext.Items["AppUserId"] = httpContext.User.GetSubjectId();
 
 		await _next(httpContext);
 	}
@@ -38,9 +29,9 @@ public static class IdAssignmentMiddlewareExtensions
 		return builder.UseMiddleware<UserIdMapperMiddleware>();
 	}
 
-	public static long UserId(this HttpContext context)
+	public static Guid UserId(this HttpContext context)
 	{
-		return (long)context.Items["AppUserId"]!;
+		return (Guid)context.Items["AppUserId"]!;
 	}
 }
 

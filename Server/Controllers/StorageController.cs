@@ -1,12 +1,11 @@
-﻿using System.Net.Mime;
-using System.Text.Json;
-using Concerto.Server.Extensions;
-using Concerto.Server.Middlewares;
+﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
+using System.Text.Json;
 
 namespace Concerto.Server.Controllers;
 
@@ -18,6 +17,7 @@ public class StorageController : ControllerBase
 	private readonly ILogger<StorageController> _logger;
 	private readonly SessionService _sessionService;
 	private readonly StorageService _storageService;
+	private Guid UserId => HttpContext.UserId();
 
 	public StorageController(ILogger<StorageController> logger, StorageService storageService, SessionService sessionService)
 	{
@@ -26,7 +26,7 @@ public class StorageController : ControllerBase
 		_sessionService = sessionService;
 	}
 
-	private long UserId => HttpContext.UserId();
+
 
 
 	[HttpGet]
@@ -69,7 +69,7 @@ public class StorageController : ControllerBase
 	public async Task<ActionResult<long>> CreateFolder([FromBody] CreateFolderRequest createFolderRequest)
 	{
 		if (!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, createFolderRequest.ParentId)) return Forbid();
-		
+
 
 		var folderId = await _storageService.CreateFolder(createFolderRequest, UserId);
 		if (folderId == null) return BadRequest();
@@ -80,7 +80,7 @@ public class StorageController : ControllerBase
 	public async Task<ActionResult> UpdateFolder([FromBody] UpdateFolderRequest updateFolderRequest)
 	{
 		if (!User.IsAdmin() && !await _storageService.CanEditFolder(UserId, updateFolderRequest.Id)) return Forbid();
-		
+
 		await _storageService.UpdateFolder(updateFolderRequest);
 		return Ok();
 	}
@@ -95,11 +95,11 @@ public class StorageController : ControllerBase
 			return Forbid();
 
 		bool lastChunk = await _storageService.SaveChunk(chunkMetadata, file);
-		if(lastChunk)
+		if (lastChunk)
 		{
 			if (User.IsAdmin() || await _storageService.CanWriteInFolder(UserId, chunkMetadata.FolderId))
 				return Ok(await _storageService.SaveUploadedFile(chunkMetadata, file.FileName, UserId));
-			
+
 			await _storageService.AbortFileUpload(chunkMetadata);
 			return Forbid();
 		}
@@ -118,10 +118,10 @@ public class StorageController : ControllerBase
 	{
 		if (!User.IsAdmin() && !await _storageService.CanManageFile(UserId, request.FileId))
 			return Forbid();
-		
+
 		if (await _storageService.UpdateFile(request))
 			return Ok();
-		
+
 		return Forbid();
 	}
 
@@ -130,7 +130,7 @@ public class StorageController : ControllerBase
 	{
 		if (!User.IsAdmin() && !await _storageService.CanManageFile(UserId, fileId))
 			return Forbid();
-		
+
 		await _storageService.DeleteFile(fileId);
 		return Ok();
 	}
@@ -212,13 +212,13 @@ public class StorageController : ControllerBase
 		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, UserId);
 		return Ok();
 	}
-	
+
 	[HttpGet]
 	[AllowAnonymous]
 	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token)
 	{
 		if (!_storageService.ValidateToken(fileId, token)) return Forbid();
-		
+
 		var file = await _storageService.GetFile(fileId);
 		if (file == null) return NotFound();
 		var fileBytes = System.IO.File.OpenRead(file.Path);

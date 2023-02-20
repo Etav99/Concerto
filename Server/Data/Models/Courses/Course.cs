@@ -32,7 +32,7 @@ public static partial class ViewModelConversions
 		);
 	}
 
-	public static CourseSettings ToSettingsViewModel(this Course course, long userId, CourseUserRole currentUserRole, bool canManage)
+	public static CourseSettings ToSettingsViewModel(this Course course, Guid userId, CourseUserRole currentUserRole, bool canManage)
 	{
 		return new CourseSettings(course.Id,
 			Description: course.Description,

@@ -1,33 +1,31 @@
-﻿@using Concerto.Client.Components.Layout;
-@using Concerto.Client.Services
-@using Concerto.Shared.Models.Dto
-@inject IDialogService DialogService
-@inject ICourseService CourseService
+﻿@inject ICourseService CourseService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inherits DialogAutoFullscreen
 
 <MudDialog>
 	<DialogContent>
-		<MudStack Spacing="8">
-			<MudTextField @bind-Value="_request.Name" T="string" Label="Course name"></MudTextField>
+		<MudStack Spacing="4">
+			<MudForm @ref="_form">
+				<MudTextField Immediate="true" DebounceInterval="250" @bind-Value="_request.Name" T="string" Label="Course name" Validation="Validation.NotEmpty"></MudTextField>
+			</MudForm>
 
-			<MudStack>
-				<MudSwitch @bind-Checked="_request.CopyCourseUsers" Label="Copy course users" Color="Color.Success"></MudSwitch>
+			<MudPaper Elevation="0" Outlined="true" Class="px-3 d-flex flex-column">
+				<MudSwitch @bind-Checked="_request.CopyCourseUsers" Label="Copy members" Color="Color.Success"></MudSwitch>
 				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyRoles" Label="With roles" Disabled="!_request.CopyCourseUsers" Color="Color.Success"></MudSwitch>
-			</MudStack>
+			</MudPaper>
 
-			<MudStack>
+			<MudPaper Elevation="0" Outlined="true" Class="px-3 d-flex flex-column">
 				<MudSwitch @bind-Checked="_request.CopyFolders" Label="Copy folders" Color="Color.Success"></MudSwitch>
 				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFiles" Label="With files" Disabled="!_request.CopyFolders" Color="Color.Success"></MudSwitch>
-				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user permissions" Disabled="!(_request.CopyFolders && _request.CopyCourseUsers)" Color="Color.Success"></MudSwitch>
-			</MudStack>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user specific permissions" Disabled="!(_request.CopyFolders && _request.CopyCourseUsers)" Color="Color.Success"></MudSwitch>
+			</MudPaper>
 
 		</MudStack>
 	</DialogContent>
 	<DialogActions>
-		<MudButton OnClick="Cancel">Cancel</MudButton>
-		<MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="!Valid" OnClick="Submit">Ok</MudButton>
 	</DialogActions>
 </MudDialog>
 
@@ -35,7 +33,11 @@
 	[Parameter]
 	public CourseListItem CourseToClone { get; set; } = null!;
 
+	private MudForm? _form = null;
+
 	private HashSet<User> _members = new(new UserIdEqualityComparer());
+
+	private bool Valid => !string.IsNullOrEmpty(_request.Name)  && (_request.CopyCourseUsers || _request.CopyFolders);
 
 	private CloneCourseRequest _request = null!;
 
@@ -54,11 +56,9 @@
 
 	private async Task Submit()
 	{
-		if (string.IsNullOrEmpty(_request.Name))
-		{
-			Snackbar.Add("Course name cannot be empty", Severity.Error);
-			return;
-		}
+		if (_form is null) return;
+		await _form.Validate();
+		if (!_form.IsValid) return;
 
 		try
 		{

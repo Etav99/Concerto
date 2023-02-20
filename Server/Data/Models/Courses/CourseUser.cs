@@ -1,5 +1,4 @@
-﻿using Concerto.Shared.Models.Dto;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Concerto.Server.Data.Models;
 
@@ -9,20 +8,20 @@ public class CourseUser
 {
 	public long CourseId { get; set; }
 	public Course Course { get; set; } = null!;
-	public long UserId { get; set; }
+	public Guid UserId { get; set; }
 	public User User { get; set; } = null!;
 	public CourseUserRole Role { get; set; }
 
 	public CourseUser() { }
 
 
-	public CourseUser(long userId, CourseUserRole role)
+	public CourseUser(Guid userId, CourseUserRole role)
 	{
 		CourseId = Entity.NoId;
 		UserId = userId;
 		Role = role;
 	}
-	public CourseUser(long courseId, long userId, CourseUserRole role)
+	public CourseUser(long courseId, Guid userId, CourseUserRole role)
 	{
 		CourseId = courseId;
 		UserId = userId;
