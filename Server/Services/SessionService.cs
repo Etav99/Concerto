@@ -1,6 +1,12 @@
-﻿using Concerto.Server.Data.DatabaseContext;
+﻿using Concerto.Client.Services;
+using Concerto.Server.Data.DatabaseContext;
 using Concerto.Server.Data.Models;
+using Concerto.Server.Settings;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace Concerto.Server.Services;
 
@@ -32,19 +38,30 @@ public class SessionService
 		return session.ToViewModel(isAdmin || await CanManageSession(sessionId, userId));
 	}
 
-	public async Task<bool> CanAccessSession(Guid userId, long sessionId)
+	public async Task<bool> CanAccessSession(Guid meetingGuid, Guid userId)
+	{
+		var session = await _context.Sessions.Where(s => s.MeetingGuid == meetingGuid).FirstOrDefaultAsync();
+		if (session == null)
+			return false;
+
+		var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
+		if (courseUser == null)
+			return false;
+
+		return true;
+	}
+
+	public async Task<bool> CanAccessSession(long sessionId, Guid userId)
 	{
 		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null)
 			return false;
 
 		var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
+		if (courseUser == null)
+			return false;
 
-		return await _context.Entry(session)
-			.Reference(s => s.Course)
-			.Query()
-			.Include(r => r.CourseUsers)
-			.AnyAsync(r => r.CourseUsers.Any(ru => ru.UserId == userId));
+		return true;
 	}
 
 	internal async Task<bool> CanManageSession(long sessionId, Guid userId)
@@ -142,6 +159,50 @@ public class SessionService
 		var session = await _context.Sessions.FindAsync(sessionId);
 
 		return session?.ToSettingsViewModel();
+	}
+
+	public async Task<string> GenerateMeetingToken(Guid userId, long sessionId)
+	{
+		var session = await _context.Sessions.FindAsync(sessionId);
+		if (session == null)
+			throw new Exception("Session not found");
+		return await GenerateMeetingToken(userId, session.MeetingGuid);
+	}
+
+	public async Task<string> GenerateMeetingToken(Guid userId, Guid roomGuid)
+	{
+		var user = await _context.Users.FindAsync(userId);
+		if (user == null)
+			throw new Exception("User not found");
+
+		string key = AppSettings.Meetings.JwtSecret;
+		var securityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+		var credentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(securityKey, "HS256");
+
+		var jitsiContext = new { 
+			user = new
+			{
+				avatar = "", 
+				email = "", 
+				name = user.FullName
+			}
+		};
+
+        ClaimsIdentity claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaim(new Claim("context", JsonSerializer.Serialize(jitsiContext), JsonClaimValueTypes.Json));
+        claimsIdentity.AddClaim(new Claim("room", roomGuid.ToString()));
+        claimsIdentity.AddClaim(new Claim("sub", (new Uri(AppSettings.Meetings.JitsiUrl)).Host));
+
+		var tokenHandler = new JwtSecurityTokenHandler();
+		var token = tokenHandler.CreateJwtSecurityToken(
+			issuer: AppSettings.Meetings.JwtAppId,
+			audience: (new Uri(AppSettings.Meetings.JitsiUrl)).Host,
+			subject: claimsIdentity,
+			expires: DateTime.UtcNow.AddMinutes(2),
+			signingCredentials: credentials
+		);
+		Console.WriteLine(token.ToString());
+		return tokenHandler.WriteToken(token);
 	}
 }
 

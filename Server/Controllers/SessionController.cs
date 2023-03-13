@@ -39,7 +39,7 @@ public class SessionController : ControllerBase
 	public async Task<ActionResult<Session>> GetSession(long sessionId)
 	{
 		var isAdmin = User.IsAdmin();
-		if (!isAdmin && !await _sessionService.CanAccessSession(UserId, sessionId)) return Forbid();
+		if (!isAdmin && !await _sessionService.CanAccessSession(sessionId, UserId)) return Forbid();
 
 		var session = await _sessionService.GetSession(sessionId, UserId, isAdmin);
 		return session is null ? NotFound() : Ok(session);
@@ -77,6 +77,14 @@ public class SessionController : ControllerBase
 		if (!await _sessionService.UpdateSession(request)) return Forbid();
 
 		return Ok();
+	}
+
+	[HttpGet]
+	[Produces("text/plain")]
+	public async Task<ActionResult<string>> GetMeetingToken(Guid meetingGuid)
+	{
+		if (!User.IsAdmin() && !await _sessionService.CanAccessSession(meetingGuid, UserId)) return Forbid();
+		return await _sessionService.GenerateMeetingToken(UserId, meetingGuid);
 	}
 }
 

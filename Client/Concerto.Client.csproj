@@ -4,6 +4,10 @@
 	  <Configurations>Debug;Release</Configurations>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Proxy|AnyCPU'" Label="Configuration">
+	  <Configurations>Debug;Release;DebugProxy</Configurations>
+	</PropertyGroup>
+
 	<PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 	</PropertyGroup>
 

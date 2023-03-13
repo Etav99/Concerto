@@ -24,11 +24,6 @@ public static class ClaimsPrincipalExtensions
 		return !user.IsInRole("unverified");
 	}
 
-	public static long? GetUserId(this ClaimsPrincipal user)
-	{
-		return user.FindFirst("user_id")?.Value.ToUserId();
-	}
-
 	public static Guid GetSubjectId(this ClaimsPrincipal user)
 	{
 		var subId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

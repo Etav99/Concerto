@@ -13,30 +13,25 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "DockerCom
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug Proxy|Any CPU = Debug Proxy|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Debug Proxy|Any CPU.ActiveCfg = Debug|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31322F3D-815B-4A66-8CD7-743BA8B4305E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Debug Proxy|Any CPU.ActiveCfg = Debug|Any CPU
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00E425AA-6AB7-4694-A8BE-84236BD2A81E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Debug Proxy|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0536A13-A628-4CDF-9E5D-B1E83DEB9AFC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Debug Proxy|Any CPU.ActiveCfg = Debug Proxy|Any CPU
-		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Debug Proxy|Any CPU.Build.0 = Debug Proxy|Any CPU
 		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Release|Any CPU.ActiveCfg = Debug Proxy|Any CPU
+		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806936F1-4B51-48A1-A7E4-5AFABF13A5F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

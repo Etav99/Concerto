@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject IAccountClient AccountService
+@inject IUserService UserService
 @inject NavigationManager Navigation
 
 
@@ -54,6 +55,8 @@
 	private async Task OnLogInSucceeded()
 	{
 		await AccountService.AfterLoginAsync();
+		Console.WriteLine(await UserService.GetTokenString());
+
 	}
 
 	void OnLogOutSucceeded()

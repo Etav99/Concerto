@@ -13,8 +13,36 @@ const CODECS = [
     "h.264"
 ];
 
-// 10GB test
+// 10GB
 const MAX_RECORDING_SIZE = 10 * 1024 * 1024 * 1024;
+
+async function startRecording(DotNetMeetingsComponent, selectedAudioInputId, filenameBase, saveInterval = 500) {
+    let recordingManager = new RecordingManager(DotNetMeetingsComponent, filenameBase, saveInterval);
+    await recordingManager.startRecording(selectedAudioInputId);
+}
+
+async function stopRecording() {
+    if (window.recordingManager)
+    {
+        await window.recordingManager.stopRecording();
+    }
+}
+
+async function getAudioInputs() {
+    var AudioInputs = await navigator.mediaDevices.enumerateDevices().then((devices) => {
+        return devices.filter((device) => device.kind === 'audioinput');
+    });
+    
+    // convert to name uid pairs
+    AudioInputsNames = [];
+    AudioInputsIds = [];
+    AudioInputs.forEach((device) => {
+        AudioInputsNames.push(device.label);
+        AudioInputsIds.push(device.deviceId);
+    });
+
+    return {Names: AudioInputsNames, Ids: AudioInputsIds}
+}
 
 class RecordingManager {
     screenMediaStream;

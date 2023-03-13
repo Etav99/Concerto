@@ -7,6 +7,7 @@ namespace Concerto.Client.Services;
 public interface IUserService : IUserClient
 {
     public Task<Guid?> UserId();
+    public Task<string> GetTokenString();
 }
 
 public class UserService : UserClient, IUserService, IDisposable
@@ -42,6 +43,12 @@ public class UserService : UserClient, IUserService, IDisposable
         }
 
         return null;
+    }
+
+    public async Task<string> GetTokenString()
+    {
+        var tokenResult = await _tokenProvider.RequestAccessToken();
+		return tokenResult.TryGetToken(out var token) ? token.Value : string.Empty;
     }
 
     private void AuthenticationStateChanged(Task<AuthenticationState> authenticationState)

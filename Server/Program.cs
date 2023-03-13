@@ -6,15 +6,19 @@ using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Server.Settings;
 using Concerto.Shared.Extensions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
 using Npgsql;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Concerto.Server Builder");
 // Add services to the container.
+IdentityModelEventSource.ShowPII = true; 
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
@@ -23,8 +27,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
-builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
 builder.Services.AddHostedService<ScheduledTasksService>();
+builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
@@ -43,12 +47,12 @@ builder.Services.AddAuthentication(options =>
 		{
 			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 		}
 	)
 	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 		{
-			options.RequireHttpsMetadata = false;
-			// options.RequireHttpsMetadata = builder.Environment.IsProduction();
+			options.RequireHttpsMetadata = AppSettings.Oidc.RequireHttpsMetadata;
 
 			if (AppSettings.Oidc.AcceptAnyServerCertificateValidator)
 				options.BackchannelHttpHandler = new HttpClientHandler
@@ -77,7 +81,43 @@ builder.Services.AddAuthentication(options =>
 				}
 			};
 		}
-	);
+	)
+	.AddCookie(options =>
+	{
+		options.Cookie.Path = $"{AppSettings.Web.BasePath}/auth";
+		options.Cookie.SameSite = SameSiteMode.Strict;
+		options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+	})
+	.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    {
+		options.RequireHttpsMetadata = AppSettings.Oidc.RequireHttpsMetadata;
+		options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+		options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+		options.Authority = AppSettings.Oidc.Authority;
+		options.ClientId = AppSettings.Oidc.ServerClientId;
+		options.ClientSecret = AppSettings.Oidc.ServerClientSecret;
+		options.ResponseType = "code";
+		options.Scope.Add("openid");
+
+		options.SaveTokens = true;
+
+        options.CallbackPath = "/auth/signin-oidc";
+        options.SignedOutCallbackPath = "/auth/signout-callback-oidc";
+
+		options.Events = new OpenIdConnectEvents
+		{
+			OnRedirectToIdentityProvider = context =>
+			{
+				var builder = new UriBuilder(context.ProtocolMessage.RedirectUri);
+                builder.Scheme = "https";
+                builder.Port = -1;
+                context.ProtocolMessage.RedirectUri = builder.ToString();
+				return Task.CompletedTask;
+			}
+		};
+	});
+
 
 builder.Services.AddAuthorization(options =>
 {
@@ -111,8 +151,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-var basePath = "/concerto/app";
-app.UsePathBase(basePath);
+app.UsePathBase(AppSettings.Web.BasePath);
 
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1"); });
@@ -137,9 +176,7 @@ app.UseAuthentication();
 app.UseUserIdMapperMiddleware();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapRazorPages();

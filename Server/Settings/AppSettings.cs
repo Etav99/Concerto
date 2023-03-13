@@ -1,9 +1,19 @@
 ﻿using Concerto.Server.Extensions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Concerto.Server.Settings;
 
 public static class AppSettings
 {
+	public static class Web
+	{
+		public static string AppUrl => $"{PublicUrl}{BasePath}";
+		public static string PublicUrl = EnvironmentHelper.GetVariable("CONCERTO_PUBLIC_URL");
+		public static string BasePath = EnvironmentHelper.GetVariable("CONCERTO_BASE_PATH").IsNullOrEmpty()
+										? "/app"
+										: EnvironmentHelper.GetVariable("CONCERTO_BASE_PATH");
+	}
+
 	public static class Environment
 	{
 		public static bool Docker = EnvironmentHelper.GetVariable("DOTNET_RUNNING_IN_CONTAINER").Equals("true");
@@ -36,11 +46,21 @@ public static class AppSettings
 		public static string ClientPostLogoutRedirectUrl = EnvironmentHelper.GetVariable("OIDC_CLIENT_POST_LOGOUT_REDIRECT_URL");
 		public static string Audience = EnvironmentHelper.GetVariable("OIDC_AUDIENCE");
 		public static bool AcceptAnyServerCertificateValidator = EnvironmentHelper.GetVariable("OIDC_ACCEPT_ANY_SERVER_CERTIFICATE_VALIDATOR").Equals("true");
+		public static bool RequireHttpsMetadata = !EnvironmentHelper.GetVariable("OIDC_REQUIRE_HTTPS_METADATA").Equals("false");
 	}
 
 	public static class Database
 	{
 		public static string DbString = EnvironmentHelper.GetVariable("DB_STRING");
+	}
+
+	public static class Meetings
+	{
+		public static string RecorderKey = EnvironmentHelper.GetVariable("JITSI_RECORDER_PASSWORD");
+		public static string JwtSecret = EnvironmentHelper.GetVariable("JITSI_JWT_SECRET");
+		public static string JwtAppId = EnvironmentHelper.GetVariable("JITSI_JWT_APP_ID");
+		public static string JitsiUrl = EnvironmentHelper.GetVariable("JITSI_MEET_URL");
+		public static string JitsiAppDownloadUrl = EnvironmentHelper.GetVariable("JITSI_APP_DOWNLOAD_URL");
 	}
 }
 

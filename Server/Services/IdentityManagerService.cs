@@ -106,6 +106,7 @@ public class IdentityManagerService
 		await GetApiToken();
 		var url = $"{AppSettings.Oidc.OidcAdminRestApiBaseUrl}/groups?search={groupName}";
 		var unverifiedGroupSearchResponse = await _httpClient.GetAsync(url);
+		unverifiedGroupSearchResponse.EnsureSuccessStatusCode();
 		var unverifiedGroupSearchResult = JsonConvert.DeserializeObject<List<GroupRepresentation>>(await unverifiedGroupSearchResponse.Content.ReadAsStringAsync());
 		if (unverifiedGroupSearchResult == null || unverifiedGroupSearchResult.Count == 0)
 			throw new Exception("Group not found");

@@ -1,6 +1,6 @@
-﻿function startMeeting (parentId, roomName) {
-	const domain = 'meet.jit.si';
+﻿function startMeeting (parentId, domain, roomName, token, caller) {
 	const options = {
+		jwt: token,
 		roomName: roomName,
 		width: "100%",
 		height: "100%",
@@ -12,38 +12,13 @@
 		{
 			fileRecordingsEnabled: true,
 			localRecording: {
-			disable: false,
-			notifyAllParticipants: true
+			    disable: false,
+			    notifyAllParticipants: true
 			}
 		}
 	);
-	api.addListener("videoConferenceLeft", () => { api.dispose(); startMeeting(parentId, roomName); });
-}
-
-async function startRecording(DotNetMeetingsComponent, selectedAudioInputId, filenameBase, saveInterval = 500) {
-    let recordingManager = new RecordingManager(DotNetMeetingsComponent, filenameBase, saveInterval);
-    await recordingManager.startRecording(selectedAudioInputId);
-}
-
-async function stopRecording() {
-    if (window.recordingManager)
-    {
-        await window.recordingManager.stopRecording();
-    }
-}
-
-async function getAudioInputs() {
-    var AudioInputs = await navigator.mediaDevices.enumerateDevices().then((devices) => {
-        return devices.filter((device) => device.kind === 'audioinput');
+    api.addListener("videoConferenceLeft", async () => {
+        api.dispose();
+		await caller.invokeMethodAsync("StartMeeting");
     });
-    
-    // convert to name uid pairs
-    AudioInputsNames = [];
-    AudioInputsIds = [];
-    AudioInputs.forEach((device) => {
-        AudioInputsNames.push(device.label);
-        AudioInputsIds.push(device.deviceId);
-    });
-
-    return {Names: AudioInputsNames, Ids: AudioInputsIds}
 }

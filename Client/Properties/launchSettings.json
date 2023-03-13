@@ -3,32 +3,32 @@
     "http": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "concerto/app",
+      "launchUrl": "app",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "DevelopmentStandalone"
       },
       "dotnetRunMessages": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/concerto/app/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/app/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5203"
     },
     "https": {
       "commandName": "Project",
-      "commandLineArgs": "--pathbase=/concerto/app",
+      "commandLineArgs": "--pathbase=/app",
       "launchBrowser": true,
-      "launchUrl": "concerto/app",
+      "launchUrl": "app",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "DevelopmentStandalone"
       },
       "dotnetRunMessages": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/concerto/app/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/app/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7080/;http://localhost:5203/",
       "hotReloadEnabled": true
     },
     "IIS Express": {
       "commandName": "IISExpress",
-      "commandLineArgs": "--pathbase=/concerto/app/",
+      "commandLineArgs": "--pathbase=/app/",
       "launchBrowser": true,
-      "launchUrl": "concerto/app",
+      "launchUrl": "app",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "DevelopmentStandalone"
       },

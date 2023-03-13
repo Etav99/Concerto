@@ -21,6 +21,8 @@ public class AppSettingsController : ControllerBase
 			PostLogoutUrl = AppSettings.Oidc.ClientPostLogoutRedirectUrl,
 			FileSizeLimit = AppSettings.Storage.FileSizeLimit,
 			MaxAllowedFiles = AppSettings.Storage.MaxAllowedFiles,
+			JitsiUrl = AppSettings.Meetings.JitsiUrl,
+			JitsiAppDownloadUrl = AppSettings.Meetings.JitsiAppDownloadUrl
 		};
 		return Ok(x);
 	}

@@ -2,92 +2,28 @@
 @using Concerto.Client.Services;
 @using Concerto.Shared.Models.Dto;
 @inject IJSRuntime JS
-@inject IStorageService StorageService 
-@implements IAsyncDisposable
+@inject IAppSettingsService AppSettingsService
+@inject ISessionService SessionService
+@implements IDisposable
 
-<style>
-	.container {
-		height:100%;
-		display: grid;
-		grid-template-columns: 1fr;
-		grid-template-rows: min-content 1fr;
-		gap: 0px 0px;
-		grid-template-areas:
-			"buttons"
-			"meeting";
-	}
-
-	.buttons {
-		grid-area: buttons;
-	}
-
-	.meeting {
-		grid-area: meeting;
-	}
-</style>
-
-<div class="container pa-1">
-	<div class="buttons d-flex py-1 ">
-
-		<MudFileUpload T="IBrowserFile" FilesChanged="UploadRecording" Accept="video/*" Class="mt-0">
-			<ButtonTemplate>
-				<MudButton HtmlTag="label"
-						   Variant="Variant.Filled"
-						   Color="Color.Info"
-						   DisableElevation="true"
-						   StartIcon="@Icons.Material.Filled.CloudUpload"
-						   for="@context">
-					Upload recording
-				</MudButton>
-			</ButtonTemplate>
-		</MudFileUpload>
-
-		@if (_selectedAudioInputId is not null && audioInputs is not null)
-		{
-			@if (!isRecording)
-			{
-				<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
-					Start recording
-				</MudButton>
-			}
-			else
-			{
-				<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
-					Stop recording
-				</MudButton>
-			}
-
-			<div class="d-flex ">
-				<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
-				<select disabled="@isRecording" style="align-self: stretch; flex-shrink: 1;" @bind="_selectedAudioInputId">
-					@foreach (var input in audioInputs)
-					{
-						<option value="@input.Id">@input.Name</option>
-					}
-					<option value="none">None</option>
-				</select>
-			</div>
-		}
-	</div>
-
-
-	@if (_isMobile.HasValue)
-	{
-		@if (!_isMobile.Value)
-		{
-			<MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
-		}
-		else
-		{
+@if (_isMobile.HasValue)
+{
+    @if (!_isMobile.Value)
+    {
+        <MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
+    }
+    else
+    {
+		<div style="height: 100%; display: grid; grid-template-rows: min-content 1fr;">
+			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl" Target="_blank">
+				Download Jitsi Meet app
+			</MudButton>
 			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_openInApp">
 				Open meeting in Jitsi Meet app (needs to be installed)
 			</MudButton>
-			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl">
-				Download Jitsi Meet app
-			</MudButton>
-		}
-	}
-</div>
+		</div>
+    }
+}
 
 @code {
 
@@ -95,27 +31,19 @@
 	public string? MeetingName { get; set; }
 
 	[Parameter]
-	public long? UploadFolderId { get; set; }
-
-	[Parameter]
 	public Guid? Guid { get; set; }
 
-	private (string Name, string Id)[]? audioInputs;
+	DotNetObjectReference<Meeting> _dotNetObjectReference = null!;
 
-	private string? _selectedAudioInputId;
-
-	bool isRecording = false;
 	bool? _isMobile = false;
 	bool _isIos = false;
 
 	string _meetingPath = string.Empty;
 
-	string _openInApp => _isIos ? $"org.jitsi.meet://meet.jit.si/{_meetingPath}"
-								: $"intent://meet.jit.si/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
+	string _openInApp => _isIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}"
+								: $"intent://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
 
-	string _downloadJitsiUrl => "https://jitsi.org/downloads/";
-
-	private DotNetObjectReference<Meeting>? _dotNetObjectReference;
+	string _downloadJitsiUrl => AppSettingsService.AppSettings.JitsiAppDownloadUrl;
 
 	class AudioDevices
 	{
@@ -124,57 +52,26 @@
 		public string[] Ids { get; set; } = null!;
 	}
 
-	protected override void OnInitialized()
-	{
-		_dotNetObjectReference = DotNetObjectReference.Create(this);
-	}
-
 	protected override async Task OnParametersSetAsync()
 	{
 		if (MeetingName == null || Guid == null) return;
-		var guid = Guid.ToString()!.Replace("-", string.Empty);
-		_meetingPath = HttpUtility.UrlPathEncode($"Concerto/{guid}");
+		var guid = Guid.ToString();
+		_meetingPath = HttpUtility.UrlPathEncode($"{guid}");
 
 		_isMobile = await IsMobile();
 		_isIos = await IsIos();
 		if (_isMobile.Value) return;
 
-		var audioDevices = await GetAudioInputs();
-		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
-		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : "none";
-
-		if (string.IsNullOrEmpty(_meetingPath)) return;
-		await JS.InvokeAsync<string>("startMeeting", "jitsi", _meetingPath);
-	}
-
-	public async Task StartRecording()
-	{
-		await JS.InvokeVoidAsync("startRecording", _dotNetObjectReference, _selectedAudioInputId, MeetingName, 500);
-	}
-
-	public async Task StopRecording()
-	{
-		await JS.InvokeVoidAsync("stopRecording", _dotNetObjectReference);
+		_dotNetObjectReference = DotNetObjectReference.Create(this);
+		await StartMeeting();
 	}
 
 	[JSInvokable]
-	public void RecordingStateChanged(bool state)
+	public async Task StartMeeting()
 	{
-		isRecording = state;
-		StateHasChanged();
-	}
-
-	public void UploadRecording(IBrowserFile recording)
-	{
-		if (UploadFolderId != null)
-		{
-			StorageService.QueueFilesToUpload(UploadFolderId.Value, new[] { recording });
-		}
-	}
-
-	private async Task<AudioDevices> GetAudioInputs()
-	{
-		return await JS.InvokeAsync<AudioDevices>("getAudioInputs", _dotNetObjectReference);
+		if (string.IsNullOrEmpty(_meetingPath)) return;
+		var token = await SessionService.GetMeetingTokenAsync(Guid);
+		await JS.InvokeAsync<string>("startMeeting", "jitsi", (new System.Uri(AppSettingsService.AppSettings.JitsiUrl)).Host, _meetingPath, token, _dotNetObjectReference);
 	}
 
 	private async Task<bool> IsMobile()
@@ -187,17 +84,8 @@
 		return await JS.InvokeAsync<bool>("isIos");
 	}
 
-	[JSInvokable]
-	public void SetAudioInputs(string[] names, string[] ids)
-	{
-		audioInputs = names.Zip(ids, (name, id) => (name, id)).ToArray();
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		if(isRecording)
-            await StopRecording();
-		_dotNetObjectReference?.Dispose();
-	}
-
+public void Dispose()
+    {
+        _dotNetObjectReference?.Dispose();
+    }
 }

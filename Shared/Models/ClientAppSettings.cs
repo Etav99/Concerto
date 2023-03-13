@@ -7,6 +7,9 @@ public class ClientAppSettings
 	public string AdminConsoleUrl { get; set; } = string.Empty;
 	public string PostLogoutUrl { get; set; } = string.Empty;
 
+	public string JitsiUrl { get; set; } = string.Empty;
+	public string JitsiAppDownloadUrl { get; set; } = string.Empty;
+
 	public long FileSizeLimit { get; set; }
 	public int MaxAllowedFiles { get; set; }
 }
