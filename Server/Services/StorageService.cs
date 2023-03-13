@@ -708,4 +708,46 @@ public class StorageService
 		if (file == null) return false;
 		return file.FolderId != destinationFolderId;
 	}
+
+	internal async Task SaveRecording(string meetingId, string filePath)
+	{
+		var fileInfo = new FileInfo(filePath);
+		if (!fileInfo.Exists) throw new FileNotFoundException("File not found", filePath);
+
+		var meetingGuid = Guid.Parse(meetingId);
+		var session = await _context.Sessions.Where(s => s.MeetingGuid == meetingGuid).FirstAsync();
+
+		var storageName = $"{fileInfo.Name}.{Guid.NewGuid()}";
+		var timeStamp = fileInfo.CreationTime.ToString("dd-MM-yyyy HH-mm-ss");
+		var newFilename = $"{session.Name} {timeStamp}";
+		foreach (char c in Path.GetInvalidFileNameChars())
+		{
+		   newFilename = newFilename.Replace(c, '_');
+		}
+
+		var recordingFile = new UploadedFile
+		{
+			OwnerId = null,
+			DisplayName = newFilename,
+			Extension = fileInfo.Extension,
+			Size = fileInfo.Length,
+			StorageName = storageName,
+			FolderId = session.FolderId,
+		};
+
+		await FileExtensions.CopyAsync(fileInfo.FullName, recordingFile.Path, true);
+		try
+		{
+			await _context.AddAsync(recordingFile);
+			await _context.SaveChangesAsync();
+		}
+		catch
+		{
+			await FileExtensions.DeleteAsync(recordingFile.Path);
+			throw;
+		}
+
+		if(fileInfo.DirectoryName != null)
+			Directory.Delete(fileInfo.DirectoryName, true);
+	}
 }

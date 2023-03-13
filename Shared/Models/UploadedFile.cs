@@ -31,4 +31,10 @@ public record CopyFileRequest
 	public long CopyIntoFolderId { get; set; }
 }
 
+public record RecordingFinishedRequest()
+{
+	public string FilePath {get; set; } = null!;
+	public string MeetingId {get; set; } = null!;
+	public string RecorderKey {get; set; }= null!;
+}
 

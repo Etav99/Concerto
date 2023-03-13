@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
+using Concerto.Server.Settings;
 using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
@@ -233,6 +234,27 @@ public class StorageController : ControllerBase
 
 		var token = _storageService.GenerateOneTimeToken(fileId);
 		return Ok(token);
+	}
+
+	[HttpPost]
+	[AllowAnonymous]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<ActionResult<Guid>> RecordingFinished([FromBody] RecordingFinishedRequest request)
+	{
+		if(request.RecorderKey != AppSettings.Meetings.RecorderKey) return Unauthorized();
+
+		try
+		{
+			await _storageService.SaveRecording(request.MeetingId, request.FilePath);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error while saving recording");
+			return BadRequest();
+		}
+		return Ok();
 	}
 }
 

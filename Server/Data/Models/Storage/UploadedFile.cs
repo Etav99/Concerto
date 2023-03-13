@@ -10,7 +10,7 @@ public class UploadedFile : Entity
 	public long FolderId { get; set; }
 	public Folder Folder { get; set; } = null!;
 
-	public Guid OwnerId { get; set; }
+	public Guid? OwnerId { get; set; }
 
 	public long Size { get; set; }
 

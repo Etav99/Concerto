@@ -12,7 +12,7 @@ public static class FileExtensions
 		await using (new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.None, 1, FileOptions.DeleteOnClose | FileOptions.Asynchronous)) { }
 	}
 
-	public static async Task MoveAsync(string source, string destination, bool createDirectories)
+	public static async Task CopyAsync(string source, string destination, bool createDirectories)
 	{
 		if (createDirectories)
 		{
@@ -26,6 +26,11 @@ public static class FileExtensions
 		{
 			await tempFileStream.CopyToAsync(fileStream, 524_288);
 		}
+	}
+
+	public static async Task MoveAsync(string source, string destination, bool createDirectories)
+	{
+		await CopyAsync(source, destination, createDirectories);
 		await DeleteAsync(source);
 	}
 }
