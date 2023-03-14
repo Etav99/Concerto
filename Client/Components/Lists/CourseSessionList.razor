@@ -51,9 +51,9 @@
 
 	</HeaderContent>
 	<RowTemplate>
-		<MudTd>@context.Name</MudTd>
-		<MudTd>@context.ScheduledDate.ToLocalTime().ToString()</MudTd>
-		<MudTd Style="text-align: right">
+		<MudTd DataLabel="Name">@context.Name</MudTd>
+		<MudTd DataLabel="Scheduled for">@context.ScheduledDate.ToLocalTime().ToString()</MudTd>
+		<MudTd DataLabel="Actions"  Style="text-align: right">
 			<MudMenu Dense="true">
 				<ActivatorContent>
 					<MudIconButton Title="Actions" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled" />

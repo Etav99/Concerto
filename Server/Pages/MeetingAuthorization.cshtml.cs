@@ -22,14 +22,24 @@ public class MeetingAuthorizationModel : PageModel
     public async Task<IActionResult> OnGetAsync(string roomGuid)
     {
 		var userId = HttpContext.User.GetSubjectId();
-		var meetingGuid = Guid.Parse(roomGuid);
-		if (!await _sessionService.CanAccessSession(userId, meetingGuid))
+
+		Guid meetingGuid;
+		try
+		{
+			meetingGuid = Guid.Parse(roomGuid);
+		}
+		catch
+		{
+			return Redirect($"{AppSettings.Web.BasePath}");
+		}
+
+		if (!await _sessionService.CanAccessSession(meetingGuid,userId))
 			return Forbid();
 
 		try
 		{
-			var token = await _sessionService.GenerateMeetingToken(userId, meetingGuid);
-			return Redirect($"{AppSettings.Meetings.JitsiUrl}/{roomGuid}?jwt={token}");
+			var ids = await _sessionService.GetCourseAndSessionIds(meetingGuid);
+			return Redirect($"{AppSettings.Web.BasePath}/courses/{ids.courseId}/sessions/{ids.sessionId}");
 		}
 		catch
 		{

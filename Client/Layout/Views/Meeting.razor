@@ -18,7 +18,7 @@
 			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl" Target="_blank">
 				Download Jitsi Meet app
 			</MudButton>
-			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_openInApp">
+			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" OnClick="OpenInApp">
 				Open meeting in Jitsi Meet app (needs to be installed)
 			</MudButton>
 		</div>
@@ -39,6 +39,7 @@
 	bool _isIos = false;
 
 	string _meetingPath = string.Empty;
+
 
 	string _openInApp => _isIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}"
 								: $"intent://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
@@ -72,6 +73,12 @@
 		if (string.IsNullOrEmpty(_meetingPath)) return;
 		var token = await SessionService.GetMeetingTokenAsync(Guid);
 		await JS.InvokeAsync<string>("startMeeting", "jitsi", (new System.Uri(AppSettingsService.AppSettings.JitsiUrl)).Host, _meetingPath, token, _dotNetObjectReference);
+	}
+
+	private async Task OpenInApp()
+	{
+		var token = await SessionService.GetMeetingTokenAsync(Guid);
+		await JS.InvokeVoidAsync("open", $"{_openInApp}?jwt={token}");
 	}
 
 	private async Task<bool> IsMobile()

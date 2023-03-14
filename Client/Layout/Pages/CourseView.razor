@@ -65,7 +65,7 @@ else
 		}
 		catch (CourseException)
 		{
-			Snackbar.Add("Course not found", Severity.Error);
+			Snackbar.Add("Course does not exist or you don't have access", Severity.Error);
 			NavigationManager.NavigateTo("courses");
 		}
 		_loading = false;

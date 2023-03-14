@@ -23,6 +23,12 @@ public class SessionService
 		_storageService = storageService;
 	}
 
+	public async Task<(long courseId, long sessionId)> GetCourseAndSessionIds(Guid meetingGuid)
+	{
+		var session = await _context.Sessions.Where(s => s.MeetingGuid == meetingGuid).SingleAsync();
+		return (session.CourseId, session.Id);
+	}
+
 	public async Task<Dto.Session?> GetSession(long sessionId, Guid userId, bool isAdmin)
 	{
 		var session = await _context.Sessions

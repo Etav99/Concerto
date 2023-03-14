@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject IBreadcrumbsService BreadcrumbsService;
 @inject ISessionService SessionService;
+@inject ISnackbar Snackbar;
 <PageTitle>@($"Session - {SelectedSession?.Name}")</PageTitle>
 
 
@@ -60,10 +61,14 @@ else
 
 	protected override async Task OnParametersSetAsync()
 	{
-		SelectedSession = await SessionService.GetSessionAsync(SelectedSessionId);
-		if (SelectedSession == null)
+		try
 		{
-			NavigationManager.NavigateTo("courses");
+			SelectedSession = await SessionService.GetSessionAsync(SelectedSessionId);
+		}
+		catch
+		{
+			Snackbar.Add("Session does not exists or you don't have access", Severity.Error);
+			NavigationManager.NavigateTo($"courses/{CourseId}");
 			return;
 		}
 
