@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Concerto.Server.Data.Models;
 
 [Index(nameof(CourseId))]
+[Index(nameof(MeetingGuid))]
 public class Session : Entity
 {
 	public string Name { get; set; } = null!;

@@ -1,5 +1,5 @@
 using Blazored.LocalStorage;
-using Concerto.Client;
+using Concerto.Client.UI;
 using Concerto.Client.Extensions;
 using Concerto.Client.Services;
 using Concerto.Shared.Extensions;

@@ -1,4 +1,4 @@
-﻿using Concerto.Client.Components.Dialogs;
+﻿using Concerto.Client.UI.Components.Dialogs;
 using Concerto.Shared.Models.Dto;
 using MudBlazor;
 

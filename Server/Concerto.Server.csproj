@@ -8,6 +8,7 @@
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerComposeProjectPath>..\DockerCompose\docker-compose.dcproj</DockerComposeProjectPath>
 		<Configurations>Debug;Release</Configurations>
+		<EnableSdkContainerSupport>true</EnableSdkContainerSupport>
 	</PropertyGroup>
 
 	<ItemGroup>

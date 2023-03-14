@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230310141001_Initial")]
+    [Migration("20230314130455_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -216,6 +216,8 @@ namespace Concerto.Server.Migrations
 
                     b.HasIndex("FolderId")
                         .IsUnique();
+
+                    b.HasIndex("MeetingGuid");
 
                     b.ToTable("Sessions");
                 });

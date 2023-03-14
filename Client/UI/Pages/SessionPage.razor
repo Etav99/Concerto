@@ -39,7 +39,7 @@ else
 		@if (SelectedSession!.CanManage)
 		{
 			<MudTabPanel Text="Session settings">
-				<SessionSettingsView SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" OnSessionUpdated="OnSessionUpdated"/>
+				<SessionSettingsManager SessionId="SelectedSession!.Id" OnSessionDeleted="OnSessionDeleted" OnSessionUpdated="OnSessionUpdated"/>
 			</MudTabPanel>
 		}
 

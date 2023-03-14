@@ -214,6 +214,8 @@ namespace Concerto.Server.Migrations
                     b.HasIndex("FolderId")
                         .IsUnique();
 
+                    b.HasIndex("MeetingGuid");
+
                     b.ToTable("Sessions");
                 });
 

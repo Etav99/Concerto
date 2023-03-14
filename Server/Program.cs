@@ -18,7 +18,7 @@ using System.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
 var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Concerto.Server Builder");
 // Add services to the container.
-IdentityModelEventSource.ShowPII = true; 
+// IdentityModelEventSource.ShowPII = true; 
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();

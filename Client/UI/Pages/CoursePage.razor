@@ -33,7 +33,7 @@ else
 		@if (SelectedCourse!.CanManage)
 		{
 			<MudTabPanel Text="Settings">
-				<CourseSettingsView CourseId="SelectedCourseId" OnCourseDeleted="OnCourseDeleted" OnCourseUpdated="OnCourseUpdated"/>
+				<CourseSettingsManager CourseId="SelectedCourseId" OnCourseDeleted="OnCourseDeleted" OnCourseUpdated="OnCourseUpdated"/>
 			</MudTabPanel>
 		}
 

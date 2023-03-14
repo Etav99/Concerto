@@ -333,6 +333,11 @@ namespace Concerto.Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_MeetingGuid",
+                table: "Sessions",
+                column: "MeetingGuid");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UploadedFiles_FolderId",
                 table: "UploadedFiles",
                 column: "FolderId");

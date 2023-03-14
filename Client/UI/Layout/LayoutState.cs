@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace Concerto.Client.Layout;
+namespace Concerto.Client.UI.Layout;
 
 public record LayoutState
 {
