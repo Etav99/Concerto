@@ -6,14 +6,12 @@
 
 @inject NavigationManager Navigation
 @inject IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> Options
-@inject IBreadcrumbsService BreadcrumbsService
-@inject IAppSettingsService AppSettingsService
-@inject IUserService UserService
-@inject ISnackbar Snackbar
 @inject ISyncLocalStorageService LocalStorage
+@inject IAppSettingsService AppSettingsService
+@inject IJSRuntime JS
 
-<CustomStyleProvider DarkMode="@_darkMode" />
-<MudThemeProvider @bind-IsDarkMode="@_darkMode" />
+<CustomStyleProvider DarkMode="@_layoutState.DarkMode" />
+<MudThemeProvider @bind-IsDarkMode="@_layoutState.DarkMode" />
 <CascadingValue Value="@_layoutState">
 	<MudDialogProvider CloseOnEscapeKey="true" DisableBackdropClick="true" MaxWidth="MaxWidth.Large" CloseButton="true" />
 </CascadingValue>
@@ -41,7 +39,7 @@
 							<MudMenuItemW Style="pointer-events: none;" Icon="@Icons.Material.Filled.PermIdentity">
 								@context.User.Identity?.Name
 							</MudMenuItemW>
-							<MudLink Color="Color.Default" Underline="Underline.None" Target="_blank" Href="@_appSettings?.AccountManagementUrl">
+							<MudLink Color="Color.Default" Underline="Underline.None" Target="_blank" Href="@AppSettingsService.AppSettings.AccountManagementUrl">
 							<MudMenuItemW Icon="@Icons.Material.Filled.ManageAccounts">
 									<MudStack Row="true" Class="">
 										<MudText Typo="Typo.body2">Manage account</MudText>
@@ -49,13 +47,13 @@
 									</MudStack>
 							</MudMenuItemW>
 							</MudLink>
-							<MudMenuItemW Icon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnTouch="()=> toggleDarkMode(!_darkMode)" OnClick="() => toggleDarkMode(!_darkMode)">Toggle theme</MudMenuItemW>
+							<MudMenuItemW Icon="@(_layoutState.DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" OnTouch="()=> toggleDarkMode(!_layoutState.DarkMode)" OnClick="() => toggleDarkMode(!_layoutState.DarkMode)">Toggle theme</MudMenuItemW>
 							<MudMenuItemW Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" OnTouch="BeginLogout" OnClick="BeginLogout">Log out</MudMenuItemW>
 						</ChildContent>
 					</MudMenu>
 				</Authorized>
 				<NotAuthorized>
-					<MudSwitch T="bool" Checked="@_darkMode" CheckedChanged="@(b => toggleDarkMode(b))" ThumbIconColor="Color.Dark" ThumbIcon="@(_darkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Theme</MudSwitch>
+					<MudSwitch T="bool" Checked="@_layoutState.DarkMode" CheckedChanged="@(b => toggleDarkMode(b))" ThumbIconColor="Color.Dark" ThumbIcon="@(_layoutState.DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)">Theme</MudSwitch>
 					<MudStack Row="true">
 						<MudButton Href="authentication/login" Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Login">Sign in</MudButton>
 					</MudStack>
@@ -87,9 +85,7 @@
 
 	Size AppbarIconSize => _layoutState.Xs ? Size.Medium : Size.Large;
 
-	bool _darkMode { get; set; }
 	bool _drawerOpen = true;
-	ClientAppSettings? _appSettings;
 
 	void DrawerToggle()
 	{
@@ -110,24 +106,25 @@
 
 	private void toggleDarkMode(bool darkMode)
 	{
-		_darkMode = darkMode;
-		LocalStorage.SetItem("darkMode", _darkMode);
-		_layoutState = _layoutState with { DarkMode = _darkMode };
+		LocalStorage.SetItem("darkMode", darkMode);
+		_layoutState = _layoutState with { DarkMode = darkMode };
 	}
 
 	protected override void OnInitialized()
 	{
-		_appSettings = AppSettingsService.AppSettings;
-		if (LocalStorage.ContainKey("darkMode"))
-		{
-			_darkMode = LocalStorage.GetItem<bool>("darkMode");
-		}
-		else
-		{
-			LocalStorage.SetItem("darkMode", _darkMode);
-		}
+		var updatedLayout = _layoutState with { };
 
-		_layoutState = _layoutState with { DarkMode = _darkMode };
+		if (LocalStorage.ContainKey("darkMode"))
+			updatedLayout.DarkMode = LocalStorage.GetItem<bool>("darkMode");
+		else
+			LocalStorage.SetItem("darkMode", _layoutState.DarkMode);
+
+		if (LocalStorage.ContainKey("isMobile"))
+			updatedLayout.IsMobile = LocalStorage.GetItem<bool>("isMobile");
+		if (LocalStorage.ContainKey("isIos"))
+			updatedLayout.IsIos = LocalStorage.GetItem<bool>("isIos");
+
+		_layoutState = updatedLayout;
 	}
 
 	private void OnBreakpointChanged(Breakpoint breakpoint)

@@ -1,5 +1,4 @@
 ﻿@page "/recorder"
-@using System.Web
 @using Concerto.Client.Services;
 @using Concerto.Shared.Models.Dto;
 @inject IJSRuntime JS
@@ -15,112 +14,140 @@
 		gap: 0px 0px;
 		grid-template-areas:
 			"buttons"
-			"meeting";
+			"preview";
 	}
 
 	.buttons {
 		grid-area: buttons;
 	}
 
-	.meeting {
-		grid-area: meeting;
+	.preview {
+		grid-area: preview;
+	}
+
+	.canvas-container {
+		overflow: hidden;
+	}
+
+	.canvas-container > canvas {
+		object-fit: contain;
+		max-width: 100%;
+		height: calc(100% - 44px);
 	}
 </style>
 
-<div class="container pa-1">
-	<div class="buttons d-flex py-1 ">
+@if(LayoutState.IsMobile)
+{
+	<div class="d-flex align-center justify-center" style="height: 100%">
+		<MudText role="alert" Style="text-align: center; margin:auto;" Typo="Typo.h4">Feature unavailable on mobile devices</MudText>
+	</div>
+}
+else
+{
+		<div class="container pa-1">
+			<div class="buttons d-flex py-1 ">
 
-		<MudFileUpload T="IBrowserFile" FilesChanged="UploadRecording" Accept="video/*" Class="mt-0">
-			<ButtonTemplate>
-				<MudButton HtmlTag="label"
+			@*
+				<MudFileUpload T="IBrowserFile" Accept="video/*" Class="mt-0">
+					<ButtonTemplate>
+						<MudButton HtmlTag="label"
 						   Variant="Variant.Filled"
 						   Color="Color.Info"
 						   DisableElevation="true"
 						   StartIcon="@Icons.Material.Filled.CloudUpload"
-		 for="@context">
-					Upload recording
-				</MudButton>
-			</ButtonTemplate>
-		</MudFileUpload>
+				 for="@context">
+							Upload recording
+						</MudButton>
+					</ButtonTemplate>
+				</MudFileUpload>
+				*@
 
-		@if (_selectedAudioInputId is not null && audioInputs is not null)
-		{
-			@if (!isRecording)
-			{
-				<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
-					Start recording
-				</MudButton>
-			}
-			else
-			{
-				<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
-					Stop recording
-				</MudButton>
-			}
+				@if (!isRecording)
+				{
+					<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
+						Start recording
+					</MudButton>
+				}
+				else
+				{
+					<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
+						Stop recording
+					</MudButton>
+				}
 
-			<div class="d-flex ">
-				<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
-				<select disabled="@isRecording" style="align-self: stretch; flex-shrink: 1;" @bind="_selectedAudioInputId">
-					@foreach (var input in audioInputs)
+				<div class="d-flex ">
+					<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
+					<select style="align-self: stretch; flex-shrink: 1;"  onclick="@(() => FetchMediaInputs())" @bind="SelectedAudioInputId">
+						@foreach (var input in audioInputs)
+						{
+							<option value="@input.Id">@input.Name</option>
+						}
+					@if (!audioInputs.Any())
 					{
-						<option value="@input.Id">@input.Name</option>
+						<option value="@string.Empty">None</option>
 					}
-					<option value="none">None</option>
-				</select>
+					</select>
+				</div>
+
+				<div class="d-flex ">
+					<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.CameraAlt" />
+					<select style="align-self: stretch; flex-shrink: 1;" onclick="@(() => FetchMediaInputs())" @bind="SelectedVideoInputId">
+						@foreach (var input in videoInputs)
+						{
+							<option value="@input.Id">@input.Name</option>
+						}
+						@if (!videoInputs.Any())
+						{
+							<option value="@string.Empty">None</option>
+						}
+					</select>
+				</div>
 			</div>
-		}
-	</div>
 
 
-	@if (_isMobile.HasValue)
-	{
-		@if (!_isMobile.Value)
-		{
-			<MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
-		}
-		else
-		{
-			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_openInApp">
-				Open meeting in Jitsi Meet app (needs to be installed)
-			</MudButton>
-			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl">
-				Download Jitsi Meet app
-			</MudButton>
-		}
-	}
-</div>
+			<div id="recorderPreview" class="preview canvas-container d-flex align-center justify-center py-1">
+			</div>
+
+		</div>
+}
+
 
 @code {
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
-	[Parameter]
-	public string? MeetingName { get; set; }
+	private (string Name, string Id)[] audioInputs = Array.Empty<(string Name, string Id)>();
+	private (string Name, string Id)[] videoInputs = Array.Empty<(string Name, string Id)>();
 
-	[Parameter]
-	public long? UploadFolderId { get; set; }
+	private string _selectedAudioInputId = string.Empty;
+	private string _selectedVideoInputId = string.Empty;
 
-	[Parameter]
-	public Guid? Guid { get; set; }
+	private string SelectedAudioInputId
+	{
+		get { return _selectedAudioInputId; }
+		set
+		{
+			_selectedAudioInputId = value;
+			_recordingManager?.InvokeVoidAsync("setMicrophone", value).AndForget();
+		}
+	}
 
-	private (string Name, string Id)[]? audioInputs;
-
-	private string? _selectedAudioInputId;
+	private string SelectedVideoInputId
+	{
+		get { return _selectedVideoInputId; }
+		set
+		{
+			_selectedVideoInputId = value;
+			_recordingManager?.InvokeVoidAsync("setWebcam", value).AndForget();
+		}
+	}
 
 	bool isRecording = false;
-	bool? _isMobile = false;
-	bool _isIos = false;
 
-	string _meetingPath = string.Empty;
+	private DotNetObjectReference<RecordingTool> _dotNetObjectReference = null!;
+	IJSObjectReference? _recordingManager;
 
-	string _openInApp => _isIos ? $"org.jitsi.meet://meet.jit.si/{_meetingPath}"
-								: $"intent://meet.jit.si/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
-
-	string _downloadJitsiUrl => "https://jitsi.org/downloads/";
-
-	private DotNetObjectReference<RecordingTool>? _dotNetObjectReference;
-
-	class AudioDevices
+	class MediaDevices
 	{
-		public string test { get; set; } = null!;
 		public string[] Names { get; set; } = null!;
 		public string[] Ids { get; set; } = null!;
 	}
@@ -130,32 +157,58 @@
 		_dotNetObjectReference = DotNetObjectReference.Create(this);
 	}
 
-	protected override async Task OnParametersSetAsync()
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (MeetingName == null || Guid == null) return;
-		var guid = Guid.ToString();
-		_meetingPath = HttpUtility.UrlPathEncode($"{guid}");
+		if (firstRender)
+		{
+			_recordingManager = await JS.InvokeAsync<IJSObjectReference>("initializeRecordingManager", "recorderPreview", _dotNetObjectReference);
+			await FetchMediaInputs();
+		}
+	}
 
-		_isMobile = await IsMobile();
-		_isIos = await IsIos();
-		if (_isMobile.Value) return;
 
+	private async Task FetchMediaInputs()
+	{
 		var audioDevices = await GetAudioInputs();
-		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
-		_selectedAudioInputId = audioInputs.Length > 0 ? audioInputs[0].Id : "none";
+		var videoDevices = await GetVideoInputs();
 
-		if (string.IsNullOrEmpty(_meetingPath)) return;
-		await JS.InvokeAsync<string>("startMeeting", "jitsi", _meetingPath);
+		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
+		videoInputs = videoDevices.Names.Zip(videoDevices.Ids, (name, id) => (name, id)).ToArray();
+
+		if (string.IsNullOrEmpty(SelectedAudioInputId) && audioInputs.Length > 0)
+			SelectedAudioInputId = audioInputs[0].Id;
+
+		if (string.IsNullOrEmpty(SelectedVideoInputId) && videoInputs.Length > 0)
+			SelectedVideoInputId = videoInputs[0].Id;
+
+		StateHasChanged();
+    }
+
+
+	private async Task SetVideoInput(ChangeEventArgs args)
+	{
+		if(_recordingManager is null) return;
+		var value = args.Value?.ToString();
+		await _recordingManager.InvokeVoidAsync("setWebcam", value);
+	}
+
+	private async Task SetAudioInput(ChangeEventArgs args)
+	{
+		if (_recordingManager is null) return;
+		var value = args.Value?.ToString();
+		await _recordingManager.InvokeVoidAsync("setMicrophone", value);
 	}
 
 	public async Task StartRecording()
 	{
-		await JS.InvokeVoidAsync("startRecording", _dotNetObjectReference, _selectedAudioInputId, MeetingName, 500);
+		if (_recordingManager is null) return;
+		await _recordingManager.InvokeVoidAsync("startRecording");
 	}
-
+	
 	public async Task StopRecording()
 	{
-		await JS.InvokeVoidAsync("stopRecording", _dotNetObjectReference);
+		if (_recordingManager is null) return;
+		await _recordingManager.InvokeVoidAsync("stopRecording");
 	}
 
 	[JSInvokable]
@@ -165,39 +218,25 @@
 		StateHasChanged();
 	}
 
-	public void UploadRecording(IBrowserFile recording)
+	private async Task<MediaDevices> GetAudioInputs()
 	{
-		if (UploadFolderId != null)
-		{
-			StorageService.QueueFilesToUpload(UploadFolderId.Value, new[] { recording });
-		}
+		return await JS.InvokeAsync<MediaDevices>("getAudioInputs");
 	}
 
-	private async Task<AudioDevices> GetAudioInputs()
+	private async Task<MediaDevices> GetVideoInputs()
 	{
-		return await JS.InvokeAsync<AudioDevices>("getAudioInputs", _dotNetObjectReference);
+		return await JS.InvokeAsync<MediaDevices>("getVideoInputs");
 	}
 
-	private async Task<bool> IsMobile()
-	{
-		return await JS.InvokeAsync<bool>("isMobile");
-	}
-
-	private async Task<bool> IsIos()
-	{
-		return await JS.InvokeAsync<bool>("isIos");
-	}
-
-	[JSInvokable]
-	public void SetAudioInputs(string[] names, string[] ids)
-	{
-		audioInputs = names.Zip(ids, (name, id) => (name, id)).ToArray();
-	}
 
 	public async ValueTask DisposeAsync()
 	{
 		if (isRecording)
 			await StopRecording();
+
+		if (_recordingManager is not null)
+			await _recordingManager.InvokeVoidAsync("dispose");
+
 		_dotNetObjectReference?.Dispose();
 	}
 

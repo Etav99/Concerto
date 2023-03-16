@@ -10,6 +10,9 @@ public record LayoutState
         DarkMode = false;
     }
 
+    public bool IsMobile { get; set; } = false;
+    public bool IsIos { get; set; } = false;
+
     public Breakpoint Breakpoint { get; set; }
     public bool DarkMode { get; set; }
 
@@ -27,4 +30,5 @@ public record LayoutState
     public bool LgAndUp => Breakpoint >= Breakpoint.Lg;
     public bool XlAndDown => Breakpoint <= Breakpoint.Xl;
     public bool XlAndUp => Breakpoint >= Breakpoint.Xl;
+    public static LayoutState Default => new();
 }

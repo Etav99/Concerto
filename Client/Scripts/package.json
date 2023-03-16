@@ -1,0 +1,21 @@
+{
+  "name": "recordertool",
+  "version": "1.0.0",
+  "author": "",
+  "description": "",
+  "license": "ISC",
+  "scripts": {
+    "build": "webpack --mode production --output-path ../wwwroot/js",
+    "build-dev": "webpack --mode development --output-path ./out --devtool source-map"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.76.2",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "is-mobile": "^4.0.0",
+    "webm-duration-fix": "^1.0.4"
+  }
+}

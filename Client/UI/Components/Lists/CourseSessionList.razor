@@ -75,7 +75,7 @@
 	[Parameter]
 	public EventCallback<long> OnSessionSelected { get; set; }
 
-	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	private string TableStyle => LayoutState.Xs
 	? $"min-height: 245px; display:grid; grid-template-rows: 0fr 0fr 1fr; {Style}"

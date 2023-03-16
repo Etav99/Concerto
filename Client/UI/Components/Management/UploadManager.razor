@@ -112,7 +112,7 @@
 @*<MudOverlay Visible="_isOpen" OnClick="ToggleOpen" LockScroll="false" />*@
 
 @code {
-	[CascadingParameter] LayoutState LayoutState { get; set; } = new ();
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	IReadOnlyCollection<UploadQueueItem> _items = new List<UploadQueueItem>();
 

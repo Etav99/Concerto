@@ -136,7 +136,7 @@
 
 @code
 {
-    [CascadingParameter] LayoutState LayoutState { get; set; } = new();
+    [CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
     [Parameter]
     public HashSet<CourseUser> SelectedCourseUsers { get; set; } = new(new CourseUserIdEqualityComparer());

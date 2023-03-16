@@ -55,8 +55,6 @@
 	private async Task OnLogInSucceeded()
 	{
 		await AccountService.AfterLoginAsync();
-		Console.WriteLine(await UserService.GetTokenString());
-
 	}
 
 	void OnLogOutSucceeded()

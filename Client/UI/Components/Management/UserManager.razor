@@ -112,7 +112,7 @@
 
 
 @code {
-	[CascadingParameter] public LayoutState LayoutState { get; set; } = new LayoutState();
+	[CascadingParameter] public LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	bool Loading => _users is null;
 

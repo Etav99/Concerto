@@ -102,7 +102,7 @@ else
 
 
 @code {
-	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	[Parameter]
 	public EventCallback<long> OnCourseSelected { get; set; }

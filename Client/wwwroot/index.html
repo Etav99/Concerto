@@ -36,8 +36,12 @@
 	<script src="https://meet.jit.si/external_api.js"></script>
 	<script src="js/bundle.js"></script>
 	<script src="js/utilities.js"></script>
-	<script src="js/recordings.js"></script>
 	<script src="js/meetings.js"></script>
+
+	<script>
+		localStorage.setItem('isMobile', isMobile())
+		localStorage.setItem('isIos', isIos())
+	</script>
 
 	<script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>

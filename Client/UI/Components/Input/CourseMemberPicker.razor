@@ -71,7 +71,7 @@
 
 @code
 {
-	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	private string TableContentHeight => $"calc({Height})";
 

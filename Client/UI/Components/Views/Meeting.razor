@@ -6,14 +6,12 @@
 @inject ISessionService SessionService
 @implements IDisposable
 
-@if (_isMobile.HasValue)
+@if (!LayoutState.IsMobile)
 {
-    @if (!_isMobile.Value)
-    {
         <MudPaper id="jitsi" Class="flex-grow-1 meeting" Height="100%" MaxHeight="100%" Elevation="0" Outlined="true" />
-    }
-    else
-    {
+}
+else
+{
 		<div style="height: 100%; display: grid; grid-template-rows: min-content 1fr;">
 			<MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl" Target="_blank">
 				Download Jitsi Meet app
@@ -22,10 +20,10 @@
 				Open meeting in Jitsi Meet app (needs to be installed)
 			</MudButton>
 		</div>
-    }
 }
-
 @code {
+	[CascadingParameter]
+	public LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	[Parameter]
 	public string? MeetingName { get; set; }
@@ -35,14 +33,11 @@
 
 	DotNetObjectReference<Meeting> _dotNetObjectReference = null!;
 
-	bool? _isMobile = false;
-	bool _isIos = false;
-
 	string _meetingPath = string.Empty;
 
 
-	string _openInApp => _isIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}"
-								: $"intent://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
+	string _openInApp => LayoutState.IsIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}"
+								           : $"intent://{AppSettingsService.AppSettings.JitsiUrl}/{_meetingPath}#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
 
 	string _downloadJitsiUrl => AppSettingsService.AppSettings.JitsiAppDownloadUrl;
 
@@ -59,9 +54,7 @@
 		var guid = Guid.ToString();
 		_meetingPath = HttpUtility.UrlPathEncode($"{guid}");
 
-		_isMobile = await IsMobile();
-		_isIos = await IsIos();
-		if (_isMobile.Value) return;
+		if (LayoutState.IsMobile) return;
 
 		_dotNetObjectReference = DotNetObjectReference.Create(this);
 		await StartMeeting();
@@ -79,16 +72,6 @@
 	{
 		var token = await SessionService.GetMeetingTokenAsync(Guid);
 		await JS.InvokeVoidAsync("open", $"{_openInApp}?jwt={token}");
-	}
-
-	private async Task<bool> IsMobile()
-	{
-		return await JS.InvokeAsync<bool>("isMobile");
-	}
-
-	private async Task<bool> IsIos()
-	{
-		return await JS.InvokeAsync<bool>("isIos");
 	}
 
 public void Dispose()

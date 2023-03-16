@@ -7,9 +7,16 @@
 		<MudNavLink Href="admin" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin panel</MudNavLink>
 	</AuthorizeView>
 	<AuthorizeView >
-		<MudNavLink Href="recorder" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Camera">Recording tool</MudNavLink>
+		@if(!LayoutState.IsMobile)
+		{
+			<MudNavLink Href="recorder" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Camera">Recording tool</MudNavLink>
+		}
 		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Courses</MudNavLink>
 		<CoursesNavGroup/>
 	</AuthorizeView>
-
 </MudNavMenu>
+
+@code
+{
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
+}

@@ -26,7 +26,7 @@
 </MudToolBar>
 
 @code {
-	[CascadingParameter] LayoutState LayoutState { get; set; } = new();
+	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	BreadcrumbsPackage? _breadcrumbs = null;
 
