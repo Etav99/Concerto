@@ -17,7 +17,25 @@ module.exports = {
           test: /\.css$/,
           use: [
             'style-loader',
-            'css-loader'
+            'css-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    [
+                      'postcss-prefix-selector',
+                      {
+                        prefix: '.daw',
+                        transform: function (prefix, selector, prefixedSelector) {
+                          return prefixedSelector;
+                        },
+                      },
+                    ],
+                  ],
+                },
+              },
+            },
           ]
         },
         {

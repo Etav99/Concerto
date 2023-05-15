@@ -1,43 +1,33 @@
 import { init as initWaveformPlaylist } from '../waveform-playlist/src/app.js';
-import { EventEmitter, default as createEventEmitter } from "event-emitter";
+import PlaylistEvents from '../waveform-playlist/src/PlaylistEvents';
+
+import './css/main.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import { EventEmitter } from "eventemitter3";
 
 import controlsHTML from './controls.html';
 
 const recordingConstraints = { audio: true };
 
-export class DawTrack
-{
-  public id: number;
-  public name: string;
-  public takes: DawTrackTake[];
-}
 
-export class DawTrackTake
-{
-  public id: number;
-  public name: string;
 
-  public duration = 0;
-  public startTime = 0;
-  public endTime = 0;
-  public gain = 1;
-  public stereoPan = 0;
-}
+
 
 export class Daw {
   private tracks: DawTrack[];
 
   private playlist: any;
-  private eventEmitter: EventEmitter.Emitter;
+  private eventEmitter: EventEmitter;
 
-  public static async initialize(containerId: string): Promise<Daw>
-  {
+  public static async initialize(containerId: string): Promise<Daw> {
     // get microphone input stream
     let microphoneStream: MediaStream;
     try {
       microphoneStream = await navigator.mediaDevices.getUserMedia(recordingConstraints)
     }
-    catch(err) {
+    catch (err) {
       console.log(err);
       return;
     }
@@ -45,7 +35,6 @@ export class Daw {
     var container = document.getElementById(containerId);
     if (!container)
       throw new Error("Could not find container with id: " + containerId);
-
     var options = {
       samplesPerPixel: 3000,
       waveHeight: 100,
@@ -58,7 +47,7 @@ export class Daw {
       },
       timescale: true,
       controls: {
-        show: true, //whether or not to include the track controls
+        show: false, //whether or not to include the track controls
         width: 200 //width of controls in pixels
       },
       seekStyle: 'line',
@@ -66,62 +55,111 @@ export class Daw {
     }
 
     let daw = new Daw(options, microphoneStream);
-    await daw.loadSamplePlaylist();
-
-    // generate UI for the playlist
-    container.insertAdjacentHTML('afterbegin', controlsHTML);
-
+    // await daw.loadSamplePlaylist();
+    // await daw.playlist.createTrack("test");
 
     // add event listeners to the UI
     let ee = daw.eventEmitter;
-    $('#daw-pause').on('click', () => ee.emit("pause"));
-    $('#daw-play').on('click', () => ee.emit("play"));
-    $('#daw-stop').on('click', () => ee.emit("stop"));
-    $('#daw-rewind').on('click', () => ee.emit("rewind"));
-    $('#daw-forward').on('click', () => ee.emit("fastforward"));
-    $('#daw-record').on('click', () => ee.emit("record"));
-    $('#daw-zoom-out').on('click', () => ee.emit("zoomout"));
-    $('#daw-zoom-in').on('click', () => ee.emit("zoomin"));
-    $('#daw-cursor').on('click', function() {
-      ee.emit("statechange", "cursor");
-      toggleActive(this);
-    });
-    $('#daw-select').on('click', function() {
-      ee.emit("statechange", "select");
-      toggleActive(this);
-    });
-    $('#daw-shift').on('click', function() {
-      ee.emit("statechange", "shift");
-      toggleActive(this);
-    });
+
+    // async timeout 
+    new Promise(
+      () => setTimeout(
+        () => {
+          daw.playlist.updateTrack(
+            "Drums",
+            {
+              src: "assets/BassDrums30.mp3",
+              name: "Drums",
+              gain: 0.75,
+              start: 7,
+            }
+          )
+        },
+        4000
+      )
+    );
 
     return daw;
   }
 
   public constructor(options: {}, userMediaStream: MediaStream) {
-    this.eventEmitter = createEventEmitter();
+    this.eventEmitter = new EventEmitter();
     this.playlist = initWaveformPlaylist(options, this.eventEmitter);
     this.playlist.initRecorder(userMediaStream);
+  }
+
+  public async updateTrackList (trackList: DawTrack[]) {
+
+
+  }
+
+  public play() {
+    this.eventEmitter.emit(PlaylistEvents.PLAY);
+  }
+
+  public pause() {
+    this.eventEmitter.emit(PlaylistEvents.PAUSE);
+  }
+
+  public stop() {
+    this.eventEmitter.emit(PlaylistEvents.STOP);
+  }
+
+  public record() {
+    this.eventEmitter.emit(PlaylistEvents.RECORD);
+  }
+
+  public fastForward() {
+    this.eventEmitter.emit(PlaylistEvents.FAST_FORWARD);
+  }
+
+  public rewind() {
+    this.eventEmitter.emit(PlaylistEvents.REWIND);
+  }
+
+  public zoomIn() {
+    this.eventEmitter.emit(PlaylistEvents.ZOOM_IN);
+  }
+
+  public zoomOut() {
+    this.eventEmitter.emit(PlaylistEvents.ZOOM_OUT);
+  }
+
+  public setSelectState() {
+    this.eventEmitter.emit(PlaylistEvents.STATE_CHANGE, "select");
+  }
+
+  public setShiftState() {
+    this.eventEmitter.emit(PlaylistEvents.STATE_CHANGE, "shift");
+  }
+
+  public setCursorState() {
+    this.eventEmitter.emit(PlaylistEvents.STATE_CHANGE, "cursor");
   }
 
   public async loadSamplePlaylist() {
     const trackList = [
       {
-        src: "http://naomiaro.github.io/waveform-playlist/media/audio/BassDrums30.mp3",
+        src: "assets/BassDrums30.mp3",
         name: "Drums",
         gain: 0.5,
-
       },
       {
-        src: "http://naomiaro.github.io/waveform-playlist/media/audio/Guitar30.mp3",
+        src: "assets/Guitar30.mp3",
         name: "Guitar",
         gain: 0.5,
       },
     ];
     await this.playlist.loadTrackList(trackList);
   }
+
+  public static initDevControls(containerId: string) {
+    let container = document.getElementById(containerId);
+    // generate UI for the playlist
+    container.insertAdjacentHTML('afterbegin', controlsHTML);
 }
 
+}
 
 function toggleActive(node: HTMLElement) {
   var active = node.parentNode.querySelectorAll('.active');

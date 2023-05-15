@@ -5,14 +5,15 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<title>Concerto</title>
-	<base href="/" />
+	<base href="/app/" />
+
 	<link href="css/app.css" rel="stylesheet" />
-	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
-	<link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 	<link href="css/style.css" rel="stylesheet" />
 
-	<link href="manifest.json" rel="manifest" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+	<link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 
+	<link href="manifest.json" rel="manifest" />
 	<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -35,13 +36,16 @@
 		<a href="" class="reload">Reload</a>
 		<a class="dismiss">🗙</a>
 	</div>
+
 	<script src="_framework/blazor.webassembly.js"></script>
 	<script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-	<script src="_content/MudBlazor/MudBlazor.min.js"></script>
-	<script src="https://meet.jit.si/external_api.js"></script>
-	<script src="js/bundle.js"></script>
+
+	<script src="js/node/bundle.js"></script>
 	<script src="js/utilities.js"></script>
 	<script src="js/meetings.js"></script>
+
+	<script src="_content/MudBlazor/MudBlazor.min.js"></script>
+	<script src="https://meet.jit.si/external_api.js"></script>
 
 	<script>
 		localStorage.setItem('isMobile', isMobile())

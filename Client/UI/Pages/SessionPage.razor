@@ -1,7 +1,7 @@
 ﻿@attribute [Authorize]
 @page "/courses/{CourseId:long}/sessions/{SelectedSessionId:long}"
 
-@inject NavigationManager NavigationManager
+@inject NavigationManager NavigationManager;
 @inject IBreadcrumbsService BreadcrumbsService;
 @inject ISessionService SessionService;
 @inject ISnackbar Snackbar;

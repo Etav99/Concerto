@@ -1,0 +1,113 @@
+﻿<style>
+    .daw {
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        grid-template-rows: min-content 1fr;
+        grid-auto-rows: 1fr;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "controls controls"
+            "tracks daw";
+        overflow: auto;
+    }
+
+    .controls {
+        grid-area: controls;
+        position: sticky;
+    }
+
+    .tracks {
+        grid-area: tracks;
+    }
+
+    .daw {
+        grid-area: daw;
+    }
+
+    .tracks {
+        display: grid;
+        grid-auto-columns: 1fr;
+        margin-top: 30px;
+        overflow-x: scroll;
+    }
+
+        .tracks > div {
+            border: 1px solid black;
+        }
+
+</style>
+
+<div class="daw">
+
+    <div class="controls">
+        <MudButtonGroup OverrideStyles="false" DisableElevation="true">
+            <MudIconButton OnClick="Pause"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Warning" Icon="@Icons.Material.Filled.Pause" />
+
+            <MudIconButton OnClick="Play"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Success" Icon="@Icons.Material.Filled.PlayArrow" />
+
+
+            <MudIconButton OnClick="Stop"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Error" Icon="@Icons.Material.Filled.Stop" />
+
+
+            <MudIconButton OnClick="Rewind"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Success" Icon="@Icons.Material.Filled.FastRewind" />
+
+            <MudIconButton OnClick="FastForward"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Success" Icon="@Icons.Material.Filled.FastForward" />
+        </MudButtonGroup>
+
+        <MudButtonGroup OverrideStyles="false" DisableElevation="true">
+            <MudIconButton OnClick="ZoomOut"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Default" Icon="@Icons.Material.Filled.ZoomOut" />
+
+            <MudIconButton OnClick="ZoomIn"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Default" Icon="@Icons.Material.Filled.ZoomIn" />
+        </MudButtonGroup>
+
+        <MudButtonGroup OverrideStyles="false" DisableElevation="true">
+            <MudIconButton OnClick="SetCursorState"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Default" Icon="@CustomIcons.Cursor" />
+
+            <MudIconButton OnClick="SetSelectState"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Default" Icon="@CustomIcons.CursorText" />
+
+            <MudIconButton OnClick="SetShiftState"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Default" Icon="@CustomIcons.Shift" />
+        </MudButtonGroup>
+    </div>
+
+    <div class="tracks">
+        @foreach (var track in Tracks)
+        {
+            <div>
+                <div>
+                    @track.Name
+                </div>
+                <select name="take" id="@track.Name">
+                    <option value="1">Take 12</option>
+                    <option value="2">Take 2</option>
+                    <option value="3">Take 3</option>
+                    <option value="4">Take 4</option>
+                </select>
+            </div>
+        }
+    </div>
+    <div id="@DawId">
+    </div>
+
+</div>
+
