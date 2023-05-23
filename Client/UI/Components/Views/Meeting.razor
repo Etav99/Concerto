@@ -1,19 +1,72 @@
-﻿
-<div style="@Style" class="flex-grow-1">
-    <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
-        @if (_loading)
-        {
-            <LoadingIndicator Size="Size.Large" />
-        }
-    </div>
+﻿@using System.Web;
 
-    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
+@implements IDisposable
+@inject IJSRuntime JS
+@inject IAppSettingsService AppSettingsService
+@inject ISessionService SessionService
 
-    <div style="@DawStyle">
-        @if (_dawInitialized)
-        {
-            <Daw />
-        }
-    </div>
-
+<div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
+    @if (_loading)
+    {
+        <LoadingIndicator Size="Size.Large" />
+    }
 </div>
+
+@code
+{
+
+    [CascadingParameter]
+    public LayoutState LayoutState { get; set; } = LayoutState.Default;
+
+    [Parameter]
+    public string? MeetingName { get; set; }
+    [Parameter]
+    public Guid? Guid { get; set; }
+
+    string _meetingPath = string.Empty;
+    CancellationTokenSource startMeetingCancellation = new();
+
+    DotNetObjectReference<Meeting> _dotNetObjectReference = null!;
+
+    bool _disposed = false;
+    bool _loading = true;
+
+    protected override void OnInitialized()
+    {
+        _dotNetObjectReference = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (MeetingName == null || Guid == null) return;
+        var guid = Guid.ToString();
+        var meetingPath = HttpUtility.UrlPathEncode($"{guid}");
+        if (meetingPath == _meetingPath) return;
+        _meetingPath = HttpUtility.UrlPathEncode($"{guid}");
+        //if (LayoutState.IsMobile) return;
+        await StartMeeting();
+    }
+
+    [JSInvokable]
+    public async Task StartMeeting()
+    {
+        if (_disposed || string.IsNullOrEmpty(_meetingPath)) return;
+        _loading = true;
+        StateHasChanged();
+        var token = await SessionService.GetMeetingTokenAsync(Guid, startMeetingCancellation.Token);
+        try
+        {
+            await JS.InvokeAsync<string>("startMeeting", startMeetingCancellation.Token, "jitsi", AppSettingsService.AppSettings.JitsiUrl.Host, _meetingPath, token, _dotNetObjectReference);
+        }
+        catch (ObjectDisposedException) { }
+        _loading = false;
+    }
+
+
+    public void Dispose()
+    {
+        startMeetingCancellation.Cancel();
+        _dotNetObjectReference?.Dispose();
+        _disposed = true;
+    }
+}

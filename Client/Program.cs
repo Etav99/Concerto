@@ -42,6 +42,7 @@ builder.Services.AddSingleton<IAppSettingsService, AppSettingsService>(sp => app
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IForumService, ForumService>();
+builder.Services.AddScoped<DawService, DawService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountClient, AccountClient>();

@@ -31,6 +31,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddHostedService<ScheduledTasksService>();
 builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
+builder.Services.AddSingleton<DawService, DawService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
@@ -184,6 +185,7 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<NotificationHub>("/notifications");
+app.MapHub<DawHub>("/daw");
 
 var contentRoot = app.Environment.WebRootFileProvider;
 // load index.html

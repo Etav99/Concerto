@@ -27,7 +27,18 @@ else
 
         <ChildContent>
             <MudTabPanel Text="Meeting">
-                <Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid" />
+                <div style="@MeetingTabStyle" class="">
+                    <Meeting MeetingName="@SelectedSession?.Name" Guid="@SelectedSession?.MeetingGuid" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
+
+                    <div style="@DawStyle">
+                        @if (_dawInitialized)
+                        {
+                            <Daw SessionId="@SelectedSession?.Id" />
+                        }
+                    </div>
+                </div>
             </MudTabPanel>
 
             <MudTabPanel Text="Recordings">
@@ -66,6 +77,20 @@ else
 
     private bool Loading => SelectedSession is null;
 
+
+    private bool _dawInitialized = false;
+    private bool _dawVisible = false;
+
+    private const string MeetingTabStyleBase = "display: grid; height: 100%; max-height: 100%;";
+    private string MeetingTabStyle => _dawVisible
+                            ? $"{MeetingTabStyleBase} grid-template-rows: 1fr; grid-template-columns: 1fr min-content 1fr;"
+                            : $"{MeetingTabStyleBase} grid-template-rows: 1fr; grid-template-columns: 1fr min-content min-content;";
+
+    private const string DawStyleBase = "overflow: auto;";
+    private string DawStyle => _dawVisible ? $"{DawStyleBase}" : $"{DawStyleBase} display: none;";
+
+
+
     protected override async Task OnParametersSetAsync()
     {
         try
@@ -96,6 +121,12 @@ else
     private async void OnSessionUpdated()
     {
         await OnParametersSetAsync();
+    }
+
+    private void ToggleDaw()
+    {
+        if (!_dawInitialized) _dawInitialized = true;
+        _dawVisible = !_dawVisible;
     }
 
 }

@@ -5,7 +5,7 @@
   "description": "",
   "license": "ISC",
   "scripts": {
-    "build": "webpack --mode production --output-path ../wwwroot/js/node",
+    "build": "webpack --mode development --output-path ../wwwroot/js/node --devtool source-map",
     "build-dev": "webpack --mode development --output-path ./out --devtool source-map"
   },
   "devDependencies": {

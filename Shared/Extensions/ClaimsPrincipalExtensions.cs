@@ -47,7 +47,8 @@ public static class ClaimsPrincipalExtensions
 
 	public static string? GetUserIdString(this ClaimsPrincipal user)
 	{
-		return user.FindFirst("user_id")?.Value;
+		var guid = user.GetSubjectId();
+		return guid == Guid.Empty ? null : guid.ToString();
 	}
 }
 

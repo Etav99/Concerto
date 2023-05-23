@@ -1,96 +1,344 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Concerto.Client.Services;
+using Concerto.Client.UI.Layout;
+using Concerto.Shared.Constants;
+using Concerto.Shared.Models.Dto;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
+
+using System.Text.Json;
 
 namespace Concerto.Client.UI.Components.Views;
 
 public partial class Daw : IAsyncDisposable
 {
     [Inject] IJSRuntime JS { get; set; } = null!;
+    [Inject] DawService DawService { get; set; } = null!;
+    [Inject] NavigationManager Navigation { get; set; } = null!;
 
-    public const string DawId = "daw";
+    [CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
-    IJSObjectReference? _daw;
+    public const string dawId = "daw";
 
-    private List<Track> Tracks {get; set;} = new List<Track>();
+    bool DawInitialized { get; set; } = false;
+    DawInterop DawInterop { get; } = new DawInterop();
+
+    private HubConnection? _dawHub = null;
+    private HubConnection DawHub
+    {
+        get => _dawHub ?? throw new NullReferenceException("DawHub is not initialized");
+        set => _dawHub = value;
+    }
+
+    [Parameter]
+    public long? SessionId { get; set; }
+    private long _sessionId;
+
+    private DawProject? _project;
+    private DawProject Project
+    {
+        get => _project ?? throw new NullReferenceException("Project is not initialized");
+        set => _project = value;
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        _daw = await JS.InvokeAsync<IJSObjectReference>("initializeDaw", DawId);
+    }
 
-        Tracks = new List<Track>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SessionId == _sessionId || SessionId is null) return;
+        _sessionId = SessionId.Value;
+
+        if (_dawHub != null) await _dawHub.DisposeAsync();
+        DawHub = DawService.CreateHubConnection();
+        await DawHub.StartAsync();
+        DawHub.On<long>(DawHubMethods.Client.ProjectChanged, OnProjectChanged);
+        await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
+
+        if (!DawInitialized)
+            await DawInterop.Initialize(JS, dawId, this);
+        else
+            await DawInterop.ClearProject();
+
+        Project = await DawService.GetProjectAsync(_sessionId);
+        await DawInterop.LoadProject(Project);
+
+        if (!DawInitialized)
+            DawInitialized = true;
+    }
+
+    public async Task OnProjectChanged(long sessionId)
+    {
+        // if(sessionId != _sessionId) return;
+        // TODO update logic
+        await UpdateProject();
+    }
+
+    public async Task UpdateProject()
+    {
+        var oldProjectState = Project;
+        var newProjectState = await DawService.GetProjectAsync(_sessionId);
+
+        foreach (var track in newProjectState.Tracks)
         {
-            new Track("Track 1", "assets/BassDrums30.mp3", 0),
-            new Track("Track 2", "assets/Guitar30.mp3", 4),
-        };
+            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Name == track.Name);
+            if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
 
-    }
+            if (oldTrack is null)
+                await DawInterop.AddTrack(track);
+            else
+                await DawInterop.UpdateTrack(track, oldTrack.Source != track.Source);
+        }
 
-    public async Task UpdateTrack(Track track)
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("updateTrack", track);
-    }
+        foreach (var track in oldProjectState.Tracks)
+            await DawInterop.RemoveTrack(track);
 
-    public async Task Play()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("play");
-    }
-    public async Task Pause()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("pause");
-    }
-    public async Task Stop()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("stop");
-    }
-    public async Task Rewind()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("rewind");
-    }
-    public async Task FastForward()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("fastForward");
-    }
-    public async Task ZoomIn()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("zoomIn");
-    }
-    public async Task ZoomOut()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("zoomOut");
-    }
-    public async Task SetCursorState()
-    {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("setCursorState");
+        if (newProjectState.Tracks.Any())
+            await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Name));
+
+        await DawInterop.ReRender();
+
+        Project = newProjectState;
+        StateHasChanged();
     }
 
-    public async Task SetSelectState()
+    private async Task AddTrack()
     {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("setSelectState");
+        await DawService.AddTrackAsync(_sessionId, Guid.NewGuid().ToString());
     }
 
-    public async Task SetShiftState()
+    private async Task SelectTrack(Track track)
     {
-        if (_daw == null) return;
-        await _daw.InvokeVoidAsync("setShiftState");
+        await DawService.SelectTrackAsync(_sessionId, track.Name);
     }
 
+    private async Task DeleteTrack(Track track)
+    {
+        await DawService.DeleteTrackAsync(_sessionId, track.Name);
+    }
+
+    private async Task UnselectTrack(Track track)
+    {
+        await DawService.UnselectTrackAsync(_sessionId, track.Name);
+    }
+
+    private async Task SetTrackVolume(Track track, float volume)
+    {
+        await DawService.SetTrackVolumeAsync(_sessionId, track.Name, volume);
+    }
+
+    private async Task SetTrackStartTime(Track track, float startTime)
+    {
+        await DawService.SetTrackStartTimeAsync(_sessionId, track.Name, startTime);
+    }
+
+    public async Task SetTrackStartTime(string trackName, float startTime)
+    {
+        await DawService.SetTrackStartTimeAsync(_sessionId, trackName, startTime);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DawInterop.DisposeAsync();
+        if (_dawHub != null) await _dawHub.DisposeAsync();
+    }
+
+}
+
+public class DawInterop : IAsyncDisposable
+{
+    private IJSObjectReference? _playlist;
+    private IJSObjectReference? _ee;
+    private readonly DotNetObjectReference<DawInterop> _dawInteropJsRef;
+    private Daw? _daw;
+
+    public DawInterop()
+    {
+        _dawInteropJsRef = DotNetObjectReference.Create(this);
+    }
+
+    private IJSObjectReference Playlist
+    {
+        get
+        {
+            if (_playlist is null) throw new NullReferenceException("Daw is not initialized");
+            return _playlist;
+        }
+    }
+
+    private IJSObjectReference Ee
+    {
+        get
+        {
+            if (_ee is null) throw new NullReferenceException("Daw is not initialized");
+            return _ee;
+        }
+    }
+
+
+    public async Task Initialize(IJSRuntime js, string dawId, Daw? daw = null)
+    {
+        _playlist = await js.InvokeAsync<IJSObjectReference>("initializeDaw", dawId, new PlaylistOptionsJs(), _dawInteropJsRef);
+        _ee = await _playlist.InvokeAsync<IJSObjectReference>("getEventEmitter");
+        _daw = daw;
+    }
+
+    public async Task LoadProject(DawProject project)
+    {
+        await Playlist.InvokeVoidAsync("loadTrackList", project.Tracks.Select(TrackJs.Create));
+    }
+
+    public async Task ClearProject()
+    {
+        await Playlist.InvokeVoidAsync("clearTrackList");
+    }
+
+    public async Task AddTrack(Track track)
+    {
+        await Playlist.InvokeVoidAsync("addTrack", TrackJs.Create(track));
+    }
+
+    public async Task RemoveTrack(Track track)
+    {
+        await Playlist.InvokeVoidAsync("removeTrackByName", track.Name);
+    }
+
+    public async Task ReorderTracks(IEnumerable<string> trackNamesOrder)
+    {
+        await Playlist.InvokeVoidAsync("reorderTracks", trackNamesOrder);
+    }
+    public async Task UpdateTrack(Track track, bool sourceChanged)
+    {
+        await Playlist.InvokeVoidAsync("updateTrack", TrackJs.Create(track), sourceChanged);
+    }
+    public async Task ReRender()
+    {
+        await Playlist.InvokeVoidAsync("reRender");
+    }
+
+    public async Task SetVolume(string trackName, float volume)
+    {
+        await Playlist.InvokeVoidAsync("setTrackVolumeByName", trackName, volume);
+    }
+
+
+    public Task Play() => EmitEvent(PlaylistEventsJs.PLAY).AsTask();
+    public Task Pause() => EmitEvent(PlaylistEventsJs.PAUSE).AsTask();
+    public Task Stop() => EmitEvent(PlaylistEventsJs.STOP).AsTask();
+    public Task Rewind() => EmitEvent(PlaylistEventsJs.REWIND).AsTask();
+    public Task FastForward() => EmitEvent(PlaylistEventsJs.FAST_FORWARD).AsTask();
+    public Task ZoomIn() => EmitEvent(PlaylistEventsJs.ZOOM_IN).AsTask();
+    public Task ZoomOut() => EmitEvent(PlaylistEventsJs.ZOOM_OUT).AsTask();
+    public Task SetCursorState() => EmitEvent(PlaylistEventsJs.STATE_CHANGE, "cursor").AsTask();
+    public Task SetSelectState() => EmitEvent(PlaylistEventsJs.STATE_CHANGE, "select").AsTask();
+    public Task SetShiftState() => EmitEvent(PlaylistEventsJs.STATE_CHANGE, "shift").AsTask();
+
+
+
+    public ValueTask EmitEvent(params string[] emitParams) => Ee.InvokeVoidAsync("emit", emitParams);
+
+
+    [JSInvokable]
+    public async Task OnShift(string trackName, float newStartTime) {
+        if(_daw is null) return;
+        await _daw.SetTrackStartTime(trackName, newStartTime);
+    }
+
+    [JSInvokable]
+    public async Task OnVolumeChange(string trackName, float newVolume) { }
 
 
     public async ValueTask DisposeAsync()
     {
-        if(_daw != null) await _daw.DisposeAsync();
+        if (_playlist != null) await _playlist.DisposeAsync();
+        if (_ee != null) await _ee.DisposeAsync();
+        _dawInteropJsRef.Dispose();
     }
+
+
+    public record TrackJs
+    {
+        public string name { get; set; } = string.Empty;
+        public string? src { get; set; } = null;
+        public float gain { get; set; }
+        public float start { get; set; }
+        public bool locked { get; set; } = true;
+
+        public string customClass { get; set; } = string.Empty;
+        public string waveOutlineColor { get; set; } = string.Empty;
+
+        public static TrackJs Create(Track track)
+            => new TrackJs
+            {
+                name = track.Name,
+                src = track.Source,
+                gain = track.Volume,
+                start = track.StartTime,
+                locked = track.SelectionState is not TrackSelectionState.Self,
+
+
+                waveOutlineColor = DawTrackColors.Background,
+                customClass = track.SelectionState switch
+                {
+                    TrackSelectionState.Self => "daw-track-selected-self",
+                    TrackSelectionState.Other => "daw-track-selected-other",
+                    TrackSelectionState.None => "daw-track-selected-none",
+                    _ => string.Empty
+                }
+            };
+    }
+
+    public record PlaylistOptionsJs
+    {
+        public int samplesPerPixel { get; set; } = 3000;
+        public int waveHeigt { get; set; } = 100;
+
+        public bool mono { get; set; } = true;
+
+        public PlaylistColorsJs colors { get; set; } = new();
+
+        public bool timescale { get; set; } = true;
+
+        public string seekStyle { get; set; } = "line";
+
+        public int[] zoomLevels { get; set; } = new[] { 100, 250, 500, 1000, 3000, 5000 };
+    }
+
+    public record PlaylistColorsJs
+    {
+        public string waveOutlineColor { get; set; } = "#005BBB";
+        public string timeColor { get; set; } = "grey";
+        public string fadeColor { get; set; } = "black";
+    }
+
+
+    public static class PlaylistEventsJs
+    {
+        public const string PLAY = "play";
+        public const string PAUSE = "pause";
+        public const string STOP = "stop";
+        public const string REWIND = "rewind";
+        public const string FAST_FORWARD = "fastforward";
+        public const string ZOOM_IN = "zoomin";
+        public const string ZOOM_OUT = "zoomout";
+        public const string STATE_CHANGE = "statechange";
+        public const string VOLUME_CHANGE = "volumechange";
+    }
+
 }
 
+public static class DawTrackColors
+{
+    public const string Background = "#c0dce0";
 
-public record Track(string Name, string Source, float startTime);
+    public static class Selection
+    {
+        public const string Self = "#f5a831";
+        public const string SelfProgress = "#ffd632";
+        public const string Other = "#782391";
+        public const string OtherProgress = "#521763";
+        public const string None = "#808080";
+        public const string NoneProgress = "#5c5c5c";
+    }
+}

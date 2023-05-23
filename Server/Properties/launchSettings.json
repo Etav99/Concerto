@@ -4,7 +4,8 @@
       "commandName": "Project",
       "commandLineArgs": "watch run",
       "launchBrowser": true,
-      "launchUrl": "https://concerto.local:443/courses/1/sessions/1",
+      "launchUrl": "https://concerto.local:443/dawtest",
+      // "launchUrl": "https://concerto.local:443/courses/1/sessions/1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "CONCERTO_BASE_PATH": "",
