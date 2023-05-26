@@ -11,7 +11,7 @@ module.exports = {
         {
           test: /\.tsx?$/,
           use: 'ts-loader',
-          exclude: ["/node_modules/", "/src/waveform-playlist/" ], 
+          exclude: ["/node_modules/", "/src/waveform-playlist/node_modules/" ], 
         },
         {
           test: /\.css$/,

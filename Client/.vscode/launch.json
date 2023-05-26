@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Chrome recoder",
+            "url": "file://${workspaceFolder}/out/index.html",
+            "webRoot": "${workspaceFolder}",
+            "runtimeArgs": [
+                "--disable-web-security",
+                "--user-data-dir",
+                "--allow-file-access-from-files"
+            ],
+
+            "sourceMaps": true,
+            "trace": true
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Chrome daw",
+            "url": "file://${workspaceFolder}/out/daw.html",
+            "webRoot": "${workspaceFolder}",
+            "runtimeArgs": [
+                "--disable-web-security",
+                "--user-data-dir",
+                "--allow-file-access-from-files"
+            ],
+            "sourceMaps": true,
+            "trace": true
+        },
+        // attach
+        {
+            "type": "chrome",
+            "request": "attach",
+            "name": "Attach to Chrome",
+            "port": 9222,
+
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}

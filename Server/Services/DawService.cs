@@ -59,10 +59,28 @@ public class DawService
 	{
         FindProject(sessionId)
 			.Tracks
-			.Add(new Track { Name = trackName });
+			.Add(new Track(trackName, sessionId));
 
 		await NotifyProjectChanged(sessionId);
-    }
+	}
+
+	public async Task SetTrackSource(long sessionId, string trackName, IFormFile sourceFile)
+	{
+		var stream = sourceFile.OpenReadStream();
+		var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream);
+
+		FindTrack(sessionId, trackName)
+            .AudioSource = new DawAudioSource(memoryStream.ToArray());
+
+		await NotifyProjectChanged(sessionId);
+	}
+
+	public byte[] GetTrackSource(long sessionId, string trackName)
+	{
+		return FindTrack(sessionId, trackName).AudioSource?.Bytes ?? Array.Empty<byte>();
+	}
+
 
 	public async Task SetTrackStartTime(long sessionId, string trackName, float startTime)
 	{
@@ -79,14 +97,6 @@ public class DawService
 
 		await NotifyProjectChanged(sessionId);
 	}
-
-	public async Task SetTrackSource(long sessionId, string trackName, byte[] data)
-	{
-		FindTrack(sessionId, trackName)
-			.AudioSource = new DawAudioSource { Guid = Guid.NewGuid(), Bytes = data };
-
-		await NotifyProjectChanged(sessionId);
-    }
 
 	public async Task SelectTrack(long sessionId, string trackName, Guid userId)
 	{

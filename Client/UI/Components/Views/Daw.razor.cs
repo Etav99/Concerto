@@ -3,10 +3,12 @@ using Concerto.Client.UI.Layout;
 using Concerto.Shared.Constants;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 
 using System.Text.Json;
+using static MudBlazor.CategoryTypes;
 
 namespace Concerto.Client.UI.Components.Views;
 
@@ -86,9 +88,15 @@ public partial class Daw : IAsyncDisposable
             if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
 
             if (oldTrack is null)
+            {
                 await DawInterop.AddTrack(track);
+            }
             else
-                await DawInterop.UpdateTrack(track, oldTrack.Source != track.Source);
+            {
+                track.IsSolo = oldTrack.IsSolo;
+                track.IsMuted = oldTrack.IsMuted;
+                await DawInterop.UpdateTrack(track, oldTrack.SourceId != track.SourceId);
+            }
         }
 
         foreach (var track in oldProjectState.Tracks)
@@ -106,6 +114,11 @@ public partial class Daw : IAsyncDisposable
     private async Task AddTrack()
     {
         await DawService.AddTrackAsync(_sessionId, Guid.NewGuid().ToString());
+    }
+
+    private async Task UploadTrackSource(Track track, IBrowserFile file)
+    {
+        await DawService.SetTrackSourceAsync(_sessionId, track.Name, file);
     }
 
     private async Task SelectTrack(Track track)
@@ -222,6 +235,18 @@ public class DawInterop : IAsyncDisposable
         await Playlist.InvokeVoidAsync("setTrackVolumeByName", trackName, volume);
     }
 
+    public async Task ToggleSolo(Track track)
+    {
+        // await Playlist.InvokeVoidAsync("toggleSolo", trackName);
+        track.IsSolo = !track.IsSolo;
+    }
+
+    public async Task ToggleMute(Track track)
+    {
+        // await Playlist.InvokeVoidAsync("toggleSolo", trackName);
+        track.IsMuted = !track.IsMuted;
+    }
+
 
     public Task Play() => EmitEvent(PlaylistEventsJs.PLAY).AsTask();
     public Task Pause() => EmitEvent(PlaylistEventsJs.PAUSE).AsTask();
@@ -264,6 +289,8 @@ public class DawInterop : IAsyncDisposable
         public float gain { get; set; }
         public float start { get; set; }
         public bool locked { get; set; } = true;
+        public bool muted { get; set; } = false;
+        public bool soloed { get; set; } = false;
 
         public string customClass { get; set; } = string.Empty;
         public string waveOutlineColor { get; set; } = string.Empty;
@@ -272,11 +299,12 @@ public class DawInterop : IAsyncDisposable
             => new TrackJs
             {
                 name = track.Name,
-                src = track.Source,
+                src = DawService.GetTrackSourceUrl(track),
                 gain = track.Volume,
                 start = track.StartTime,
                 locked = track.SelectionState is not TrackSelectionState.Self,
-
+                muted = track.IsMuted,
+                soloed = track.IsSolo,
 
                 waveOutlineColor = DawTrackColors.Background,
                 customClass = track.SelectionState switch
@@ -292,7 +320,7 @@ public class DawInterop : IAsyncDisposable
     public record PlaylistOptionsJs
     {
         public int samplesPerPixel { get; set; } = 3000;
-        public int waveHeigt { get; set; } = 100;
+        public int waveHeight { get; set; } = 162;
 
         public bool mono { get; set; } = true;
 

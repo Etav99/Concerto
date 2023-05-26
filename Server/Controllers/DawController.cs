@@ -12,7 +12,6 @@ namespace Concerto.Server.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-[Authorize]
 public class DawController : ControllerBase
 {
 	private readonly ILogger<DawController> _logger;
@@ -65,12 +64,6 @@ public class DawController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task SetTrackSource(long sessionId, string trackName, byte[] data)
-	{
-		await _dawService.SetTrackSource(sessionId, trackName, data);
-    }
-
-	[HttpPost]
 	public async Task SelectTrack(long sessionId, string trackName)
 	{
 		await _dawService.SelectTrack(sessionId, trackName, UserId);
@@ -81,5 +74,23 @@ public class DawController : ControllerBase
 	{
 		await _dawService.UnselectTrack(sessionId, trackName);
     }
+
+	[HttpPost]
+	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
+	public async Task<IActionResult> SetTrackSource([FromForm] long sessionId, [FromForm]string trackName, [FromForm] IFormFile file)
+	{
+		await _dawService.SetTrackSource(sessionId, trackName, file);
+
+		return Ok();
+	}
+
+	[HttpGet]
+	public async Task<IActionResult> GetTrackSource([FromQuery] long sessionId,[FromQuery] string trackName)
+	{
+        var file = _dawService.GetTrackSource(sessionId, trackName);
+		// TODO
+        return File(file, "audio/*");
+    }
+
 
 }
