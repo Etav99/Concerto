@@ -97,6 +97,7 @@ services:
     - start 
     networks:
       concerto:
+    restart: unless-stopped
 
 
   postgres:

@@ -184,6 +184,10 @@
                            DisableElevation="true" Variant="Variant.Filled"
                            Color="Color.Default" Icon="@CustomIcons.Shift" />
             </MudButtonGroup>
+
+            <MudIconButton OnClick="ListenTogether"
+                       DisableElevation="true" Variant="Variant.Filled"
+                       Color="Color.Default" Icon="@CustomIcons.Shift" />
         }
 
     </div>
@@ -194,11 +198,29 @@
             {
                     <div class="daw-track-controls">
                         <div class="daw-track-controls-buttons">
-                            @if (track.SelectionState is TrackSelectionState.Self)
+                            @if (track.IsSelfSelected)
                             {
                                 <MudIconButton OnClick="() => UnselectTrack(track)" 
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Warning" Icon="@Icons.Material.Filled.EditOff" />
+
+                                <MudIconButton OnClick="() => {}"
+                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
+                                   Color="Color.Info" Icon="@Icons.Material.Filled.Mic" />
+
+                                <MudFileUpload T="IBrowserFile" FilesChanged="(file) => UploadTrackSource(track, file)" Accept="audio/*" Class="ma-0">
+                                    <ButtonTemplate>
+                                        <MudIconButton
+                                           DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
+                                           Color="Color.Info" Icon="@Icons.Material.Filled.UploadFile"
+                                           HtmlTag="label"
+                                                       for="@context" />
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+
+                                <MudIconButton OnClick="() => DeleteTrack(track)"
+                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
+                                   Color="Color.Error" Icon="@Icons.Material.Filled.Close" />
                             }
                             else
                             {
@@ -207,23 +229,7 @@
                                    Color="Color.Success" Icon="@Icons.Material.Filled.Edit" />
                             }
 
-                            <MudIconButton OnClick="() => {}" Disabled="!track.IsSelfSelected"
-                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
-                                   Color="Color.Info" Icon="@Icons.Material.Filled.Mic" />
 
-                            <MudFileUpload T="IBrowserFile" FilesChanged="(file) => UploadTrackSource(track, file)" Accept="audio/*" Class="ma-0" >
-                                <ButtonTemplate>
-                                    <MudIconButton Disabled="!track.IsSelfSelected"
-                                           DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
-                                           Color="Color.Info" Icon="@Icons.Material.Filled.UploadFile"
-                                           HtmlTag="label"
-                                           for="@context" />
-                                </ButtonTemplate>
-                            </MudFileUpload>
-
-                            <MudIconButton OnClick="() => DeleteTrack(track)" Disabled="!track.IsSelfSelected"
-                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
-                                   Color="Color.Error" Icon="@Icons.Material.Filled.Close" />
                         </div>
 
                         <div class="daw-track-controls-name">
@@ -248,7 +254,7 @@
                             <div class="daw-track-controls-slider">
                                 <MudIcon Class="mr-2" Icon="@Icons.Material.Sharp.VolumeUp" Size="Size.Small" />
                                 <input type="range" min="0" max="1" step="0.01" value="@track.Volume.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                    @oninput="async (e) => await DawInterop.SetVolume(track.Name, e.GetFloatValue())"
+                                    @oninput="async (e) => await DawInterop.SetVolume(track.Id, e.GetFloatValue())"
                                     @onchange="async (e) => await SetTrackVolume(track, e.GetFloatValue())"
                                     disabled="@(!track.IsSelfSelected)" />
                             </div>

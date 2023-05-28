@@ -10,7 +10,7 @@ public record DawProject
 public record Track
 {
     public long Id { get; set; }
-    public long SessionId { get; set; }
+    public long ProjectId { get; set; }
     public string Name { get; set; }
     public Guid? SourceId { get; set; }
     public float StartTime { get; set; }

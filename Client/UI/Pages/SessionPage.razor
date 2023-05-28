@@ -35,7 +35,7 @@ else
                     <div style="@DawStyle">
                         @if (_dawInitialized)
                         {
-                            <Daw SessionId="@SelectedSession?.Id" />
+                            <Daw SessionId="@SelectedSession?.Id" OnListenTogether="ListenTogether"/>
                         }
                     </div>
                 </div>
@@ -127,6 +127,11 @@ else
     {
         if (!_dawInitialized) _dawInitialized = true;
         _dawVisible = !_dawVisible;
+    }
+
+    private async Task ListenTogether(long projectId)
+    {
+        
     }
 
 }

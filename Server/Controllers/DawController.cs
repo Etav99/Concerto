@@ -1,10 +1,8 @@
-﻿using Concerto.Server.Data.Models.Daw;
-using Concerto.Server.Hubs;
+﻿using Concerto.Server.Hubs;
 using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
 using Concerto.Shared.Constants;
 using Concerto.Shared.Extensions;
-using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,80 +15,99 @@ public class DawController : ControllerBase
 	private readonly ILogger<DawController> _logger;
 	private readonly DawService _dawService;
 	private readonly SessionService _sessionService;
+
 	private Guid UserId => HttpContext.UserId();
 
-	public DawController(ILogger<DawController> logger, DawService dawService)
+    public DawController(ILogger<DawController> logger, DawService dawService, SessionService sessionService)
+    {
+        _logger = logger;
+        _dawService = dawService;
+        _sessionService = sessionService;
+    }
+
+    [HttpGet]
+	public async Task<ActionResult<Dto.DawProject>> GetProject(long sessionId)
 	{
-		_logger = logger;
-		_dawService = dawService;
+		if(!await _sessionService.CanAccessSession(sessionId, UserId)) return Forbid();
+		var project = await _dawService.GetProject(sessionId, UserId);
+		if (project == null) return NotFound();
+		return project;
 	}
 
 	[HttpGet]
-	public bool CanModifyTrack(long sessionId, string trackName)
-		=> _dawService.CanModifyTrack(UserId, sessionId, trackName);
-
-	[HttpGet]
-	public Dto.DawProject GetProject(long sessionId)
-		=> _dawService.GetProject(sessionId, UserId);
-
-	[HttpGet]
-	public Dto.Track GetTrack(long sessionId, string trackName)
+	public async Task<ActionResult<Dto.Track>> GetTrack(long projectId, long trackId)
 	{
-		return _dawService.GetTrack(sessionId, trackName, UserId);
+		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		var track = await _dawService.GetTrack(projectId, trackId, UserId);
+		if (track == null) return NotFound();
+		return track;
 	}
 
 	[HttpDelete]
-	public async Task DeleteTrack(long sessionId, string trackName)
+	public async Task<ActionResult> DeleteTrack(long projectId, long trackId)
 	{
-		await _dawService.DeleteTrack(sessionId, trackName);
+		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		await _dawService.DeleteTrack(projectId, trackId);
+		return Ok();
 	}
 
 	[HttpPost]
-	public async Task AddTrack(long sessionId, string trackName)
+	public async Task AddTrack(long projectId, string trackName)
 	{
-        await _dawService.AddTrack(sessionId, trackName);
+        await _dawService.AddTrack(projectId, trackName);
     }
 
 	[HttpPost]
-	public async Task SetTrackStartTime(long sessionId, string trackName, float startTime)
+	public async Task SetTrackStartTime(long projectId, long trackId, float startTime)
 	{
-		await _dawService.SetTrackStartTime(sessionId, trackName, startTime);
+		await _dawService.SetTrackStartTime(projectId, trackId, startTime);
 	}
 
 	[HttpPost]
-	public async Task SetTrackVolume(long sessionId, string trackName, float volume)
+	public async Task SetTrackVolume(long projectId, long trackId, float volume)
 	{
-		await _dawService.SetTrackVolume(sessionId, trackName, volume);
+		await _dawService.SetTrackVolume(projectId, trackId, volume);
 	}
 
 	[HttpPost]
-	public async Task SelectTrack(long sessionId, string trackName)
+	public async Task SelectTrack(long projectId, long trackId)
 	{
-		await _dawService.SelectTrack(sessionId, trackName, UserId);
+		await _dawService.SelectTrack(projectId, trackId, UserId);
 	}
 
 	[HttpPost]
-	public async Task UnselectTrack(long sessionId, string trackName)
+	public async Task UnselectTrack(long projectId, long trackId)
 	{
-		await _dawService.UnselectTrack(sessionId, trackName);
+		await _dawService.UnselectTrack(projectId, trackId, UserId);
     }
 
 	[HttpPost]
 	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
-	public async Task<IActionResult> SetTrackSource([FromForm] long sessionId, [FromForm]string trackName, [FromForm] IFormFile file)
+	public async Task<IActionResult> SetTrackSource([FromForm] long projectId, [FromForm]long trackId, [FromForm] IFormFile file)
 	{
-		await _dawService.SetTrackSource(sessionId, trackName, file);
-
+		await _dawService.SetTrackSource(projectId, trackId, file);
 		return Ok();
 	}
 
 	[HttpGet]
-	public async Task<IActionResult> GetTrackSource([FromQuery] long sessionId,[FromQuery] string trackName)
+	public async Task<IActionResult> GetTrackSource([FromQuery] long projectId, [FromQuery] long trackId)
 	{
-        var file = _dawService.GetTrackSource(sessionId, trackName);
-		// TODO
-        return File(file, "audio/*");
+		var fileStream = await _dawService.GetTrackSourceStream(projectId, trackId);
+        return File(fileStream, "audio/*");
     }
 
+	[HttpGet]
+	public async Task<IActionResult> GetProjectCombinedSource([FromQuery] long projectId)
+	{
+		var fileStream = await _dawService.GetProjectSourceStream(projectId);
+        return File(fileStream, "audio/*");
+    }
+
+	[HttpPost]
+	public async Task<IActionResult> GenerateProjectSource(long projectId)
+	{
+		await _dawService.GenerateProjectSource(projectId);
+		return Ok();
+    }
 
 }

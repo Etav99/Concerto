@@ -18,6 +18,9 @@ public class AppDataContext : DbContext
 	public DbSet<Post> Posts { get; set; }
 	public DbSet<Comment> Comments { get; set; }
 
+	public DbSet<DawProject> DawProjects { get; set; }
+	public DbSet<Track> Tracks { get; set; }
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		modelBuilder.Ignore<Entity>();
@@ -137,6 +140,19 @@ public class AppDataContext : DbContext
 		modelBuilder.Entity<Post>()
 			.HasMany(uf => uf.ReferencedFiles)
 			.WithMany();
+
+		modelBuilder.Entity<Track>()
+			.Property(t => t.Id)
+			.ValueGeneratedOnAdd();
+
+		modelBuilder.Entity<Track>()
+			.HasKey(t => new { t.ProjectId, t.Id });
+
+		modelBuilder.Entity<Track>()
+			.HasOne(t => t.Project)
+            .WithMany(p => p.Tracks)
+            .HasForeignKey(t => t.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 		base.OnModelCreating(modelBuilder);
 	}

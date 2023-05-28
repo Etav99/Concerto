@@ -31,11 +31,11 @@ export async function initializeDaw(containerId: string, options: any, dotNetRef
   playlist.initRecorder(microphoneStream);
 
   if(dotNetReference != null) {
-    const onShift = (track: string, startTime: number) => dotNetReference.invokeMethodAsync('OnShift', track, startTime);
-    const onVolumeChange = (track: string, volume: number) => dotNetReference.invokeMethodAsync('OnVolumeChange', track, volume);
+    const onShift = (trackId: number, startTime: number) => dotNetReference.invokeMethodAsync('OnShift', trackId, startTime);
+    // const onVolumeChange = (track: number, volume: number) => dotNetReference.invokeMethodAsync('OnVolumeChange', track, volume);
     // TODO add these to playlist events
     eventEmitter.on(PlaylistEvents.TRACK_START_TIME_UPDATE, onShift);
-    eventEmitter.on(PlaylistEvents.VOLUME_CHANGE, onVolumeChange);
+    // eventEmitter.on(PlaylistEvents.VOLUME_CHANGE, onVolumeChange);
 
   }
 

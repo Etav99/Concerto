@@ -4,12 +4,12 @@ public static class FileExtensions
 {
 	public static async Task DeleteAsync(string path)
 	{
-		await using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None, 1, FileOptions.DeleteOnClose | FileOptions.Asynchronous)) { }
+		await using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.DeleteOnClose | FileOptions.Asynchronous)) { }
 	}
 
 	public static async Task DeleteAsync(this FileInfo file)
 	{
-		await using (new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.None, 1, FileOptions.DeleteOnClose | FileOptions.Asynchronous)) { }
+		await using (new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.DeleteOnClose | FileOptions.Asynchronous)) { }
 	}
 
 	public static async Task CopyAsync(string source, string destination, bool createDirectories)

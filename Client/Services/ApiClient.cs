@@ -1792,15 +1792,6 @@ namespace Concerto.Client.Services
     {
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<bool> CanModifyTrackAsync(long? sessionId, string trackName);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<bool> CanModifyTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DawProject> GetProjectAsync(long? sessionId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -1810,75 +1801,102 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Track> GetTrackAsync(long? sessionId, string trackName);
+        System.Threading.Tasks.Task<Track> GetTrackAsync(long? projectId, long? trackId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<Track> GetTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<Track> GetTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteTrackAsync(long? sessionId, string trackName);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DeleteTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task AddTrackAsync(long? sessionId, string trackName);
+        System.Threading.Tasks.Task DeleteTrackAsync(long? projectId, long? trackId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task AddTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DeleteTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackStartTimeAsync(long? sessionId, string trackName, float? startTime);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackStartTimeAsync(long? sessionId, string trackName, float? startTime, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackVolumeAsync(long? sessionId, string trackName, float? volume);
+        System.Threading.Tasks.Task AddTrackAsync(long? projectId, string trackName);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackVolumeAsync(long? sessionId, string trackName, float? volume, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task AddTrackAsync(long? projectId, string trackName, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SelectTrackAsync(long? sessionId, string trackName);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SelectTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task UnselectTrackAsync(long? sessionId, string trackName);
+        System.Threading.Tasks.Task SetTrackStartTimeAsync(long? projectId, long? trackId, float? startTime);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task UnselectTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task SetTrackStartTimeAsync(long? projectId, long? trackId, float? startTime, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackSourceAsync(long? sessionId, string trackName, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName);
+        System.Threading.Tasks.Task SetTrackVolumeAsync(long? projectId, long? trackId, float? volume);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackSourceAsync(long? sessionId, string trackName, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task SetTrackVolumeAsync(long? projectId, long? trackId, float? volume, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SelectTrackAsync(long? projectId, long? trackId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SelectTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UnselectTrackAsync(long? projectId, long? trackId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UnselectTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -1908,89 +1926,6 @@ namespace Concerto.Client.Services
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<bool> CanModifyTrackAsync(long? sessionId, string trackName)
-        {
-            return CanModifyTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
-        }
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<bool> CanModifyTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
-        {
-            var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Daw/CanModifyTrack?");
-            if (sessionId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            if (trackName != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            urlBuilder_.Length--;
-
-            var client_ = _httpClient;
-            var disposeClient_ = false;
-            try
-            {
-                using (var request_ = new System.Net.Http.HttpRequestMessage())
-                {
-                    request_.Method = new System.Net.Http.HttpMethod("GET");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
-
-                    PrepareRequest(client_, request_, urlBuilder_);
-
-                    var url_ = urlBuilder_.ToString();
-                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
-
-                    PrepareRequest(client_, request_, url_);
-
-                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse_ = true;
-                    try
-                    {
-                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
-                        if (response_.Content != null && response_.Content.Headers != null)
-                        {
-                            foreach (var item_ in response_.Content.Headers)
-                                headers_[item_.Key] = item_.Value;
-                        }
-
-                        ProcessResponse(client_, response_);
-
-                        var status_ = (int)response_.StatusCode;
-                        if (status_ == 200)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<bool>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new DawException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
-                        }
-                        else
-                        {
-                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
-                        }
-                    }
-                    finally
-                    {
-                        if (disposeResponse_)
-                            response_.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (disposeClient_)
-                    client_.Dispose();
-            }
-        }
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
@@ -2073,25 +2008,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Track> GetTrackAsync(long? sessionId, string trackName)
+        public virtual System.Threading.Tasks.Task<Track> GetTrackAsync(long? projectId, long? trackId)
         {
-            return GetTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
+            return GetTrackAsync(projectId, trackId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Track> GetTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<Track> GetTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/GetTrack?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -2156,25 +2091,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteTrackAsync(long? sessionId, string trackName)
+        public virtual System.Threading.Tasks.Task DeleteTrackAsync(long? projectId, long? trackId)
         {
-            return DeleteTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
+            return DeleteTrackAsync(projectId, trackId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/DeleteTrack?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -2233,21 +2168,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AddTrackAsync(long? sessionId, string trackName)
+        public virtual System.Threading.Tasks.Task AddTrackAsync(long? projectId, string trackName)
         {
-            return AddTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
+            return AddTrackAsync(projectId, trackName, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AddTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task AddTrackAsync(long? projectId, string trackName, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/AddTrack?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             if (trackName != null)
             {
@@ -2311,25 +2246,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SetTrackStartTimeAsync(long? sessionId, string trackName, float? startTime)
+        public virtual System.Threading.Tasks.Task SetTrackStartTimeAsync(long? projectId, long? trackId, float? startTime)
         {
-            return SetTrackStartTimeAsync(sessionId, trackName, startTime, System.Threading.CancellationToken.None);
+            return SetTrackStartTimeAsync(projectId, trackId, startTime, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SetTrackStartTimeAsync(long? sessionId, string trackName, float? startTime, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SetTrackStartTimeAsync(long? projectId, long? trackId, float? startTime, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/SetTrackStartTime?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             if (startTime != null)
             {
@@ -2393,25 +2328,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SetTrackVolumeAsync(long? sessionId, string trackName, float? volume)
+        public virtual System.Threading.Tasks.Task SetTrackVolumeAsync(long? projectId, long? trackId, float? volume)
         {
-            return SetTrackVolumeAsync(sessionId, trackName, volume, System.Threading.CancellationToken.None);
+            return SetTrackVolumeAsync(projectId, trackId, volume, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SetTrackVolumeAsync(long? sessionId, string trackName, float? volume, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SetTrackVolumeAsync(long? projectId, long? trackId, float? volume, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/SetTrackVolume?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             if (volume != null)
             {
@@ -2475,25 +2410,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SelectTrackAsync(long? sessionId, string trackName)
+        public virtual System.Threading.Tasks.Task SelectTrackAsync(long? projectId, long? trackId)
         {
-            return SelectTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
+            return SelectTrackAsync(projectId, trackId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SelectTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SelectTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/SelectTrack?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -2553,25 +2488,25 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UnselectTrackAsync(long? sessionId, string trackName)
+        public virtual System.Threading.Tasks.Task UnselectTrackAsync(long? projectId, long? trackId)
         {
-            return UnselectTrackAsync(sessionId, trackName, System.Threading.CancellationToken.None);
+            return UnselectTrackAsync(projectId, trackId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UnselectTrackAsync(long? sessionId, string trackName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UnselectTrackAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/UnselectTrack?");
-            if (sessionId != null)
+            if (projectId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
-            if (trackName != null)
+            if (trackId != null)
             {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -2631,27 +2566,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SetTrackSourceAsync(long? sessionId, string trackName, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName)
+        public virtual System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName)
         {
-            return SetTrackSourceAsync(sessionId, trackName, contentType, contentDisposition, headers, length, name, fileName, System.Threading.CancellationToken.None);
+            return SetTrackSourceAsync(projectId, trackId, contentType, contentDisposition, headers, length, name, fileName, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SetTrackSourceAsync(long? sessionId, string trackName, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Daw/SetTrackSource?");
-            if (sessionId != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("sessionId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(sessionId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            if (trackName != null)
-            {
-                urlBuilder_.Append(System.Uri.EscapeDataString("trackName") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackName, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            }
-            urlBuilder_.Length--;
+            urlBuilder_.Append("Daw/SetTrackSource");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2663,6 +2589,20 @@ namespace Concerto.Client.Services
                     var content_ = new System.Net.Http.MultipartFormDataContent(boundary_);
                     content_.Headers.Remove("Content-Type");
                     content_.Headers.TryAddWithoutValidation("Content-Type", "multipart/form-data; boundary=" + boundary_);
+
+                    if (projectId == null)
+                        throw new System.ArgumentNullException("projectId");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture)), "projectId");
+                    }
+
+                    if (trackId == null)
+                        throw new System.ArgumentNullException("trackId");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture)), "trackId");
+                    }
 
                     if (contentType == null)
                         throw new System.ArgumentNullException("contentType");
@@ -2707,6 +2647,230 @@ namespace Concerto.Client.Services
                         content_.Add(new System.Net.Http.StringContent(ConvertToString(fileName, System.Globalization.CultureInfo.InvariantCulture)), "FileName");
                     }
                     request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId)
+        {
+            return GetTrackSourceAsync(projectId, trackId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Daw/GetTrackSource?");
+            if (projectId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (trackId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId)
+        {
+            return GetProjectCombinedSourceAsync(projectId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Daw/GetProjectCombinedSource?");
+            if (projectId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId)
+        {
+            return GenerateProjectSourceAsync(projectId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Daw/GenerateProjectSource?");
+            if (projectId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
                     request_.Method = new System.Net.Http.HttpMethod("POST");
 
                     PrepareRequest(client_, request_, urlBuilder_);

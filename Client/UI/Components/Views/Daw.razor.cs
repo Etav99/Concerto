@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 
 using System.Text.Json;
+using System.Threading;
 using static MudBlazor.CategoryTypes;
 
 namespace Concerto.Client.UI.Components.Views;
@@ -19,6 +20,8 @@ public partial class Daw : IAsyncDisposable
     [Inject] NavigationManager Navigation { get; set; } = null!;
 
     [CascadingParameter] LayoutState LayoutState { get; set; } = new();
+
+    [Parameter] public EventCallback<long> OnListenTogether { get; set; }
 
     public const string dawId = "daw";
 
@@ -35,6 +38,9 @@ public partial class Daw : IAsyncDisposable
     [Parameter]
     public long? SessionId { get; set; }
     private long _sessionId;
+
+    private Task _updateProjectTask = Task.CompletedTask;
+    private CancellationTokenSource _updateProjectCancellationTokenSource = new();
 
     private DawProject? _project;
     private DawProject Project
@@ -74,17 +80,45 @@ public partial class Daw : IAsyncDisposable
     {
         // if(sessionId != _sessionId) return;
         // TODO update logic
-        await UpdateProject();
+        await RequestUpdateProject();
     }
 
-    public async Task UpdateProject()
+    public async Task RequestUpdateProject()
+    {
+        try
+        {
+            _updateProjectCancellationTokenSource.Cancel();
+            await _updateProjectTask;
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            _updateProjectCancellationTokenSource.Dispose();
+            _updateProjectCancellationTokenSource = new();
+        }
+
+        _updateProjectTask = UpdateProject(_updateProjectCancellationTokenSource.Token);
+
+        try
+        {
+            await _updateProjectTask;
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async Task UpdateProject(CancellationToken cancellation)
     {
         var oldProjectState = Project;
-        var newProjectState = await DawService.GetProjectAsync(_sessionId);
+        DawProject newProjectState;
+        try
+        {
+            newProjectState = await DawService.GetProjectAsync(_sessionId, cancellation);
+        }
+        catch (OperationCanceledException) { throw; }
 
         foreach (var track in newProjectState.Tracks)
         {
-            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Name == track.Name);
+            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == track.Id);
             if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
 
             if (oldTrack is null)
@@ -103,7 +137,7 @@ public partial class Daw : IAsyncDisposable
             await DawInterop.RemoveTrack(track);
 
         if (newProjectState.Tracks.Any())
-            await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Name));
+            await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Id));
 
         await DawInterop.ReRender();
 
@@ -118,37 +152,43 @@ public partial class Daw : IAsyncDisposable
 
     private async Task UploadTrackSource(Track track, IBrowserFile file)
     {
-        await DawService.SetTrackSourceAsync(_sessionId, track.Name, file);
+        await DawService.SetTrackSourceAsync(_sessionId, track.Id, file);
     }
 
     private async Task SelectTrack(Track track)
     {
-        await DawService.SelectTrackAsync(_sessionId, track.Name);
+        await DawService.SelectTrackAsync(_sessionId, track.Id);
     }
 
     private async Task DeleteTrack(Track track)
     {
-        await DawService.DeleteTrackAsync(_sessionId, track.Name);
+        await DawService.DeleteTrackAsync(_sessionId, track.Id);
     }
 
     private async Task UnselectTrack(Track track)
     {
-        await DawService.UnselectTrackAsync(_sessionId, track.Name);
+        await DawService.UnselectTrackAsync(_sessionId, track.Id);
     }
 
     private async Task SetTrackVolume(Track track, float volume)
     {
-        await DawService.SetTrackVolumeAsync(_sessionId, track.Name, volume);
+        await DawService.SetTrackVolumeAsync(_sessionId, track.Id, volume);
     }
 
     private async Task SetTrackStartTime(Track track, float startTime)
     {
-        await DawService.SetTrackStartTimeAsync(_sessionId, track.Name, startTime);
+        await DawService.SetTrackStartTimeAsync(_sessionId, track.Id, startTime);
     }
 
-    public async Task SetTrackStartTime(string trackName, float startTime)
+    public async Task SetTrackStartTime(long trackId, float startTime)
     {
-        await DawService.SetTrackStartTimeAsync(_sessionId, trackName, startTime);
+        await DawService.SetTrackStartTimeAsync(_sessionId, trackId, startTime);
+    }
+
+    public async Task ListenTogether()
+    {
+        await DawService.GenerateProjectSourceAsync(_sessionId);
+        await OnListenTogether.InvokeAsync(_sessionId);
     }
 
     public async ValueTask DisposeAsync()
@@ -165,6 +205,9 @@ public class DawInterop : IAsyncDisposable
     private IJSObjectReference? _ee;
     private readonly DotNetObjectReference<DawInterop> _dawInteropJsRef;
     private Daw? _daw;
+
+    private Task _setVolumeTask = Task.CompletedTask;
+    private CancellationTokenSource _setVolumeCancellationTokenSource = new();
 
     public DawInterop()
     {
@@ -214,12 +257,12 @@ public class DawInterop : IAsyncDisposable
 
     public async Task RemoveTrack(Track track)
     {
-        await Playlist.InvokeVoidAsync("removeTrackByName", track.Name);
+        await Playlist.InvokeVoidAsync("removeTrackById", track.Id);
     }
 
-    public async Task ReorderTracks(IEnumerable<string> trackNamesOrder)
+    public async Task ReorderTracks(IEnumerable<long> trackOrderIds)
     {
-        await Playlist.InvokeVoidAsync("reorderTracks", trackNamesOrder);
+        await Playlist.InvokeVoidAsync("reorderTracks", trackOrderIds);
     }
     public async Task UpdateTrack(Track track, bool sourceChanged)
     {
@@ -230,20 +273,32 @@ public class DawInterop : IAsyncDisposable
         await Playlist.InvokeVoidAsync("reRender");
     }
 
-    public async Task SetVolume(string trackName, float volume)
+    public async Task SetVolume(long trackId, float volume)
     {
-        await Playlist.InvokeVoidAsync("setTrackVolumeByName", trackName, volume);
+        _setVolumeCancellationTokenSource.Cancel();
+        await _setVolumeTask;
+        _setVolumeCancellationTokenSource.Dispose();
+        _setVolumeCancellationTokenSource = new();
+        _setVolumeTask = SetVolumeTask(trackId, volume, _setVolumeCancellationTokenSource.Token);
+        await _setVolumeTask;
     }
+
+    public async Task SetVolumeTask(long trackId, float volume, CancellationToken cancellation)
+    {
+        if(cancellation.IsCancellationRequested) return;
+        await Playlist.InvokeVoidAsync("setTrackVolumeById", trackId, volume);
+    }
+
 
     public async Task ToggleSolo(Track track)
     {
-        // await Playlist.InvokeVoidAsync("toggleSolo", trackName);
+        await Playlist.InvokeVoidAsync("toggleTrackSoloById", track.Id);
         track.IsSolo = !track.IsSolo;
     }
 
     public async Task ToggleMute(Track track)
     {
-        // await Playlist.InvokeVoidAsync("toggleSolo", trackName);
+        await Playlist.InvokeVoidAsync("toggleTrackMuteById", track.Id);
         track.IsMuted = !track.IsMuted;
     }
 
@@ -265,13 +320,13 @@ public class DawInterop : IAsyncDisposable
 
 
     [JSInvokable]
-    public async Task OnShift(string trackName, float newStartTime) {
+    public async Task OnShift(long trackId, float newStartTime) {
         if(_daw is null) return;
-        await _daw.SetTrackStartTime(trackName, newStartTime);
+        await _daw.SetTrackStartTime(trackId, newStartTime);
     }
 
     [JSInvokable]
-    public async Task OnVolumeChange(string trackName, float newVolume) { }
+    public async Task OnVolumeChange(long trackId, float newVolume) { }
 
 
     public async ValueTask DisposeAsync()
@@ -284,6 +339,7 @@ public class DawInterop : IAsyncDisposable
 
     public record TrackJs
     {
+        public long id { get; set; }
         public string name { get; set; } = string.Empty;
         public string? src { get; set; } = null;
         public float gain { get; set; }
@@ -298,6 +354,7 @@ public class DawInterop : IAsyncDisposable
         public static TrackJs Create(Track track)
             => new TrackJs
             {
+                id = track.Id,
                 name = track.Name,
                 src = DawService.GetTrackSourceUrl(track),
                 gain = track.Volume,

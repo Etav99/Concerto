@@ -42,12 +42,12 @@ public class DawService : DawClient
     }
 
 
-    public async Task SetTrackSourceAsync(long sessionId, string trackName, IBrowserFile file)
+    public async Task SetTrackSourceAsync(long sessionId, long trackId, IBrowserFile file)
     {
         var content = new MultipartFormDataContent();
         content.Add(new StreamContent(file.OpenReadStream(maxAllowedSize: 104_857_600)), "file", file.Name);
-        content.Add(JsonContent.Create(sessionId, options: JsonSerializerOptions.Default), "sessionId");
-        content.Add(new StringContent(trackName), "trackName");
+        content.Add(JsonContent.Create(sessionId, options: JsonSerializerOptions.Default), "projectId");
+        content.Add(JsonContent.Create(trackId, options: JsonSerializerOptions.Default), "trackId");
 
         var response = await _httpClient.PostAsync("/Daw/SetTrackSource", content);
         response.EnsureSuccessStatusCode();
@@ -56,6 +56,6 @@ public class DawService : DawClient
     public static string? GetTrackSourceUrl(Track track)
     {
         if(track.SourceId is null) return null;
-        return $"/Daw/GetTrackSource?sessionId={track.SessionId}&trackName={track.Name}";
+        return $"/Daw/GetTrackSource?projectId={track.ProjectId}&trackId={track.Id}";
     }
 }

@@ -31,7 +31,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddHostedService<ScheduledTasksService>();
 builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
-builder.Services.AddSingleton<DawService, DawService>();
+builder.Services.AddScoped<DawService, DawService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
@@ -231,6 +231,8 @@ await using (var db = scope.ServiceProvider.GetService<AppDataContext>())
 	}
 }
 
+Directory.CreateDirectory(AppSettings.Storage.StoragePath);
 Directory.CreateDirectory(AppSettings.Storage.TempPath);
+Directory.CreateDirectory(AppSettings.Storage.DawPath);
 
 app.Run();
