@@ -5,6 +5,11 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+RUN apt-get update
+RUN apt-get install -y ffmpeg
+RUN ln -s /usr/bin/ffmpeg /app/ffmpeg
+
+
 FROM mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim-amd64 AS build
 WORKDIR /src
 COPY ["Server/Concerto.Server.csproj", "Server/"]

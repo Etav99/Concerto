@@ -7,10 +7,6 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 
-using System.Text.Json;
-using System.Threading;
-using static MudBlazor.CategoryTypes;
-
 namespace Concerto.Client.UI.Components.Views;
 
 public partial class Daw : IAsyncDisposable
@@ -21,7 +17,8 @@ public partial class Daw : IAsyncDisposable
 
     [CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
-    [Parameter] public EventCallback<long> OnListenTogether { get; set; }
+    [Parameter] public EventCallback<string> OnListenTogether { get; set; }
+    [Parameter] public EventCallback OnRequestStopSharing { get; set; }
 
     public const string dawId = "daw";
 
@@ -61,7 +58,9 @@ public partial class Daw : IAsyncDisposable
         if (_dawHub != null) await _dawHub.DisposeAsync();
         DawHub = DawService.CreateHubConnection();
         await DawHub.StartAsync();
-        DawHub.On<long>(DawHubMethods.Client.ProjectChanged, OnProjectChanged);
+        DawHub.On<long>(DawHubMethods.Client.OnProjectChanged, OnProjectChanged);
+        DawHub.On(DawHubMethods.Client.OnRequestStopSharingVideo, OnRequestStopSharing.InvokeAsync);
+
         await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
 
         if (!DawInitialized)
@@ -155,6 +154,25 @@ public partial class Daw : IAsyncDisposable
         await DawService.SetTrackSourceAsync(_sessionId, track.Id, file);
     }
 
+    private async Task UploadRecording(Track track, string BlobUrl)
+    {
+        await DawService.SetTrackSourceAsync(_sessionId, track.Id, BlobUrl);
+    }
+
+
+    [JSInvokable]
+    public async Task OnShift(long trackId, float newStartTime) {
+        await SetTrackStartTime(trackId, newStartTime);
+    }
+
+
+    [JSInvokable]
+    public async Task OnRecordingFinished(long trackId, string blobUrl)
+    {
+        await DawService.SetTrackSourceAsync(_sessionId, trackId, blobUrl);
+    }
+
+
     private async Task SelectTrack(Track track)
     {
         await DawService.SelectTrackAsync(_sessionId, track.Id);
@@ -187,8 +205,13 @@ public partial class Daw : IAsyncDisposable
 
     public async Task ListenTogether()
     {
+        await DawHub.InvokeAsync(DawHubMethods.Server.RequestStopSharingVideo, _sessionId);
         await DawService.GenerateProjectSourceAsync(_sessionId);
-        await OnListenTogether.InvokeAsync(_sessionId);
+        await Task.Delay(200);
+
+        var url = DawService.GetProjectSourceUrl(_sessionId);
+        url = Navigation.ToAbsoluteUri(url).ToString();
+        await OnListenTogether.InvokeAsync(url);
     }
 
     public async ValueTask DisposeAsync()
@@ -204,6 +227,7 @@ public class DawInterop : IAsyncDisposable
     private IJSObjectReference? _playlist;
     private IJSObjectReference? _ee;
     private readonly DotNetObjectReference<DawInterop> _dawInteropJsRef;
+    private DotNetObjectReference<Daw>? _dawJsRef;
     private Daw? _daw;
 
     private Task _setVolumeTask = Task.CompletedTask;
@@ -235,9 +259,12 @@ public class DawInterop : IAsyncDisposable
 
     public async Task Initialize(IJSRuntime js, string dawId, Daw? daw = null)
     {
-        _playlist = await js.InvokeAsync<IJSObjectReference>("initializeDaw", dawId, new PlaylistOptionsJs(), _dawInteropJsRef);
-        _ee = await _playlist.InvokeAsync<IJSObjectReference>("getEventEmitter");
+        _dawJsRef?.Dispose();
         _daw = daw;
+        if(_daw != null) _dawJsRef = DotNetObjectReference.Create(_daw);
+
+        _playlist = await js.InvokeAsync<IJSObjectReference>("initializeDaw", dawId, new PlaylistOptionsJs(), _dawJsRef);
+        _ee = await _playlist.InvokeAsync<IJSObjectReference>("getEventEmitter");
     }
 
     public async Task LoadProject(DawProject project)
@@ -268,6 +295,11 @@ public class DawInterop : IAsyncDisposable
     {
         await Playlist.InvokeVoidAsync("updateTrack", TrackJs.Create(track), sourceChanged);
     }
+    public async Task RecordTrack(Track track)
+    {
+        await Playlist.InvokeVoidAsync("startRecordingTrackById", track.Id);
+    }
+
     public async Task ReRender()
     {
         await Playlist.InvokeVoidAsync("reRender");
@@ -318,22 +350,12 @@ public class DawInterop : IAsyncDisposable
 
     public ValueTask EmitEvent(params string[] emitParams) => Ee.InvokeVoidAsync("emit", emitParams);
 
-
-    [JSInvokable]
-    public async Task OnShift(long trackId, float newStartTime) {
-        if(_daw is null) return;
-        await _daw.SetTrackStartTime(trackId, newStartTime);
-    }
-
-    [JSInvokable]
-    public async Task OnVolumeChange(long trackId, float newVolume) { }
-
-
     public async ValueTask DisposeAsync()
     {
         if (_playlist != null) await _playlist.DisposeAsync();
         if (_ee != null) await _ee.DisposeAsync();
         _dawInteropJsRef.Dispose();
+        _dawJsRef?.Dispose();
     }
 
 
@@ -378,6 +400,8 @@ public class DawInterop : IAsyncDisposable
     {
         public int samplesPerPixel { get; set; } = 3000;
         public int waveHeight { get; set; } = 162;
+
+        public int barWidth { get; set; } = 1;
 
         public bool mono { get; set; } = true;
 

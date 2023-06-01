@@ -1882,12 +1882,12 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId);
+        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
@@ -2773,18 +2773,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId)
+        public virtual System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId)
         {
-            return GetProjectCombinedSourceAsync(projectId, System.Threading.CancellationToken.None);
+            return GetProjectSourceAsync(projectId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetProjectCombinedSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Daw/GetProjectCombinedSource?");
+            urlBuilder_.Append("Daw/GetProjectSource?");
             if (projectId != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");

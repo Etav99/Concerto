@@ -61,7 +61,7 @@ public class DawService
 
         await Task.WhenAll(
             NotifyProjectChanged(projectId),
-            track.AudioSourcePath is not null ? FileExtensions.DeleteAsync(track.AudioSourcePath) : Task.CompletedTask
+            track.AudioSourceGuid is not null ? FileExtensions.DeleteAsync(track.AudioSourcePath) : Task.CompletedTask
         );
 
         await NotifyProjectChanged(projectId);
@@ -83,12 +83,13 @@ public class DawService
         return new FileStream(track.AudioSourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, AppSettings.Storage.StreamBufferSize, FileOptions.Asynchronous);
     }
 
-    public async Task<FileStream> GetProjectSourceStream(long projectId)
+    public async Task<(FileStream, string)> GetProjectSourceStream(long projectId)
     {
         var project = await _context.DawProjects.FindAsync(projectId);
         if (project is null) throw new Exception($"Project with id {projectId} not found");
+        if (project.AudioSourceHash is null || project.AudioSourceGuid is null) throw new Exception($"Project with id {projectId} has no audio source");
 
-        return new FileStream(project.AudioSourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, AppSettings.Storage.StreamBufferSize, FileOptions.Asynchronous);
+        return (new FileStream(project.AudioSourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, AppSettings.Storage.StreamBufferSize, FileOptions.Asynchronous), project.AudioSourceHash);
     }
 
 
@@ -246,7 +247,7 @@ public class DawService
         await _dawHubContext
             .Clients
             .Group(DawHub.DawProjectGroup(projectId))
-            .SendAsync(DawHubMethods.Client.ProjectChanged, projectId);
+            .SendAsync(DawHubMethods.Client.OnProjectChanged, projectId);
     }
 
 }

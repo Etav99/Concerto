@@ -5,6 +5,7 @@ using Concerto.Shared.Constants;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Concerto.Server.Controllers;
 
@@ -93,14 +94,28 @@ public class DawController : ControllerBase
 	public async Task<IActionResult> GetTrackSource([FromQuery] long projectId, [FromQuery] long trackId)
 	{
 		var fileStream = await _dawService.GetTrackSourceStream(projectId, trackId);
-        return File(fileStream, "audio/*");
+        return File(fileStream, "audio/*", "Track", true);
     }
 
 	[HttpGet]
-	public async Task<IActionResult> GetProjectCombinedSource([FromQuery] long projectId)
+	public async Task<IActionResult> GetProjectSource([FromQuery] long projectId)
 	{
-		var fileStream = await _dawService.GetProjectSourceStream(projectId);
-        return File(fileStream, "audio/*");
+		var (fileStream, hash) = await _dawService.GetProjectSourceStream(projectId);
+
+		// Set no cache
+		var headers = Response.GetTypedHeaders();
+		headers.CacheControl = new CacheControlHeaderValue()
+		{
+			NoCache = true,
+			NoStore = true,
+			MustRevalidate = true
+		};
+		Response.Headers[HeaderNames.Pragma] = "no-cache";
+		Response.Headers[HeaderNames.Expires] = "0";
+
+		var tag = new EntityTagHeaderValue($"\"{hash}\"");
+
+        return File(fileStream: fileStream, fileDownloadName: "Project", lastModified: null, contentType: "audio/*", entityTag: tag, enableRangeProcessing: true);
     }
 
 	[HttpPost]

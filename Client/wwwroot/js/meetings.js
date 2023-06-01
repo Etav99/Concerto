@@ -17,8 +17,10 @@
 			}
 		}
 	);
+
     api.addListener("videoConferenceLeft", async () => {
-        api.dispose();
-		await caller.invokeMethodAsync("StartMeeting");
+		await caller.invokeMethodAsync("OnVideoConferenceLeft");
     });
+
+	return api;
 }

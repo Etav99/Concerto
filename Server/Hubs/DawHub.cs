@@ -35,4 +35,10 @@ public class DawHub : Hub
 	{
 		await Groups.AddToGroupAsync(Context.ConnectionId, DawProjectGroup(sessionId));
 	}
+
+	[HubMethodName(DawHubMethods.Server.RequestStopSharingVideo)]
+	public async Task RequestStopSharingVideo(long sessionId)
+	{
+		await Clients.OthersInGroup(DawProjectGroup(sessionId)).SendAsync(DawHubMethods.Client.OnRequestStopSharingVideo);
+	}
 }

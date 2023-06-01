@@ -1,16 +1,31 @@
 ﻿@using System.Web;
 
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IJSRuntime JS
 @inject IAppSettingsService AppSettingsService
 @inject ISessionService SessionService
 
-<div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
-    @if (_loading)
-    {
-        <LoadingIndicator Size="Size.Large" />
-    }
+<div style="@MeetingStyle" class="">
+    <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
+        @if (_loading)
+        {
+            <LoadingIndicator Size="Size.Large" />
+        }
+    </div>
+
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
+
+    <div style="@DawStyle">
+        @if (_dawInitialized)
+        {
+            <Daw SessionId="@Session?.Id" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
+        }
+    </div>
 </div>
+
+
+
+
 
 @code
 {
@@ -19,14 +34,13 @@
     public LayoutState LayoutState { get; set; } = LayoutState.Default;
 
     [Parameter]
-    public string? MeetingName { get; set; }
-    [Parameter]
-    public Guid? Guid { get; set; }
+    public Session? Session { get; set; }
 
     string _meetingPath = string.Empty;
     CancellationTokenSource startMeetingCancellation = new();
 
     DotNetObjectReference<Meeting> _dotNetObjectReference = null!;
+    IJSObjectReference? _jitsi = null;
 
     bool _disposed = false;
     bool _loading = true;
@@ -38,8 +52,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (MeetingName == null || Guid == null) return;
-        var guid = Guid.ToString();
+        if (Session is null) return;
+        var guid = Session.MeetingGuid.ToString();
         var meetingPath = HttpUtility.UrlPathEncode($"{guid}");
         if (meetingPath == _meetingPath) return;
         _meetingPath = HttpUtility.UrlPathEncode($"{guid}");
@@ -50,23 +64,62 @@
     [JSInvokable]
     public async Task StartMeeting()
     {
-        if (_disposed || string.IsNullOrEmpty(_meetingPath)) return;
+        if (Session is null) return;
         _loading = true;
         StateHasChanged();
-        var token = await SessionService.GetMeetingTokenAsync(Guid, startMeetingCancellation.Token);
-        try
-        {
-            await JS.InvokeAsync<string>("startMeeting", startMeetingCancellation.Token, "jitsi", AppSettingsService.AppSettings.JitsiUrl.Host, _meetingPath, token, _dotNetObjectReference);
-        }
-        catch (ObjectDisposedException) { }
+        var token = await SessionService.GetMeetingTokenAsync(Session.MeetingGuid, startMeetingCancellation.Token);
+        _jitsi = await JS.InvokeAsync<IJSObjectReference>("startMeeting", startMeetingCancellation.Token, "jitsi", AppSettingsService.AppSettings.JitsiUrl.Host, _meetingPath, token, _dotNetObjectReference);
         _loading = false;
     }
 
+    [JSInvokable]
+    public async Task OnVideoConferenceLeft()
+    {
 
-    public void Dispose()
+    }
+
+    public async Task PlaySharedMedia(string url)
+    {
+        if (_jitsi == null) return;
+        await _jitsi.InvokeVoidAsync("executeCommand", "stopShareVideo");
+        await _jitsi.InvokeVoidAsync("executeCommand", "startShareVideo", url);
+    }
+
+    public async Task StopSharedMedia()
+    {
+        if (_jitsi == null) return;
+        await _jitsi.InvokeVoidAsync("executeCommand", "stopShareVideo");
+    }
+
+    public async Task DisposeJitsiApi()
+    {
+        if (_jitsi == null) return;
+        await _jitsi.InvokeVoidAsync("dispose");
+        await _jitsi.DisposeAsync();
+        _jitsi = null;
+    }
+
+    public async ValueTask DisposeAsync()
     {
         startMeetingCancellation.Cancel();
+        await DisposeJitsiApi();
         _dotNetObjectReference?.Dispose();
         _disposed = true;
+    }
+
+    private bool _dawInitialized = false;
+    private bool _dawVisible = false;
+    private const string MeetingStyleBase = "display: grid; height: 100%; max-height: 100%;";
+    private string MeetingStyle => _dawVisible
+                            ? $"{MeetingStyleBase} grid-template-rows: 1fr; grid-template-columns: 1fr min-content 1fr;"
+                            : $"{MeetingStyleBase} grid-template-rows: 1fr; grid-template-columns: 1fr min-content min-content;";
+
+    private const string DawStyleBase = "overflow: auto;";
+    private string DawStyle => _dawVisible ? $"{DawStyleBase}" : $"{DawStyleBase} display: none;";
+
+    private void ToggleDaw()
+    {
+        if (!_dawInitialized) _dawInitialized = true;
+        _dawVisible = !_dawVisible;
     }
 }

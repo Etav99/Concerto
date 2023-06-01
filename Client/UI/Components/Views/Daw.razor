@@ -1,4 +1,7 @@
-﻿<style>
+﻿@using Concerto.Shared.Constants;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+<style>
     .daw-container {
         display: grid;
         grid-auto-columns: 1fr;
@@ -188,6 +191,10 @@
             <MudIconButton OnClick="ListenTogether"
                        DisableElevation="true" Variant="Variant.Filled"
                        Color="Color.Default" Icon="@CustomIcons.Shift" />
+
+            <button @onclick="async () => await DawHub.InvokeAsync(DawHubMethods.Server.RequestStopSharingVideo, _sessionId)">
+                    stop
+                </button>
         }
 
     </div>
@@ -204,7 +211,7 @@
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Warning" Icon="@Icons.Material.Filled.EditOff" />
 
-                                <MudIconButton OnClick="() => {}"
+                                <MudIconButton OnClick="() => DawInterop.RecordTrack(track)"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Info" Icon="@Icons.Material.Filled.Mic" />
 
