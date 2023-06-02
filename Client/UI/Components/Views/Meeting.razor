@@ -13,14 +13,17 @@
         }
     </div>
 
-    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
+    @if(!LayoutState.IsMobile)
+    {
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
 
-    <div style="@DawStyle">
-        @if (_dawInitialized)
-        {
-            <Daw SessionId="@Session?.Id" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
-        }
-    </div>
+        <div style="@DawStyle">
+            @if (_dawInitialized)
+            {
+                <Daw SessionId="@Session?.Id" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
+            }
+        </div> 
+    }
 </div>
 
 

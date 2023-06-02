@@ -129,7 +129,7 @@ services:
 
 
   jitsi_web:
-    image: etav/web:stable-8319-concerto-2.0
+    image: etav/web:stable-8615-concerto-2.1
     volumes:
      - ${CONCERTO_VOLUME_PATH}/jitsi_config/web:/config
      - ${CONCERTO_VOLUME_PATH}/jitsi_config/web/crontabs:/var/spool/cron/crontabs
@@ -157,7 +157,7 @@ services:
         - ${JITSI_DOMAIN:?}
 
   jitsi_jvb:
-    image: etav/jvb:stable-8319-concerto-2.0
+    image: etav/jvb:stable-8615-concerto-2.1
     volumes:
       - ${CONCERTO_VOLUME_PATH}/jitsi_config/jvb:/config
     ports:
@@ -252,7 +252,7 @@ services:
 
 
   jitsi_jibri:
-    image: etav/jibri:stable-8319-concerto-2.0
+    image: etav/jibri:stable-8615-concerto-2.1
     volumes:
     - ${CONCERTO_VOLUME_PATH}/recordings:/srv/concerto/recordings
     - ${CONCERTO_VOLUME_PATH}/jitsi_config/jibri:/config

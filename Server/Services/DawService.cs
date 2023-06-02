@@ -139,7 +139,7 @@ public class DawService
         return true;
     }
 
-    public async Task SetTrackSource(long projectId, long trackId, IFormFile sourceFile)
+    public async Task SetTrackSource(long projectId, long trackId, IFormFile sourceFile, float? startTime = null, float? volume = null)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
         if (track is null)
@@ -161,6 +161,11 @@ public class DawService
                     })
                 .ProcessAsynchronously();
         }
+
+        if(startTime.HasValue)
+            track.StartTime = startTime.Value;
+        if(volume.HasValue)
+            track.Volume = Math.Clamp(volume.Value, 0, 1);
 
         await _context.SaveChangesAsync();
 

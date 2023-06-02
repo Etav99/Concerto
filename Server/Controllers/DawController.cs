@@ -84,9 +84,9 @@ public class DawController : ControllerBase
 
 	[HttpPost]
 	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
-	public async Task<IActionResult> SetTrackSource([FromForm] long projectId, [FromForm]long trackId, [FromForm] IFormFile file)
+	public async Task<IActionResult> SetTrackSource([FromForm] long projectId, [FromForm]long trackId, [FromForm] IFormFile file, [FromForm] float? startTime, [FromForm] float? volume)
 	{
-		await _dawService.SetTrackSource(projectId, trackId, file);
+		await _dawService.SetTrackSource(projectId, trackId, file, startTime, volume);
 		return Ok();
 	}
 

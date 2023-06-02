@@ -45,28 +45,38 @@ public class DawService : DawClient
     }
 
 
-    public async Task SetTrackSourceAsync(long sessionId, long trackId, IBrowserFile file)
+    public async Task SetTrackSourceAsync(long sessionId, long trackId, IJSStreamReference file, float? startTime = null, float? volume = null)
     {
-        await SetTrackSourceAsync(sessionId, trackId, file.OpenReadStream(maxAllowedSize: 104_857_600));
+        await SetTrackSourceAsync(sessionId, trackId, await file.OpenReadStreamAsync(maxAllowedSize: 104_857_600), startTime, volume);
+        await file.DisposeAsync();
     }
 
-    public async Task SetTrackSourceAsync(long sessionId, long trackId, string url)
+    public async Task SetTrackSourceAsync(long sessionId, long trackId, IBrowserFile file, float? startTime = null, float? volume = null)
+    {
+        await SetTrackSourceAsync(sessionId, trackId, file.OpenReadStream(maxAllowedSize: 104_857_600), startTime, volume);
+    }
+
+    public async Task SetTrackSourceAsync(long sessionId, long trackId, string url, float? startTime = null, float? volume = null)
     {
         // create stream from url
         var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
-        await SetTrackSourceAsync(sessionId, trackId, await response.Content.ReadAsStreamAsync());
+        await SetTrackSourceAsync(sessionId, trackId, await response.Content.ReadAsStreamAsync(), startTime);
 
         if(url.StartsWith("blob:"))
             await _js.InvokeVoidAsync("URL.revokeObjectURL", url);
     }
 
-    private async Task SetTrackSourceAsync(long sessionId, long trackId, Stream stream)
+    private async Task SetTrackSourceAsync(long sessionId, long trackId, Stream stream, float? startTime = null, float? volume = null)
     {
         var content = new MultipartFormDataContent();
         content.Add(new StreamContent(stream), "file", "file");
         content.Add(JsonContent.Create(sessionId, options: JsonSerializerOptions.Default), "projectId");
         content.Add(JsonContent.Create(trackId, options: JsonSerializerOptions.Default), "trackId");
+        if (startTime is not null)
+        content.Add(JsonContent.Create(startTime, options: JsonSerializerOptions.Default), "startTime");
+        if (volume is not null)
+        content.Add(JsonContent.Create(volume, options: JsonSerializerOptions.Default), "volume");
 
         var response = await _httpClient.PostAsync("/Daw/SetTrackSource", content);
         response.EnsureSuccessStatusCode();

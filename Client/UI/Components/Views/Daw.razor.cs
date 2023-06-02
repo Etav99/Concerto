@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
+using static Concerto.Client.UI.Components.Views.DawInterop;
 
 namespace Concerto.Client.UI.Components.Views;
 
@@ -24,6 +25,9 @@ public partial class Daw : IAsyncDisposable
 
     bool DawInitialized { get; set; } = false;
     DawInterop DawInterop { get; } = new DawInterop();
+
+    private bool _selectActive = true;
+    private bool _shiftActive = false;
 
     private HubConnection? _dawHub = null;
     private HubConnection DawHub
@@ -45,9 +49,17 @@ public partial class Daw : IAsyncDisposable
         get => _project ?? throw new NullReferenceException("Project is not initialized");
         set => _project = value;
     }
+    private bool ShouldUpdate {get; set; }
+
+    private bool IsPlaying { get; set; } = false;
+    private bool IsRecording { get; set; } = false;
+    private bool IsRecordingPending { get; set; } = false;
+    private TrackRecording? TrackRecording { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
+
     }
 
     protected override async Task OnParametersSetAsync()
@@ -77,13 +89,18 @@ public partial class Daw : IAsyncDisposable
 
     public async Task OnProjectChanged(long sessionId)
     {
-        // if(sessionId != _sessionId) return;
-        // TODO update logic
-        await RequestUpdateProject();
+        if(sessionId != _sessionId) return;
+
+        if(IsPlaying || IsRecording || IsRecordingPending)
+            ShouldUpdate = true;
+        else
+            await UpdateProject();
     }
 
-    public async Task RequestUpdateProject()
+    public async Task UpdateProject()
     {
+        ShouldUpdate = false;
+
         try
         {
             _updateProjectCancellationTokenSource.Cancel();
@@ -96,7 +113,7 @@ public partial class Daw : IAsyncDisposable
             _updateProjectCancellationTokenSource = new();
         }
 
-        _updateProjectTask = UpdateProject(_updateProjectCancellationTokenSource.Token);
+        _updateProjectTask = UpdateProjectTask(_updateProjectCancellationTokenSource.Token);
 
         try
         {
@@ -105,7 +122,7 @@ public partial class Daw : IAsyncDisposable
         catch (OperationCanceledException) { }
     }
 
-    public async Task UpdateProject(CancellationToken cancellation)
+    public async Task UpdateProjectTask(CancellationToken cancellation)
     {
         var oldProjectState = Project;
         DawProject newProjectState;
@@ -115,20 +132,25 @@ public partial class Daw : IAsyncDisposable
         }
         catch (OperationCanceledException) { throw; }
 
-        foreach (var track in newProjectState.Tracks)
+
+        bool shouldRestartPlay = false;
+        foreach (var newTrack in newProjectState.Tracks)
         {
-            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == track.Id);
+            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == newTrack.Id);
             if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
 
             if (oldTrack is null)
             {
-                await DawInterop.AddTrack(track);
+                await DawInterop.AddTrack(newTrack);
             }
             else
             {
-                track.IsSolo = oldTrack.IsSolo;
-                track.IsMuted = oldTrack.IsMuted;
-                await DawInterop.UpdateTrack(track, oldTrack.SourceId != track.SourceId);
+                if(oldTrack.ShouldBeUpdated(newTrack))
+                {
+                    shouldRestartPlay = shouldRestartPlay || oldTrack.ShouldBeRestarted(newTrack);
+                    newTrack.CopyLocalState(oldTrack);
+                    await DawInterop.UpdateTrack(newTrack, oldTrack.SourceId != newTrack.SourceId);
+                }
             }
         }
 
@@ -138,9 +160,92 @@ public partial class Daw : IAsyncDisposable
         if (newProjectState.Tracks.Any())
             await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Id));
 
+        if (shouldRestartPlay)
+            await DawInterop.RestartPlay();
+
         await DawInterop.ReRender();
 
         Project = newProjectState;
+        StateHasChanged();
+    }
+
+    public async Task Play()
+    {
+        if(IsRecording) return;
+        IsPlaying = true;
+        await DawInterop.Play();
+    }
+
+    public async Task Stop()
+    {
+        IsPlaying = false;
+        await DawInterop.Stop();
+
+        if(ShouldUpdate) await UpdateProject();
+    }
+
+    [JSInvokable]
+    public async Task OnPlayingFinished()
+    {
+        IsPlaying = false;
+        if(ShouldUpdate) await UpdateProject();
+        StateHasChanged();
+    }
+    private async Task StartRecording(Track track)
+    {
+        if (IsRecording) return;
+        IsRecording = true;
+        TrackRecording = new TrackRecording(track);
+        await DawInterop.RecordTrack(track);
+    }
+
+    private async Task DiscardRecording()
+    {
+        if (!IsRecordingPending) return;
+        if (TrackRecording is null) throw new InvalidOperationException("TrackRecording is null");
+
+        var originalTrack = Project.TracksById[TrackRecording.Id];
+        await DawInterop.UpdateTrack(originalTrack, true);
+        await DawInterop.ReRender();
+
+        TrackRecording = null;
+        IsRecordingPending = false;
+
+        if(ShouldUpdate) await UpdateProject();
+    }
+
+    private async Task AcceptRecording()
+    {
+        if (!IsRecordingPending) return;
+        if (TrackRecording is null) throw new InvalidOperationException("TrackRecording is null");
+        if (TrackRecording.Blob is null) throw new InvalidOperationException("TrackRecording.Blob is null");
+
+
+        Project.TracksById[TrackRecording.Id].StartTime = TrackRecording.StartTime;
+        await DawService.SetTrackSourceAsync(_sessionId, TrackRecording.Id, TrackRecording.Blob, TrackRecording.StartTime, TrackRecording.Volume);
+
+        TrackRecording = null;
+        IsRecordingPending = false;
+
+        if(ShouldUpdate) await UpdateProject();
+    }
+
+    [JSInvokable]
+    public void OnRecordingFinished(long trackId, IJSStreamReference blob, float startTime)
+    {
+        if (!IsRecording || TrackRecording is null)
+            throw new InvalidOperationException("Recording finished but no recording was started");
+
+        if (TrackRecording.Id != trackId)
+            throw new InvalidOperationException("Recording finished but for different track");
+
+
+
+        TrackRecording.Blob = blob;
+        TrackRecording.StartTime = startTime;
+        IsRecordingPending = true;
+        IsRecording = false;
+
         StateHasChanged();
     }
 
@@ -151,27 +256,8 @@ public partial class Daw : IAsyncDisposable
 
     private async Task UploadTrackSource(Track track, IBrowserFile file)
     {
-        await DawService.SetTrackSourceAsync(_sessionId, track.Id, file);
+        await DawService.SetTrackSourceAsync(_sessionId, track.Id, file, 0);
     }
-
-    private async Task UploadRecording(Track track, string BlobUrl)
-    {
-        await DawService.SetTrackSourceAsync(_sessionId, track.Id, BlobUrl);
-    }
-
-
-    [JSInvokable]
-    public async Task OnShift(long trackId, float newStartTime) {
-        await SetTrackStartTime(trackId, newStartTime);
-    }
-
-
-    [JSInvokable]
-    public async Task OnRecordingFinished(long trackId, string blobUrl)
-    {
-        await DawService.SetTrackSourceAsync(_sessionId, trackId, blobUrl);
-    }
-
 
     private async Task SelectTrack(Track track)
     {
@@ -190,6 +276,12 @@ public partial class Daw : IAsyncDisposable
 
     private async Task SetTrackVolume(Track track, float volume)
     {
+        if(track.Id == TrackRecording?.Id)
+        {
+            TrackRecording.Volume = volume;
+            return;
+        }
+        track.Volume = volume;
         await DawService.SetTrackVolumeAsync(_sessionId, track.Id, volume);
     }
 
@@ -201,6 +293,31 @@ public partial class Daw : IAsyncDisposable
     public async Task SetTrackStartTime(long trackId, float startTime)
     {
         await DawService.SetTrackStartTimeAsync(_sessionId, trackId, startTime);
+    }
+
+    [JSInvokable]
+    public async Task OnShift(long trackId, float newStartTime) {
+        if(trackId == TrackRecording?.Id)
+        {
+            TrackRecording.StartTime = newStartTime;
+            return;
+        }
+        Project.TracksById[trackId].StartTime = newStartTime;
+        await SetTrackStartTime(trackId, newStartTime);
+    }
+
+    public async Task SetSelectState()
+    {
+        await DawInterop.SetSelectState();
+        _selectActive = true;
+        _shiftActive = false;
+    }
+
+    public async Task SetShiftState()
+    {
+        await DawInterop.SetShiftState();
+        _selectActive = false;
+        _shiftActive = true;
     }
 
     public async Task ListenTogether()
@@ -334,6 +451,10 @@ public class DawInterop : IAsyncDisposable
         track.IsMuted = !track.IsMuted;
     }
 
+    public async Task RestartPlay()
+    {
+        await Playlist.InvokeVoidAsync("restartPlay");
+    }
 
     public Task Play() => EmitEvent(PlaylistEventsJs.PLAY).AsTask();
     public Task Pause() => EmitEvent(PlaylistEventsJs.PAUSE).AsTask();
@@ -410,6 +531,9 @@ public class DawInterop : IAsyncDisposable
         public bool timescale { get; set; } = true;
 
         public string seekStyle { get; set; } = "line";
+        public string state {get; set;} = "select";
+
+        public bool isAutomaticScroll {get; set; } = true;
 
         public int[] zoomLevels { get; set; } = new[] { 100, 250, 500, 1000, 3000, 5000 };
     }
@@ -449,5 +573,20 @@ public static class DawTrackColors
         public const string OtherProgress = "#521763";
         public const string None = "#808080";
         public const string NoneProgress = "#5c5c5c";
+    }
+}
+
+
+public record TrackRecording
+{
+    public long Id { get; set; }
+    public IJSStreamReference? Blob { get; set; }
+    public float StartTime { get; set; }
+    public float Volume { get; set; }
+
+    public TrackRecording(Track track)
+    {
+        Id = track.Id;
+        StartTime = track.StartTime;
     }
 }

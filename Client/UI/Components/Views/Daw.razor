@@ -18,6 +18,10 @@
         grid-area: daw-controls;
     }
 
+        .daw-controls > *:not(:first-child) {
+            padding-left: 12px;
+        }
+
     .daw-playlist {
         display: grid;
         grid-template-columns: min-content 1fr;
@@ -36,7 +40,6 @@
         grid-area: daw-tracks;
         display: grid;
         grid-template-columns: 1fr;
-
     }
 
         .daw-tracks > div {
@@ -106,17 +109,22 @@
         align-items: flex-start;
     }
 
-
-
-    .daw-track-selected-self
+    .daw .playlist .playlist-tracks
     {
+        --wp-tracks-container-background-color: @DawTrackColors.Background !important;
+    }
+
+    .daw .playlist .playlist-tracks::-webkit-scrollbar-track {
+            background: var(--mud-palette-background) !important;
+    }
+
+    .daw-track-selected-self {
         background-color: @DawTrackColors.Background;
         --wp-channel-color: @DawTrackColors.Selection.Self;
         --wp-channel-progress-color: @DawTrackColors.Selection.SelfProgress;
     }
 
-    .daw-track-selected-other
-    {
+    .daw-track-selected-other {
         background-color: @DawTrackColors.Background;
         --wp-channel-color: @DawTrackColors.Selection.Other;
         --wp-channel-progress-color: @DawTrackColors.Selection.OtherProgress;
@@ -129,109 +137,153 @@
     }
 
 
+    .pulse-blob {
+        border-radius: 50%;
+        margin: 10px;
+        height: 20px;
+        width: 20px;
+        background: rgba(255, 82, 82, 1);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 1);
+        animation: pulse-red 2s infinite;
+        transform: scale(1);
+    }
 
+    @@keyframes pulse-red {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+        }
+    }
 
 </style>
 
 
 
 
-<div class="daw-container daw">
+<div class="daw-container">
     <div class="daw-controls">
-        @if(DawInitialized)
+        @if (DawInitialized)
         {
             <MudButtonGroup OverrideStyles="false" DisableElevation="true">
-                <MudIconButton OnClick="DawInterop.Pause"
+
+                <MudIconButton OnClick="DawInterop.Rewind" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Warning" Icon="@Icons.Material.Filled.Pause" />
+                           Color="Color.Success" Icon="@CustomIcons.FastBackward" />
 
-                <MudIconButton OnClick="DawInterop.Play"
+                <MudIconButton OnClick="Play" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Success" Icon="@Icons.Material.Filled.PlayArrow" />
+                           Color="Color.Success" Icon="@CustomIcons.Play" />
 
-
-                <MudIconButton OnClick="DawInterop.Stop"
+                <MudIconButton OnClick="DawInterop.Pause" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Error" Icon="@Icons.Material.Filled.Stop" />
+                           Color="Color.Warning" Icon="@CustomIcons.Pause" />
 
-
-                <MudIconButton OnClick="DawInterop.Rewind"
+                <MudIconButton OnClick="Stop"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Success" Icon="@Icons.Material.Filled.FastRewind" />
+                           Color="Color.Error" Icon="@CustomIcons.Stop" />
 
-                <MudIconButton OnClick="DawInterop.FastForward"
+                <MudIconButton OnClick="DawInterop.FastForward" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Success" Icon="@Icons.Material.Filled.FastForward" />
+                           Color="Color.Success" Icon="@CustomIcons.FastForward" />
             </MudButtonGroup>
 
             <MudButtonGroup OverrideStyles="false" DisableElevation="true">
                 <MudIconButton OnClick="DawInterop.ZoomOut"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Default" Icon="@Icons.Material.Filled.ZoomOut" />
+                           Color="Color.Default" Icon="@CustomIcons.ZoomOut" />
 
                 <MudIconButton OnClick="DawInterop.ZoomIn"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Default" Icon="@Icons.Material.Filled.ZoomIn" />
+                           Color="Color.Default" Icon="@CustomIcons.ZoomIn" />
             </MudButtonGroup>
 
             <MudButtonGroup OverrideStyles="false" DisableElevation="true">
-                <MudIconButton OnClick="DawInterop.SetCursorState"
+                <MudIconButton OnClick="SetSelectState" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Default" Icon="@CustomIcons.Cursor" />
+                           Color="_selectActive ? Color.Dark : Color.Default" Icon="@CustomIcons.CursorText" />
 
-                <MudIconButton OnClick="DawInterop.SetSelectState"
+                <MudIconButton OnClick="SetShiftState" Disabled="IsRecording"
                            DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Default" Icon="@CustomIcons.CursorText" />
-
-                <MudIconButton OnClick="DawInterop.SetShiftState"
-                           DisableElevation="true" Variant="Variant.Filled"
-                           Color="Color.Default" Icon="@CustomIcons.Shift" />
+                           Color="_shiftActive ? Color.Dark : Color.Default" Icon="@CustomIcons.Shift" />
             </MudButtonGroup>
 
-            <MudIconButton OnClick="ListenTogether"
-                       DisableElevation="true" Variant="Variant.Filled"
-                       Color="Color.Default" Icon="@CustomIcons.Shift" />
-
-            <button @onclick="async () => await DawHub.InvokeAsync(DawHubMethods.Server.RequestStopSharingVideo, _sessionId)">
-                    stop
-                </button>
+            <MudButtonGroup OverrideStyles="false" DisableElevation="true">
+                <MudIconButton OnClick="ListenTogether" Disabled="IsRecording || IsRecordingPending"
+                           DisableElevation="true" Variant="Variant.Filled"
+                           Color="Color.Info" Icon="@CustomIcons.Share" />
+            </MudButtonGroup>
         }
 
     </div>
 
-    <div class="daw-playlist">
+    <div class="daw-playlist daw">
         <div class="daw-tracks">
-            @if (DawInitialized) foreach (var track in Project.Tracks)
+            @if (DawInitialized)
             {
+                var trackControlsDisabled = IsPlaying || IsRecording || IsRecordingPending;
+                var tracksVolumeDisabled = IsRecording || IsRecordingPending;
+
+                foreach (var track in Project.Tracks)
+                {
                     <div class="daw-track-controls">
                         <div class="daw-track-controls-buttons">
                             @if (track.IsSelfSelected)
                             {
-                                <MudIconButton OnClick="() => UnselectTrack(track)" 
+                                @if (track.Id == TrackRecording?.Id)
+                                {
+                                    @if (IsRecordingPending)
+                                    {
+                                        <MudIconButton OnClick="AcceptRecording"
+                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
+                                   Color="Color.Success" Icon="@Icons.Material.Filled.Check" />
+
+                                        <MudIconButton OnClick="DiscardRecording"
+                                   DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
+                                   Color="Color.Error" Icon="@Icons.Material.Filled.Delete" />
+                                    }
+                                    else
+                                    {
+                                        <div class="pulse-blob"></div>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudIconButton OnClick="() => UnselectTrack(track)" Disabled="trackControlsDisabled"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Warning" Icon="@Icons.Material.Filled.EditOff" />
 
-                                <MudIconButton OnClick="() => DawInterop.RecordTrack(track)"
+                                    <MudIconButton OnClick="() => StartRecording(track)" Disabled="trackControlsDisabled"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Info" Icon="@Icons.Material.Filled.Mic" />
 
-                                <MudFileUpload T="IBrowserFile" FilesChanged="(file) => UploadTrackSource(track, file)" Accept="audio/*" Class="ma-0">
-                                    <ButtonTemplate>
-                                        <MudIconButton
+                                    <MudFileUpload T="IBrowserFile" FilesChanged="(file) => UploadTrackSource(track, file)" Accept="audio/*" Class="ma-0">
+                                        <ButtonTemplate>
+                                            <MudIconButton Disabled="trackControlsDisabled"
                                            DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                            Color="Color.Info" Icon="@Icons.Material.Filled.UploadFile"
                                            HtmlTag="label"
-                                                       for="@context" />
-                                    </ButtonTemplate>
-                                </MudFileUpload>
+                                                           for="@context" />
+                                        </ButtonTemplate>
+                                    </MudFileUpload>
 
-                                <MudIconButton OnClick="() => DeleteTrack(track)"
+                                    <MudIconButton OnClick="() => DeleteTrack(track)" Disabled="trackControlsDisabled"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Error" Icon="@Icons.Material.Filled.Close" />
+                                }
                             }
                             else
                             {
-                                <MudIconButton OnClick="() => SelectTrack(track)" Disabled="track.IsSelected"
+                                <MudIconButton OnClick="() => SelectTrack(track)" Disabled="trackControlsDisabled"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Success" Icon="@Icons.Material.Filled.Edit" />
                             }
@@ -240,20 +292,20 @@
                         </div>
 
                         <div class="daw-track-controls-name">
-                                @track.Name 
+                            @track.Name
                         </div>
 
                         <div class="daw-track-controls-mute">
                             <MudButton OnClick="() => DawInterop.ToggleMute(track)"
                                DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
-                                Color="track.IsMuted ? Color.Primary : Color.Default">
+                               Color="track.IsMuted ? Color.Primary : Color.Default">
                                 Mute
                             </MudButton>
 
                             <MudButton OnClick="() => DawInterop.ToggleSolo(track)"
                                DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
-                                Color="track.IsSolo ? Color.Primary : Color.Default">
-                                    Solo
+                               Color="track.IsSolo ? Color.Primary : Color.Default">
+                                Solo
                             </MudButton>
                         </div>
 
@@ -261,15 +313,16 @@
                             <div class="daw-track-controls-slider">
                                 <MudIcon Class="mr-2" Icon="@Icons.Material.Sharp.VolumeUp" Size="Size.Small" />
                                 <input type="range" min="0" max="1" step="0.01" value="@track.Volume.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                    @oninput="async (e) => await DawInterop.SetVolume(track.Id, e.GetFloatValue())"
-                                    @onchange="async (e) => await SetTrackVolume(track, e.GetFloatValue())"
-                                    disabled="@(!track.IsSelfSelected)" />
+                               @oninput="async (e) => await DawInterop.SetVolume(track.Id, e.GetFloatValue())"
+                               @onchange="async (e) => await SetTrackVolume(track, e.GetFloatValue())"
+                                       disabled="@(!track.IsSelfSelected || tracksVolumeDisabled)" />
                             </div>
 
                         </div>
 
 
                     </div>
+                }
             }
 
         </div>
@@ -277,7 +330,7 @@
         <div id="@dawId" class="daw-waveforms"></div>
 
         <div class="daw-add">
-            @if(DawInitialized)
+            @if (DawInitialized)
             {
                 <MudButton OnClick="AddTrack" Class="flex-grow-1"
                        DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
