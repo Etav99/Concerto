@@ -1,4 +1,11 @@
+import { url } from 'inspector';
 import fixWebmDuration from 'webm-duration-fix';
+declare const DotNet: typeof import("@microsoft/dotnet-js-interop").DotNet;
+interface DotNetObject {
+    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
+    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
+    dispose(): void;
+}
 
 declare global {
     interface Window {
@@ -9,9 +16,6 @@ declare global {
         initializeRecordingManager: (canvas: HTMLCanvasElement) => void;
     }
 }
-
-type DotNet = any;
-type DotNetObject = any;
 
 const FILE_EXTENSIONS = ["mp4", "webm", "ogg", "x-matroska"];
 const CODECS = ["vp9", "vp9.0", "vp8", "vp8.0", "avc1", "av1", "h265", "h.265", "h264", "h.264"];
@@ -24,7 +28,7 @@ export async function initializeRecordingManager(videoPreviewParentId?: string, 
 
     let recordingManager = new RecordingManager(dotNetCaller);
     if (videoPreviewParentId) {
-        recordingManager.createPreview(videoPreviewParentId);
+        recordingManager.appendPreviews(videoPreviewParentId);
     }
     window.recordingManager = recordingManager;
     return recordingManager;
@@ -94,12 +98,11 @@ export class RecordingManager {
     webcam: Webcam = new Webcam();
     microphone: Microphone = new Microphone();
     
-    previewCanvas?: HTMLCanvasElement | null;
-    previewCanvasContext?: CanvasRenderingContext2D | null;
+    videoPreview: HTMLVideoElement = document.createElement("video");
 
-    canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement = document.createElement("canvas");
     canvasContext: CanvasRenderingContext2D;
-    canvasStream: MediaStream | null = null;
+    canvasStream: MediaStream;
 
     audioContext: AudioContext = new AudioContext();
     microphoneInput: MediaStreamAudioSourceNode | null = null;
@@ -110,21 +113,29 @@ export class RecordingManager {
 
     readonly saveInterval = 500;
 
-    recordingStore: RecordingStore | null = null; 
+    recordingStore: RecordingStore; 
+    recordingPreview: HTMLVideoElement = document.createElement("video");
 
     canRecord = () => { return this.webcam.isActive() && this.microphone.isActive() };
 
     public constructor(dotnetCaller: DotNetObject) {
         this.dotnetCaller = dotnetCaller;
 
+        this.canvasContext = this.canvas.getContext("2d");
+        this.canvasStream = this.canvas.captureStream(30);
+
+        this.videoPreview.controls = false;
+        this.videoPreview.muted = true;
+        this.videoPreview.autoplay = true;
+        this.videoPreview.style.pointerEvents = "none";
+        this.videoPreview.srcObject = this.canvasStream;
+
+        this.recordingPreview.controls = true;
+        this.recordingPreview.style.display = "none";
+
         var mimeType: string, extension: string;
         [mimeType, extension] = getMimeTypeAndExtension();
         this.recordingStore = new RecordingStore(mimeType, extension);
-
-        this.canvas = document.createElement("canvas");
-        this.canvasContext = this.canvas.getContext("2d");
-
-        this.canvasStream = this.canvas.captureStream(30);
 
         this.audioOutput = this.audioContext.createMediaStreamDestination();
         this.drawCanvasFrame = this.drawCanvasFrame.bind(this);
@@ -136,50 +147,32 @@ export class RecordingManager {
         if(this.webcam.isActive())
         {
             this.canvasContext.drawImage(this.webcam.getPreview(), 0, 0, this.canvas.width, this.canvas.height);
-            this.previewCanvasContext?.drawImage(this.canvas, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
         }
         else
         {
             this.canvasContext.fillStyle = "black";
             this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            if(this.previewCanvas)
+            if(this.canvasContext)
             {
-                this.previewCanvas.width = 1280;
-                this.previewCanvas.height = 720;
-                this.previewCanvasContext.fillStyle = "black";
-                this.previewCanvasContext.fillRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
-                this.previewCanvasContext.fillStyle = "white";
-                this.previewCanvasContext.font = "90px Calibri";
-                this.previewCanvasContext.textAlign = "center";
-                this.previewCanvasContext.fillText("No camera input", this.previewCanvas.width / 2, this.previewCanvas.height / 2);
+                this.canvasContext.fillStyle = "black";
+                this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.canvasContext.fillStyle = "white";
+                this.canvasContext.font = "90px Calibri";
+                this.canvasContext.textAlign = "center";
+                this.canvasContext.fillText("No camera input", this.canvas.width / 2, this.canvas.height / 2);
             }
         }
     }
 
-    public createPreview(parentId: string) {
-        if(this.previewCanvas)
-            throw new Error("Preview already exists.");
-
-        let previewCanvas = document.createElement("canvas");
-        this.previewCanvas = previewCanvas;
-        this.previewCanvasContext = this.previewCanvas.getContext("2d");
-        this.previewCanvas.width = 1280;
-        this.previewCanvas.height = 720;
-
-        if(parentId)
-        {
+    public appendPreviews(parentId: string) {
             let videoPreviewParent = document.getElementById(parentId);
-            console.log(parentId)
-            videoPreviewParent.appendChild(previewCanvas);
-        }
+            videoPreviewParent.appendChild(this.videoPreview);
+            videoPreviewParent.appendChild(this.recordingPreview);
     }
 
     public removePreview() {
-        if(!this.previewCanvas)
-            return;
-        this.previewCanvas.remove();
-        this.previewCanvas = null;
-        this.previewCanvasContext = null;
+        this.videoPreview?.remove();
+        this.recordingPreview?.remove();
     }
 
     public async setWebcam(deviceId: string) {
@@ -189,8 +182,6 @@ export class RecordingManager {
 
         this.canvas.width = this.webcam.getWidth() as number;
         this.canvas.height = this.webcam.getHeight() as number;
-        this.previewCanvas.width = this.canvas.width;
-        this.previewCanvas.height = this.canvas.height;
     }
 
     public async setMicrophone(deviceId: string) {
@@ -228,9 +219,7 @@ export class RecordingManager {
                 recordingManager.stopRecording();
         };
 
-        this.recorder.onstop = () => {
-            recordingManager.finalizeRecording();
-        };
+        this.recorder.onstop = () => recordingManager.finishRecording();
 
         // stop recording on stream inactive
         // this.screenMediaStream?.getTracks().forEach((track) => {
@@ -241,7 +230,6 @@ export class RecordingManager {
 
         this.recorder.start(this.saveInterval);
         window.enablePreventWindowClose("recording");
-        // @ts-ignore
         await this.dotnetCaller.invokeMethodAsync("RecordingStateChanged", true);
     }
 
@@ -250,13 +238,31 @@ export class RecordingManager {
             this.recorder?.stop();
     }
 
-    private async finalizeRecording() {
+    private async finishRecording() {
         this.recorder = null;
-        this.recordingStore.save();
-        window.disablePreventWindowClose("recording");
+        await this.recordingStore.generateOutputAsync();
         this.recordingStore.clear();
-        // @ts-ignore
-        await this.dotnetCaller.invokeMethodAsync("RecordingStateChanged", false);
+
+        let output = this.recordingStore.getOutput();
+
+        // await this.dotnetCaller.invokeMethodAsync("RecordingStateChanged", false);
+        await this.dotnetCaller.invokeMethodAsync("RecordingFinished", DotNet.createJSStreamReference(output));
+
+        this.videoPreview.style.display = "none";
+        this.recordingPreview.style.display = "initial";
+        this.recordingPreview.controls = true;
+        this.recordingPreview.src = URL.createObjectURL(output);
+        this.recordingPreview.load();
+    }
+
+    public finalizeRecording() {
+        this.videoPreview.style.display = "initial";
+        this.recordingPreview.style.display = "none";
+        URL.revokeObjectURL(this.recordingPreview.src);
+        this.recordingPreview.src = "";
+        this.recordingPreview.load();
+
+        window.disablePreventWindowClose("recording");
     }
 
     public async dispose()
@@ -272,14 +278,13 @@ export class RecordingManager {
 }
 
 class RecordingStore {
-    chunks: Blob[];
-    length: number;
+    chunks: Blob[] = [];
+    length: number = 0;
     mimeType: string;
     extension: string;
+    output: Blob | null = null;
 
     public constructor(mimeType: string, extension: string) {
-        this.chunks = [];
-        this.length = 0;
         this.mimeType = mimeType;
         this.extension = extension;
     }
@@ -301,12 +306,26 @@ class RecordingStore {
         return this.length >= MAX_RECORDING_SIZE;
     }
 
-    public async save(filename: string | null = null) {
+    public async generateOutputAsync(filename: string | null = null) {
         let recording = new Blob([...this.chunks], { type: this.mimeType });
         if ((this.extension = "webm"))
             recording = await fixWebmDuration(recording);
+        
+        this.output = recording;
+    }
 
+    public getOutput(): Blob {
+        if(this.output == null) throw new Error("No output to return.");
+        return this.output;
+    }
 
+    public clearOutput() {
+        this.output = null;
+    }
+
+    public async saveOutputAsync(filename: string | null = null) {
+        if(this.output == null) throw new Error("No output to save.");
+        let recording = this.output;
         if(filename == null)
         {
             var filename = prompt("Please enter a filename", "recording");
@@ -327,7 +346,6 @@ class RecordingStore {
         URL.revokeObjectURL(recordingUrl);
         document.body.removeChild(downloadLink);
     }
-
 }
 
 class Webcam

@@ -149,7 +149,6 @@ public class StorageService : StorageClient, IStorageService
                 if (fileStream.Position == fileStream.Length)
                 {
                     item.Result = await response.Content.ReadFromJsonAsync<FileUploadResult>();
-                    ;
                     item.Progress = 100;
                 }
 

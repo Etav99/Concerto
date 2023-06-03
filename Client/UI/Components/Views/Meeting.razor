@@ -5,12 +5,15 @@
 @inject IAppSettingsService AppSettingsService
 @inject ISessionService SessionService
 
-<div style="@MeetingStyle" class="">
-    <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
-        @if (_loading)
-        {
-            <LoadingIndicator Size="Size.Large" />
-        }
+<div style="@MeetingStyle">
+
+    <div>
+        <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
+            @if (_loading)
+            {
+                <LoadingIndicator Size="Size.Large" />
+            }
+        </div>
     </div>
 
     @if(!LayoutState.IsMobile)
@@ -48,6 +51,8 @@
     bool _disposed = false;
     bool _loading = true;
 
+    bool _reloading = false;
+
     protected override void OnInitialized()
     {
         _dotNetObjectReference = DotNetObjectReference.Create(this);
@@ -64,7 +69,6 @@
         await StartMeeting();
     }
 
-    [JSInvokable]
     public async Task StartMeeting()
     {
         if (Session is null) return;
@@ -73,12 +77,15 @@
         var token = await SessionService.GetMeetingTokenAsync(Session.MeetingGuid, startMeetingCancellation.Token);
         _jitsi = await JS.InvokeAsync<IJSObjectReference>("startMeeting", startMeetingCancellation.Token, "jitsi", AppSettingsService.AppSettings.JitsiUrl.Host, _meetingPath, token, _dotNetObjectReference);
         _loading = false;
+        StateHasChanged();
     }
+
 
     [JSInvokable]
     public async Task OnVideoConferenceLeft()
     {
-
+        await DisposeJitsiApi();
+        await StartMeeting();
     }
 
     public async Task PlaySharedMedia(string url)
@@ -98,6 +105,7 @@
     {
         if (_jitsi == null) return;
         await _jitsi.InvokeVoidAsync("dispose");
+
         await _jitsi.DisposeAsync();
         _jitsi = null;
     }

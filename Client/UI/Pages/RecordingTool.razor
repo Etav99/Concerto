@@ -6,238 +6,285 @@
 @implements IAsyncDisposable
 
 <style>
-	.container {
-		height: 100%;
-		display: grid;
-		grid-template-columns: 1fr;
-		grid-template-rows: min-content 1fr;
-		gap: 0px 0px;
-		grid-template-areas:
-			"buttons"
-			"preview";
-	}
+    .container {
+        height: 100%;
+        width: 100%;
 
-	.buttons {
-		grid-area: buttons;
-	}
 
-	.preview {
-		grid-area: preview;
-	}
+    }
 
-	.canvas-container {
-		overflow: hidden;
-	}
+    .buttons {
+        grid-area: buttons;
+    }
 
-	.canvas-container > canvas {
-		object-fit: contain;
-		max-width: 100%;
-		height: calc(100% - 44px);
-	}
+
+    .preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: calc(100% - 44px);
+    }
+
+    .preview video
+    {
+        object-fit: contain;
+    }
+
+
 </style>
 
-@if(LayoutState.IsMobile)
+@if (LayoutState.IsMobile)
 {
-	<div class="d-flex align-center justify-center" style="height: 100%">
-		<MudText role="alert" Style="text-align: center; margin:auto;" Typo="Typo.h4">Feature unavailable on mobile devices</MudText>
-	</div>
+    <div class="d-flex align-center justify-center" style="height: 100%">
+        <MudText role="alert" Style="text-align: center; margin:auto;" Typo="Typo.h4">Feature unavailable on mobile devices</MudText>
+    </div>
 }
 else
 {
-		<div class="container pa-1">
-			<div class="buttons d-flex py-1 ">
+    <div class="container pa-1">
+        <div class="buttons d-flex py-1 ">
 
-			@*
-				<MudFileUpload T="IBrowserFile" Accept="video/*" Class="mt-0">
-					<ButtonTemplate>
-						<MudButton HtmlTag="label"
-						   Variant="Variant.Filled"
-						   Color="Color.Info"
-						   DisableElevation="true"
-						   StartIcon="@Icons.Material.Filled.CloudUpload"
-				 for="@context">
-							Upload recording
-						</MudButton>
-					</ButtonTemplate>
-				</MudFileUpload>
-				*@
+            @*
+        <MudFileUpload T="IBrowserFile" Accept="video/*" Class="mt-0">
+        <ButtonTemplate>
+        <MudButton HtmlTag="label"
+        Variant="Variant.Filled"
+        Color="Color.Info"
+        DisableElevation="true"
+        StartIcon="@Icons.Material.Filled.CloudUpload"
+        for="@context">
+        Upload recording
+        </MudButton>
+        </ButtonTemplate>
+        </MudFileUpload>
+        *@
 
-				@if (!isRecording)
-				{
-					<MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
-						Start recording
-					</MudButton>
-				}
-				else
-				{
-					<MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
-						Stop recording
-					</MudButton>
-				}
+            @if(!IsRecordingPending)
+            {
+                @if (!IsRecording)
+                {
+                    <MudButton StartIcon="@Icons.Material.Filled.FiberManualRecord" IconColor="Color.Error" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="StartRecording">
+                        Record
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton StartIcon="@Icons.Material.Filled.Stop" IconColor="Color.Default" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="StopRecording">
+                        Stop
+                    </MudButton>
+                }
+            }
+            else
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecording"
+                           Class="mr-2">
+                    Save
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="DiscardRecording">
+                    Discard
+                </MudButton>
+            }
 
-				<div class="d-flex ">
-					<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.Mic" />
-					<select style="align-self: stretch; flex-shrink: 1;"  onclick="@(() => FetchMediaInputs())" @bind="SelectedAudioInputId">
-						@foreach (var input in audioInputs)
-						{
-							<option value="@input.Id">@input.Name</option>
-						}
-					@if (!audioInputs.Any())
-					{
-						<option value="@string.Empty">None</option>
-					}
-					</select>
-				</div>
+            @if (!IsRecordingPending)
+            {
+                <div class="d-flex px-2">
+                    <MudIcon Style="align-self: center; margin-right: 2px;" Icon="@Icons.Material.Filled.Mic" />
+                    <select style="align-self: stretch; flex-shrink: 1; max-width: 150px;" onclick="@(() => FetchMediaInputs())" @bind="SelectedAudioInputId">
+                        @foreach (var input in audioInputs)
+                        {
+                            <option value="@input.Id">@input.Name</option>
+                        }
+                        @if (!audioInputs.Any())
+                        {
+                            <option value="@string.Empty">None</option>
+                        }
+                    </select>
+                </div>
 
-				<div class="d-flex ">
-					<MudIcon Style="align-self: center" Icon="@Icons.Material.Filled.CameraAlt" />
-					<select style="align-self: stretch; flex-shrink: 1;" onclick="@(() => FetchMediaInputs())" @bind="SelectedVideoInputId">
-						@foreach (var input in videoInputs)
-						{
-							<option value="@input.Id">@input.Name</option>
-						}
-						@if (!videoInputs.Any())
-						{
-							<option value="@string.Empty">None</option>
-						}
-					</select>
-				</div>
-			</div>
+                <div class="d-flex ">
+                    <MudIcon Style="align-self: center; margin-right: 2px;" Icon="@Icons.Material.Filled.CameraAlt" />
+                    <select style="align-self: stretch; flex-shrink: 1; max-width: 150px;" onclick="@(() => FetchMediaInputs())" @bind="SelectedVideoInputId">
+                        @foreach (var input in videoInputs)
+                        {
+                            <option value="@input.Id">@input.Name</option>
+                        }
+                        @if (!videoInputs.Any())
+                        {
+                            <option value="@string.Empty">None</option>
+                        }
+                    </select>
+                </div>
+            }
+        </div>
 
+        <div id="recoderPreview" class="preview">
 
-			<div id="recorderPreview" class="preview canvas-container d-flex align-center justify-center py-1">
-			</div>
+        </div>
 
-		</div>
+    </div>
 }
 
 
 @code {
-	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
+    [CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
-	private (string Name, string Id)[] audioInputs = Array.Empty<(string Name, string Id)>();
-	private (string Name, string Id)[] videoInputs = Array.Empty<(string Name, string Id)>();
+    private (string Name, string Id)[] audioInputs = Array.Empty<(string Name, string Id)>();
+    private (string Name, string Id)[] videoInputs = Array.Empty<(string Name, string Id)>();
 
-	private string _selectedAudioInputId = string.Empty;
-	private string _selectedVideoInputId = string.Empty;
+    private string _selectedAudioInputId = string.Empty;
+    private string _selectedVideoInputId = string.Empty;
 
-	private string SelectedAudioInputId
-	{
-		get { return _selectedAudioInputId; }
-		set
-		{
-			_selectedAudioInputId = value;
-			_recordingManager?.InvokeVoidAsync("setMicrophone", value).AndForget();
-		}
-	}
+    private string SelectedAudioInputId
+    {
+        get { return _selectedAudioInputId; }
+        set
+        {
+            _selectedAudioInputId = value;
+            _recordingManager?.InvokeVoidAsync("setMicrophone", value).AndForget();
+        }
+    }
 
-	private string SelectedVideoInputId
-	{
-		get { return _selectedVideoInputId; }
-		set
-		{
-			_selectedVideoInputId = value;
-			_recordingManager?.InvokeVoidAsync("setWebcam", value).AndForget();
-		}
-	}
+    private string SelectedVideoInputId
+    {
+        get { return _selectedVideoInputId; }
+        set
+        {
+            _selectedVideoInputId = value;
+            _recordingManager?.InvokeVoidAsync("setWebcam", value).AndForget();
+        }
+    }
 
-	bool isRecording = false;
-
-	private DotNetObjectReference<RecordingTool> _dotNetObjectReference = null!;
-	IJSObjectReference? _recordingManager;
-
-	class MediaDevices
-	{
-		public string[] Names { get; set; } = null!;
-		public string[] Ids { get; set; } = null!;
-	}
-
-	protected override void OnInitialized()
-	{
-		_dotNetObjectReference = DotNetObjectReference.Create(this);
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			_recordingManager = await JS.InvokeAsync<IJSObjectReference>("initializeRecordingManager", "recorderPreview", _dotNetObjectReference);
-			await FetchMediaInputs();
-		}
-	}
+    bool IsRecording { get; set; } = false;
+    bool IsRecordingPending { get; set; } = false;
+    IJSStreamReference? _recording = null;
 
 
-	private async Task FetchMediaInputs()
-	{
-		var audioDevices = await GetAudioInputs();
-		var videoDevices = await GetVideoInputs();
+    private DotNetObjectReference<RecordingTool> _dotNetObjectReference = null!;
+    IJSObjectReference? _recordingManager;
 
-		audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
-		videoInputs = videoDevices.Names.Zip(videoDevices.Ids, (name, id) => (name, id)).ToArray();
+    class MediaDevices
+    {
+        public string[] Names { get; set; } = null!;
+        public string[] Ids { get; set; } = null!;
+    }
 
-		if (string.IsNullOrEmpty(SelectedAudioInputId) && audioInputs.Length > 0)
-			SelectedAudioInputId = audioInputs[0].Id;
+    protected override void OnInitialized()
+    {
+        _dotNetObjectReference = DotNetObjectReference.Create(this);
+    }
 
-		if (string.IsNullOrEmpty(SelectedVideoInputId) && videoInputs.Length > 0)
-			SelectedVideoInputId = videoInputs[0].Id;
-
-		StateHasChanged();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _recordingManager = await JS.InvokeAsync<IJSObjectReference>("initializeRecordingManager", "recoderPreview", _dotNetObjectReference);
+            await FetchMediaInputs();
+        }
     }
 
 
-	private async Task SetVideoInput(ChangeEventArgs args)
-	{
-		if(_recordingManager is null) return;
-		var value = args.Value?.ToString();
-		await _recordingManager.InvokeVoidAsync("setWebcam", value);
-	}
+    private async Task FetchMediaInputs()
+    {
+        var audioDevices = await GetAudioInputs();
+        var videoDevices = await GetVideoInputs();
 
-	private async Task SetAudioInput(ChangeEventArgs args)
-	{
-		if (_recordingManager is null) return;
-		var value = args.Value?.ToString();
-		await _recordingManager.InvokeVoidAsync("setMicrophone", value);
-	}
+        audioInputs = audioDevices.Names.Zip(audioDevices.Ids, (name, id) => (name, id)).ToArray();
+        videoInputs = videoDevices.Names.Zip(videoDevices.Ids, (name, id) => (name, id)).ToArray();
 
-	public async Task StartRecording()
-	{
-		if (_recordingManager is null) return;
-		await _recordingManager.InvokeVoidAsync("startRecording");
-	}
-	
-	public async Task StopRecording()
-	{
-		if (_recordingManager is null) return;
-		await _recordingManager.InvokeVoidAsync("stopRecording");
-	}
+        if (string.IsNullOrEmpty(SelectedAudioInputId) && audioInputs.Length > 0)
+            SelectedAudioInputId = audioInputs[0].Id;
 
-	[JSInvokable]
-	public void RecordingStateChanged(bool state)
-	{
-		isRecording = state;
-		StateHasChanged();
-	}
+        if (string.IsNullOrEmpty(SelectedVideoInputId) && videoInputs.Length > 0)
+            SelectedVideoInputId = videoInputs[0].Id;
 
-	private async Task<MediaDevices> GetAudioInputs()
-	{
-		return await JS.InvokeAsync<MediaDevices>("getAudioInputs");
-	}
-
-	private async Task<MediaDevices> GetVideoInputs()
-	{
-		return await JS.InvokeAsync<MediaDevices>("getVideoInputs");
-	}
+        StateHasChanged();
+    }
 
 
-	public async ValueTask DisposeAsync()
-	{
-		if (isRecording)
-			await StopRecording();
+    private async Task SetVideoInput(ChangeEventArgs args)
+    {
+        if (_recordingManager is null) return;
+        var value = args.Value?.ToString();
+        await _recordingManager.InvokeVoidAsync("setWebcam", value);
+    }
 
-		if (_recordingManager is not null)
-			await _recordingManager.InvokeVoidAsync("dispose");
+    private async Task SetAudioInput(ChangeEventArgs args)
+    {
+        if (_recordingManager is null) return;
+        var value = args.Value?.ToString();
+        await _recordingManager.InvokeVoidAsync("setMicrophone", value);
+    }
 
-		_dotNetObjectReference?.Dispose();
-	}
+    public async Task StartRecording()
+    {
+        if (_recordingManager is null) return;
+        await _recordingManager.InvokeVoidAsync("startRecording");
+    }
+
+    public async Task StopRecording()
+    {
+        if (_recordingManager is null) return;
+        await _recordingManager.InvokeVoidAsync("stopRecording");
+    }
+
+    [JSInvokable]
+    public void RecordingStateChanged(bool state)
+    {
+        IsRecording = state;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void RecordingFinished(IJSStreamReference recording)
+    {
+        IsRecording = false;
+        IsRecordingPending = true;
+        _recording = recording;
+        StateHasChanged();
+    }
+
+    public async Task DiscardRecording()
+    {
+        await FinalizeRecording();
+    }
+
+    public async Task SaveRecording()
+    {
+        // TODO Save logic
+        await FinalizeRecording();
+    }
+
+    public async Task FinalizeRecording()
+    {
+        IsRecordingPending = false;
+        _recording = null;
+
+        if (_recordingManager is null) throw new NullReferenceException("Recording manager is null");
+        await _recordingManager.InvokeVoidAsync("finalizeRecording");
+        StateHasChanged();
+    }
+
+    private async Task<MediaDevices> GetAudioInputs()
+    {
+        return await JS.InvokeAsync<MediaDevices>("getAudioInputs");
+    }
+
+    private async Task<MediaDevices> GetVideoInputs()
+    {
+        return await JS.InvokeAsync<MediaDevices>("getVideoInputs");
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if (IsRecording)
+            await StopRecording();
+
+        if (_recordingManager is not null)
+            await _recordingManager.InvokeVoidAsync("dispose");
+
+        _dotNetObjectReference?.Dispose();
+    }
 
 }

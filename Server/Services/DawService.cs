@@ -21,12 +21,14 @@ public class DawService
     private readonly ILogger<DawService> _logger;
     private readonly IHubContext<DawHub> _dawHubContext;
     private readonly AppDataContext _context;
+    private readonly DawProjectStateService _dawProjectStateService;
 
-    public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context)
+    public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context, DawProjectStateService dawProjectStateService)
     {
         _logger = logger;
         _dawHubContext = dawHubContext;
         _context = context;
+        _dawProjectStateService = dawProjectStateService;
     }
 
     public async Task<Dto.DawProject> GetProject(long projectId, Guid userId)
@@ -178,6 +180,22 @@ public class DawService
 
     public async Task GenerateProjectSource(long projectId)
     {
+        var mutex = await _dawProjectStateService.GetProjectGenerationLock(projectId);
+        await mutex.WaitAsync();
+        try
+        {
+            await GenerateProjectSourceInternal(projectId);
+        }
+        finally
+        {
+            mutex.Release();
+        }
+        await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
+    }
+
+
+    public async Task GenerateProjectSourceInternal(long projectId)
+    {
         var project = await _context.DawProjects.FindAsync(projectId);
         if (project is null) return;
 
@@ -246,6 +264,7 @@ public class DawService
         if(oldSourcePath is not null)
             await FileExtensions.DeleteAsync(oldSourcePath);
     }
+
 
     private async Task NotifyProjectChanged(long projectId)
     {

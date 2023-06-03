@@ -40,6 +40,8 @@ public partial class Daw : IAsyncDisposable
     public long? SessionId { get; set; }
     private long _sessionId;
 
+
+
     private Task _updateProjectTask = Task.CompletedTask;
     private CancellationTokenSource _updateProjectCancellationTokenSource = new();
 
@@ -54,6 +56,7 @@ public partial class Daw : IAsyncDisposable
     private bool IsPlaying { get; set; } = false;
     private bool IsRecording { get; set; } = false;
     private bool IsRecordingPending { get; set; } = false;
+    private bool ListenTogetherPending { get; set; } = false;
     private TrackRecording? TrackRecording { get; set; }
 
 
@@ -322,6 +325,9 @@ public partial class Daw : IAsyncDisposable
 
     public async Task ListenTogether()
     {
+        if (ListenTogetherPending) return;
+
+        ListenTogetherPending = true;
         await DawHub.InvokeAsync(DawHubMethods.Server.RequestStopSharingVideo, _sessionId);
         await DawService.GenerateProjectSourceAsync(_sessionId);
         await Task.Delay(200);
@@ -329,6 +335,7 @@ public partial class Daw : IAsyncDisposable
         var url = DawService.GetProjectSourceUrl(_sessionId);
         url = Navigation.ToAbsoluteUri(url).ToString();
         await OnListenTogether.InvokeAsync(url);
+        ListenTogetherPending = false;
     }
 
     public async ValueTask DisposeAsync()

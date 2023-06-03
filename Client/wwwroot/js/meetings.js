@@ -24,3 +24,10 @@
 
 	return api;
 }
+
+function removeChildNodes(parentId) {
+    const parent = document.getElementById(parentId);
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
