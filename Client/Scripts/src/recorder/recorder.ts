@@ -129,9 +129,11 @@ export class RecordingManager {
         this.videoPreview.autoplay = true;
         this.videoPreview.style.pointerEvents = "none";
         this.videoPreview.srcObject = this.canvasStream;
+        this.videoPreview.classList.add("preview");
 
         this.recordingPreview.controls = true;
         this.recordingPreview.style.display = "none";
+        this.recordingPreview.classList.add("preview");
 
         var mimeType: string, extension: string;
         [mimeType, extension] = getMimeTypeAndExtension();
@@ -263,6 +265,10 @@ export class RecordingManager {
         this.recordingPreview.load();
 
         window.disablePreventWindowClose("recording");
+    }
+
+    public async saveLocally(filename: string = null) {
+        await this.recordingStore.saveOutputAsync(filename);
     }
 
     public async dispose()

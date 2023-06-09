@@ -3,6 +3,7 @@
 @using Concerto.Shared.Models.Dto;
 @inject IJSRuntime JS
 @inject IStorageService StorageService
+@inject IDialogService DialogService
 @implements IAsyncDisposable
 
 <style>
@@ -17,6 +18,10 @@
         grid-area: buttons;
     }
 
+    .buttons > * {
+        margin-right: 8px;
+    }
+
 
     .preview {
         display: flex;
@@ -26,8 +31,7 @@
         height: calc(100% - 44px);
     }
 
-    .preview video
-    {
+    .preview video {
         object-fit: contain;
     }
 
@@ -77,13 +81,18 @@ else
             }
             else
             {
-                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecording"
-                           Class="mr-2">
-                    Save
+                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecording"  Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
+                    Save in course
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="DiscardRecording">
+                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecordingLocally" Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
+                    Save on computer
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="DiscardRecording"> 
                     Discard
                 </MudButton>
+
+                <MudInput @bind-Value="RecordingName" Placeholder="Recording name" Immediate="true" Label="Recording name" Variant="Variant.Filled" Margin="Margin.None" Class="pa-0" />
+
             }
 
             @if (!IsRecordingPending)
@@ -154,6 +163,9 @@ else
             _recordingManager?.InvokeVoidAsync("setWebcam", value).AndForget();
         }
     }
+
+
+    private string RecordingName { get; set; } = string.Empty;
 
     bool IsRecording { get; set; } = false;
     bool IsRecordingPending { get; set; } = false;
@@ -241,6 +253,7 @@ else
         IsRecording = false;
         IsRecordingPending = true;
         _recording = recording;
+        RecordingName = $"Recording-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}";
         StateHasChanged();
     }
 
@@ -251,16 +264,29 @@ else
 
     public async Task SaveRecording()
     {
-        // TODO Save logic
+        var destinationFolder = await DialogService.ShowSelectFolderDialog("Select folder for recording", "Save here");
+        if (destinationFolder is null) return;
+        if (_recording is null) return;
+        if (string.IsNullOrWhiteSpace(RecordingName)) return;
+
+        StorageService.QueueFileToUpload(destinationFolder.Id, _recording, $"{RecordingName}.webm");
+
+        await FinalizeRecording();
+    }
+
+    public async Task SaveRecordingLocally()
+    {
+        if (_recordingManager is null) return;
+        await _recordingManager.InvokeVoidAsync("saveLocally", "test");
         await FinalizeRecording();
     }
 
     public async Task FinalizeRecording()
     {
+        if (_recordingManager is null) return;
+
         IsRecordingPending = false;
         _recording = null;
-
-        if (_recordingManager is null) throw new NullReferenceException("Recording manager is null");
         await _recordingManager.InvokeVoidAsync("finalizeRecording");
         StateHasChanged();
     }

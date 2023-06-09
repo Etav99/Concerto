@@ -1,0 +1,114 @@
+﻿@inherits DialogAutoFullscreen
+@inject ICourseService CourseService
+@inject IStorageService StorageService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+	<DialogContent>
+		@if (!Loading)
+		{
+			<MudStack Spacing="0" Style="height: calc(100vh - 200px)" Class="flex-grow-1">
+				
+				<MudStack Row="true" AlignItems="AlignItems.Center">
+						<MudIcon Icon="@Icons.Material.Filled.ArrowRight" />
+					<MudText>@($"Course: {_selectedCourse?.Name}")</MudText>
+						<MudButton Color="Color.Info" OnClick="ChooseCourse">Change</MudButton>
+				</MudStack>
+
+				<FileManager Class="" Style="height: calc(100% - 48px)" Outlined="true" Elevation="0"
+					             ChooseFolderMode="true" InitialFolderId="_selectedCourse!.RootFolderId"
+								 OnFolderLoaded="OnFolderChanged" />
+			</MudStack>
+		}
+	</DialogContent>
+	
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" Disabled="!_canChoose" OnClick="Submit">@SelectButtonText</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+	@code {
+	private Course? _selectedCourse;
+	[Parameter]
+	public long? InitialCourseId { get; set; } = null;
+
+	HashSet<long> _excludedFolderIds = null!;
+	[Parameter]
+	public IEnumerable<long>? ExcludedIds { get; set; }
+
+	HashSet<long> _excludedWithChildrenFolderIds = null!;
+	[Parameter]
+	public IEnumerable<long>? ExcludedWithChildrenIds { get; set; }
+
+	[Parameter]
+	public string SelectButtonText { get; set; } = "Select";
+
+	private bool _canChoose = false;
+
+	bool Loading => _selectedCourse is null;
+
+	private FolderItem? _currentFolder = null;
+
+
+
+
+	protected override void OnInitialized()
+	{
+		Dialog.Options.FullWidth = true;
+		Dialog.Options.MaxWidth = MaxWidth.Large;
+		Dialog.SetOptions(Dialog.Options);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (InitialCourseId is null)
+			await ChooseCourse();
+		else
+			_selectedCourse = await CourseService.GetCourseAsync(InitialCourseId.Value);
+
+		if (_selectedCourse is null)
+			Cancel();
+
+		_excludedFolderIds = ExcludedIds?.ToHashSet() ?? new HashSet<long>();
+		_excludedWithChildrenFolderIds = ExcludedWithChildrenIds?.ToHashSet() ?? new HashSet<long>();
+	}
+
+	private async Task ChooseCourse()
+	{
+		var name = "Select course";
+		var result = await DialogService.Show<SelectCourseDialog>(name).Result;
+		if (result.Canceled) return;
+		var courseId = result.Data as long?;
+		if (courseId is null) return;
+		_selectedCourse = await CourseService.GetCourseAsync(courseId.Value);
+		StateHasChanged();
+	}
+
+	private void OnFolderChanged(FileManager.FolderSelectedEventArgs args)
+	{
+		var folder = args.Folder;
+		_currentFolder = folder;
+
+		_canChoose = folder.CanWrite
+						&& !_excludedFolderIds.Contains(folder.Id)
+						&& !_excludedWithChildrenFolderIds.Contains(folder.Id)
+						&& !args.Breadcrumbs.Any(x => _excludedWithChildrenFolderIds.Contains(x.Id));
+	}
+
+
+	private bool CanSubmit => _currentFolder is not null && _canChoose;
+	private void Submit()
+	{
+		if (!CanSubmit) return;
+		Dialog.Close(DialogResult.Ok(_currentFolder));
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
+}

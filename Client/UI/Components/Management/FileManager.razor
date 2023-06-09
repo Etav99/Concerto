@@ -371,25 +371,22 @@
 @code {
 	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
+	private long? _initialFolderId = null;
+	[Parameter]
+	public long? InitialFolderId { get; set; } = null;
+
 	[Parameter]
 	public bool ChooseFolderMode { get; set; } = false;
-
 	[Parameter]
 	public bool SelectFilesMode { get; set; } = false;
-
 	[Parameter]
 	public HashSet<FolderContentItem> SelectedItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
-
 	[Parameter]
 	public EventCallback<HashSet<FolderContentItem>> OnSelectedItemsChanged { get; set; }
-
 	[Parameter]
 	public EventCallback<FolderSelectedEventArgs> OnFolderLoaded { get; set; }
 
 
-	private long? _initialFolderId = null;
-	[Parameter]
-	public long? InitialFolderId { get; set; } = null;
 
 	private CancellationTokenSource? _lastRefreshCancellation;
 
@@ -406,7 +403,7 @@
 	private bool CanMoveSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
 	private bool CanCopySelected => SelectionMode && SelectedItems.Any();
 	private bool CanDeleteSelected => SelectionMode && SelectedItems.Any() && SelectedItems.All(i => i.CanDelete);
-	
+
 	private bool? _selectAllState => SelectedItems.Count == FolderContentItems.Count ? true : SelectedItems.Count > 0 ? null : false;
 
 	private bool _selectionMode = false;
@@ -575,24 +572,55 @@
 
 	public async Task MoveSelected()
 	{
-		var moved = await DialogService.ShowMoveFolderItemsDialog(SelectedItems, FolderContent!.Self.Id, FolderContent!.CourseId);
-		if (moved)
-		{
-			SelectionMode = false;
-			await Refresh();
-		}
+		if (FolderContent is null) return;
+		var folderIds = SelectedItems.Where(item => item is FolderItem).Select(folder => folder.Id).ToArray();
+		var fileIds = SelectedItems.Where(item => item is FileItem).Select(file => file.Id).ToArray();
+
+		var excluded = new long[] { FolderContent.Self.Id };
+		var excludedWithChildren = folderIds;
+
+		var destinationFolder = await DialogService.ShowSelectFolderDialog("Move items to", "Move here", FolderContent.CourseId, excluded, excludedWithChildren);
+		if (destinationFolder is null) return;
+
+		var moveRequest = new MoveFolderItemsRequest
+			{
+				FolderIds = folderIds,
+				FileIds = fileIds,
+				DestinationFolderId = destinationFolder.Id
+			};
+
+		await StorageService.MoveFolderItemsAsync(moveRequest);
+
+		SelectionMode = false;
+		await Refresh();
 	}
 
 	public async Task CopySelected()
 	{
-		var copied = await DialogService.ShowCopyFolderItemsDialog(SelectedItems, FolderContent!.Self.Id, FolderContent!.CourseId);
-		if (copied)
-		{
-			SelectionMode = false;
-			await Refresh();
-		}
+		if (FolderContent is null) return;
+		var folderIds = SelectedItems.Where(item => item is FolderItem).Select(folder => folder.Id).ToArray();
+		var fileIds = SelectedItems.Where(item => item is FileItem).Select(file => file.Id).ToArray();
 
+		var excluded = new long[] { FolderContent.Self.Id };
+		var excludedWithChildren = folderIds;
+
+		var destinationFolder = await DialogService.ShowSelectFolderDialog("Copy items to", "Copy here", FolderContent.CourseId, excluded, excludedWithChildren);
+		if (destinationFolder is null) return;
+
+		var copyRequest = new CopyFolderItemsRequest
+			{
+				FolderIds = folderIds,
+				FileIds = fileIds,
+				DestinationFolderId = destinationFolder.Id
+			};
+
+		await StorageService.CopyFolderItemsAsync(copyRequest);
+
+		SelectionMode = false;
+		await Refresh();
 	}
+
+
 	
 	public async Task DeleteFolder(FolderItem folder)
 	{
