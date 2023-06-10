@@ -40,9 +40,10 @@
         grid-area: daw-tracks;
         display: grid;
         grid-template-columns: 1fr;
+        grid-template-rows: 0 1fr;
     }
 
-        .daw-tracks > div {
+        .daw-tracks > .daw-track-controls {
             border: 1px solid black;
         }
 
@@ -67,6 +68,26 @@
         padding: 4px;
     }
 
+    .daw-track-selectedby {
+        position: relative;
+        left: 164px;
+        top: 4px;
+        width: unset;
+        overflow: visible;
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .daw-track-selectedby > p
+    {
+        position: absolute;
+        padding: 2px 4px;
+        border-radius: 10px;
+        color: black;
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+
     .daw-track-controls-name {
         display: flex;
         height: 50px;
@@ -75,6 +96,18 @@
         align-items: center;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-align: center;
+        background: none;
+        color: var(--mud-palette-text-primary);
+    }
+
+        .daw-track-controls-name:hover {
+            background: unset;
+            background-color: var(--mud-palette-info-hover);
+        }
+
+    .daw-track-controls-name::placeholder {
+        color: var(--mud-palette-text-primary);
     }
 
     .daw-track-controls-sliders {
@@ -230,7 +263,7 @@
 
     </div>
 
-    <div class="daw-playlist daw">
+    <div class="daw-playlist">
         <div class="daw-tracks">
             @if (DawInitialized)
             {
@@ -239,6 +272,14 @@
 
                 foreach (var track in Project.Tracks)
                 {
+                    <div class="daw-track-selectedby">
+                        @if (track.SelectionState is not TrackSelectionState.None)
+                        {
+                            <p>
+                                @track.SelectedByName
+                            </p>
+                        }
+                    </div>
                     <div class="daw-track-controls">
                         <div class="daw-track-controls-buttons">
                             @if (track.IsSelfSelected)
@@ -306,9 +347,9 @@
 
                         </div>
 
-                        <div class="daw-track-controls-name">
-                            @track.Name
-                        </div>
+                        <input value="@track.Name" placeholder="Unnamed track"
+                                @onchange="async (e) => await SetTrackName(track, e.GetStringValue())" disabled="@(!track.IsSelected)"  class="daw-track-controls-name" />
+
 
                         <div class="daw-track-controls-mute">
                             <MudButton OnClick="() => DawInterop.ToggleMute(track)"
@@ -342,7 +383,7 @@
 
         </div>
 
-        <div id="@dawId" class="daw-waveforms"></div>
+        <div id="@dawId" class="daw-waveforms daw"></div>
 
         <div class="daw-add">
             @if (DawInitialized)

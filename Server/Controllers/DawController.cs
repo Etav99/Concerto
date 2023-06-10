@@ -60,9 +60,10 @@ public class DawController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<IActionResult> AddTrack(long projectId, string trackName)
+	public async Task<IActionResult> AddTrack(long projectId, string? trackName)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if (trackName == null) trackName = string.Empty;
         await _dawService.AddTrack(projectId, trackName);
 		return Ok();
     }
@@ -109,6 +110,16 @@ public class DawController : ControllerBase
 		await _dawService.SetTrackSource(projectId, trackId, file, startTime, volume);
 		return Ok();
 	}
+
+
+	[HttpPost]
+	public async Task<IActionResult> SetTrackName(long projectId, long trackId, string? name)
+	{
+		if(name is null) name = string.Empty;
+		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		await _dawService.SetTrackName(projectId, trackId, name, UserId);
+		return Ok();
+    }
 
 	[HttpGet]
 	[AllowAnonymous]

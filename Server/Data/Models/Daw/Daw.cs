@@ -29,15 +29,18 @@ public class DawProject
 public class Track
 {
 	public long Id { get; set; }
-	[ForeignKey("DawProject")]
+	[ForeignKey("Project")]
 	public long ProjectId { get; set; }
-	public DawProject Project { get; set; } = null!;
+	public virtual DawProject Project { get; set; } = null!;
 
 	public int Order { get; set; }
 	public string Name { get; set; }
 	public float StartTime { get; set; }
 	public float Volume { get; set; } = 1.0f;
-    public Guid? SelectedBy { get; set; }
+
+	[ForeignKey("SelectedByUser")]
+    public Guid? SelectedByUserId { get; set; }
+	public virtual User? SelectedByUser { get; set; }
 
 	public Guid? AudioSourceGuid { get; set; }
 	public string AudioSourcePath
@@ -89,9 +92,10 @@ public static partial class ViewModelConversions
             StartTime = track.StartTime,
 			Volume = track.Volume,
 			SourceId = track.AudioSourceGuid,
-            SelectionState = track.SelectedBy == null
+			SelectedByName = track.SelectedByUser?.FullName ?? string.Empty,
+            SelectionState = track.SelectedByUserId == null
 				? Dto.TrackSelectionState.None
-				: track.SelectedBy == userId
+				: track.SelectedByUserId == userId
 					? Dto.TrackSelectionState.Self
 					: Dto.TrackSelectionState.Other
         };

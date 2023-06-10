@@ -261,7 +261,12 @@ public partial class Daw : IAsyncDisposable
 
     private async Task AddTrack()
     {
-        await DawService.AddTrackAsync(_sessionId, Guid.NewGuid().ToString());
+        await DawService.AddTrackAsync(_sessionId, string.Empty);
+    }
+
+    private async Task SetTrackName(Track track, string name)
+    {
+        await DawService.SetTrackNameAsync(_sessionId, track.Id, name);
     }
 
     private async Task UploadTrackSource(Track track, IBrowserFile file)
@@ -570,7 +575,7 @@ public class DawInterop : IAsyncDisposable
 
     public record PlaylistColorsJs
     {
-        public string waveOutlineColor { get; set; } = "#005BBB";
+        public string waveOutlineColor { get; set; } = "var(--wp-tracks-container-background-color)";
         public string timeColor { get; set; } = "grey";
         public string fadeColor { get; set; } = "black";
     }

@@ -44,17 +44,25 @@ public class DawService
             _context.DawProjects.Add(project);
             await _context.SaveChangesAsync();
         }
+
         project.Tracks = await _context.Tracks
             .Where(t => t.ProjectId == projectId)
             .OrderBy(t => t.Id)
+            .Include(t => t.SelectedByUser)
             .ToListAsync();
+
         return project.ToViewModel(userId);
     }
 
     public async Task<Dto.Track?> GetTrack(long projectId, long trackId, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        return track?.ToViewModel(userId);
+        if (track == null) return null;
+
+        if(track.SelectedByUserId is not null)
+            await _context.Entry(track).Reference(t => t.SelectedByUser).LoadAsync();
+
+        return track.ToViewModel(userId);
     }
 
     public async Task DeleteTrack(long projectId, long trackId)
@@ -98,6 +106,16 @@ public class DawService
         return (new FileStream(project.AudioSourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, AppSettings.Storage.StreamBufferSize, FileOptions.Asynchronous), project.AudioSourceHash);
     }
 
+    public async Task SetTrackName(long projectId, long trackId, string trackName, Guid userId)
+    {
+        var track = await _context.Tracks.FindAsync(projectId, trackId);
+        if (track is null) return;
+        if(track.SelectedByUserId != userId) return;
+
+        track.Name = trackName;
+        await _context.SaveChangesAsync();
+        await NotifyProjectChanged(track.ProjectId);
+    }
 
     public async Task SetTrackStartTime(long projectId, long trackId, float startTime)
     {
@@ -123,10 +141,10 @@ public class DawService
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
         if (track is null) return false;
-        if (track.SelectedBy is not null && track.SelectedBy != userId) return false;
-        if (track.SelectedBy == userId) return true;
+        if (track.SelectedByUserId is not null && track.SelectedByUserId != userId) return false;
+        if (track.SelectedByUserId == userId) return true;
 
-        track.SelectedBy = userId;
+        track.SelectedByUserId = userId;
         await _context.SaveChangesAsync();
         await NotifyProjectChanged(track.ProjectId);
         return true;
@@ -136,10 +154,10 @@ public class DawService
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
         if (track is null) return false;
-        if (track.SelectedBy is null) return true;
-        if (track.SelectedBy != userId) return false;
+        if (track.SelectedByUserId is null) return true;
+        if (track.SelectedByUserId != userId) return false;
 
-        track.SelectedBy = null;
+        track.SelectedByUserId = null;
         await _context.SaveChangesAsync();
         await NotifyProjectChanged(track.ProjectId);
         return true;
