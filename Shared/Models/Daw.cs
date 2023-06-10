@@ -5,6 +5,7 @@ namespace Concerto.Shared.Models.Dto;
 public record DawProject
 {
     public List<Track> Tracks { get; set; } = new();
+    public Guid Token { get; set; }
 
     [JsonIgnore]
     private Dictionary<long, Track>? _tracksById = null;

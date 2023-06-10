@@ -9,9 +9,11 @@ using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
+using MimeMapping;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -22,16 +24,18 @@ public class DawService
     private readonly IHubContext<DawHub> _dawHubContext;
     private readonly AppDataContext _context;
     private readonly DawProjectStateService _dawProjectStateService;
+    private readonly TokenStore _tokenStore;
 
-    public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context, DawProjectStateService dawProjectStateService)
-    {
-        _logger = logger;
-        _dawHubContext = dawHubContext;
-        _context = context;
-        _dawProjectStateService = dawProjectStateService;
-    }
+	public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context, DawProjectStateService dawProjectStateService, TokenStore tokenStore)
+	{
+		_logger = logger;
+		_dawHubContext = dawHubContext;
+		_context = context;
+		_dawProjectStateService = dawProjectStateService;
+		_tokenStore = tokenStore;
+	}
 
-    public async Task<Dto.DawProject> GetProject(long projectId, Guid userId)
+	public async Task<Dto.DawProject> GetProject(long projectId, Guid userId)
     {
         var project = await _context.DawProjects.FindAsync(projectId);
         if (project == null)
@@ -178,26 +182,70 @@ public class DawService
 
     }
 
-    public async Task GenerateProjectSource(long projectId)
+
+    public async Task SaveProjectSource(long projectId, long folderId, string filename, Guid userId)
+    {
+        var project = await _context.DawProjects.FindAsync(projectId);
+        if(project is null) throw new Exception($"Project with id {projectId} not found");
+
+        var mutex = await _dawProjectStateService.GetProjectGenerationLock(projectId);
+        await mutex.WaitAsync();
+
+        if(!File.Exists(project?.AudioSourcePath)) throw new Exception($"Project with id {projectId} has no audio source file");
+
+        var sanitizedFilename = WebUtility.HtmlEncode(filename);
+		if (string.IsNullOrEmpty(sanitizedFilename)) throw new FilenameException("Filename is empty");
+
+        var uploadedFile = new UploadedFile
+        {
+                OwnerId = userId,
+				DisplayName = sanitizedFilename,
+				Extension = ".mp3",
+                MimeType = MimeUtility.GetMimeMapping(".mp3"),
+				Size = new FileInfo(project.AudioSourcePath).Length,
+				StorageName = string.Format(@$"{sanitizedFilename}.mp3.{Guid.NewGuid()}"),
+				FolderId = folderId
+	    };
+
+        await _context.UploadedFiles.AddAsync(uploadedFile);
+        await FileExtensions.CopyAsync(project.AudioSourcePath, uploadedFile.Path, true);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            await FileExtensions.DeleteAsync(uploadedFile.Path);
+            throw;
+        }
+        finally
+        {
+            mutex.Release();
+            await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
+        }
+    }
+
+    public async Task<bool> GenerateProjectSource(long projectId)
     {
         var mutex = await _dawProjectStateService.GetProjectGenerationLock(projectId);
         await mutex.WaitAsync();
         try
         {
-            await GenerateProjectSourceInternal(projectId);
+            return await GenerateProjectSourceInternal(projectId);
         }
         finally
         {
             mutex.Release();
+            await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
         }
-        await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
     }
 
 
-    public async Task GenerateProjectSourceInternal(long projectId)
+    public async Task<bool> GenerateProjectSourceInternal(long projectId)
     {
         var project = await _context.DawProjects.FindAsync(projectId);
-        if (project is null) return;
+        if (project is null) return false;
 
         var tracks = await _context.Tracks
             .Where(t => t.ProjectId == projectId)
@@ -205,7 +253,7 @@ public class DawService
             .OrderBy(t => t.Id)
             .ToListAsync();
 
-        if (tracks.Count == 0) return;
+        if (tracks.Count == 0) return false;
 
         // Calculate MD5 hash of all tracks state
         string hashString;
@@ -218,7 +266,7 @@ public class DawService
             var hash = mD5.ComputeHash(Encoding.UTF8.GetBytes(toHash));
             hashString = Convert.ToHexString(hash);
         }
-        if(hashString == project.AudioSourceHash) return;
+        if(hashString == project.AudioSourceHash) return true;
 
 
         var oldSourcePath = project.AudioSourceGuid is null ? null : project.AudioSourcePath;
@@ -259,10 +307,22 @@ public class DawService
         foreach (var disposeTask in DisposeTasks)
             await disposeTask;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            await FileExtensions.DeleteAsync(project.AudioSourcePath);
+			throw;
+        }
+        finally
+        {
+            if(oldSourcePath is not null)
+                await FileExtensions.DeleteAsync(oldSourcePath);
+        }
 
-        if(oldSourcePath is not null)
-            await FileExtensions.DeleteAsync(oldSourcePath);
     }
 
 

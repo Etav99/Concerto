@@ -23,7 +23,7 @@
         <div style="@DawStyle">
             @if (_dawInitialized)
             {
-                <Daw SessionId="@Session?.Id" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
+                <Daw SessionId="Session?.Id" CourseId="Session?.CourseId" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
             }
         </div> 
     }

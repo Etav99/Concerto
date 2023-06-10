@@ -1,0 +1,85 @@
+﻿@using MudBlazor.Extensions.Components
+@using MimeMapping
+@inherits DialogAutoFullscreen
+
+@inject IStorageService StorageService
+
+<MudDialog>
+	<DialogContent>
+		@if(File is not null && _url is not null)
+		{
+			@switch(_mimeType)
+			{
+                case "image":
+					<img src="@_url" style="@previewStyle" class="@previewClass" />
+                    break;
+				case "video":
+					<video src="@_url" controls style="@previewStyle" class="@previewClass"></video>
+                    break;
+				case "audio":
+					<audio src="@_url" controls></audio>
+					break;
+				default:
+					if(_fullMimeType == "application/pdf")
+					{
+						<embed src="@_url" type="@_fullMimeType" style="@previewStyle" class="@previewClass" />
+					}
+					else
+					{
+                        <p>Cannot preview this file</p>
+                    }
+                break;
+            
+			}
+
+		}
+	</DialogContent>
+	
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Close</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Submit">Download</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+
+	[Parameter]
+	public FileItem File { get; set; } = null!;
+
+	private string? _url;
+
+	private string? _fullMimeType;
+	private string? _mimeType;
+
+	private string previewStyle => IsFullScreen ? "display: flex; flex-grow: 1; height: calc(100vh - 140px); width: 100%;"
+												: "display: flex; flex-grow: 1; height: calc(100vh - 205px); width: 1232px; max-width: 1232px;";
+
+	private string previewClass => "mud-container-maxwidth-xl";
+
+	protected override async Task OnInitializedAsync()
+	{
+		if(File is null) throw new ArgumentNullException(nameof(File));
+		_url = await StorageService.GetFileUrl(File.Id, true);
+
+		var mime = File.MimeType.ToLower();
+		_fullMimeType = mime;
+
+		var mimeSplit = mime.Split('/');
+		if(mimeSplit.Length > 1)
+            _mimeType = mimeSplit[0];
+		else 
+			_mimeType = mime;
+	}
+
+	private async Task Submit()
+	{
+		await StorageService.DownloadFile(File.Id, File.FullName);
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
+}

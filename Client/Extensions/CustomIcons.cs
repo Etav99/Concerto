@@ -35,5 +35,7 @@ public static class CustomIcons
     public static string ZoomIn { get; } = "fa-solid fa-magnifying-glass-plus";
     public static string ZoomOut { get; } = "fa-solid fa-magnifying-glass-minus";
 
+    public static string CloudArrowUp { get; } = "fa-solid fa-cloud-arrow-up";
 
+    public static string CloudArrowDown { get; } = "fa-solid fa-cloud-arrow-down";
 }

@@ -17,6 +17,7 @@ public interface IStorageService : IStorageClient
     public void ClearInactiveUploads();
 
     public Task DownloadFile(long fileId, string saveAs);
+    public Task<string> GetFileUrl(long fileId, bool inline = false);
 
     public void ClearIfInactive(UploadQueueItem item);
     public EventHandler<IReadOnlyCollection<UploadQueueItem>>? QueueChangedEventHandler { get; set; }
@@ -205,8 +206,7 @@ public class StorageService : StorageClient, IStorageService
     {
         try
         {
-            var token = await GetOneTimeTokenAsync(fileId);
-            var url = $"Storage/DownloadFile?fileId={fileId}&token={token}";
+            var url = await GetFileUrl(fileId);
             await _JS.InvokeVoidAsync("downloadFile", saveAs, $"{_http.BaseAddress}{url}");
         }
         catch (Exception e)
@@ -215,6 +215,12 @@ public class StorageService : StorageClient, IStorageService
             Console.WriteLine(e);
         }
     }
+
+	public async Task<string> GetFileUrl(long fileId, bool inline = false)
+	{
+		var token = await GetFileDownloadTokenAsync(fileId);
+		return $"Storage/DownloadFile?fileId={fileId}&token={token}&inline={inline}";
+	}
 
 }
 

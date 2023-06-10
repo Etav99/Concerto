@@ -1,4 +1,5 @@
-﻿using Concerto.Client.Services;
+﻿using Concerto.Client.Extensions;
+using Concerto.Client.Services;
 using Concerto.Client.UI.Layout;
 using Concerto.Shared.Constants;
 using Concerto.Shared.Models.Dto;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
-using static Concerto.Client.UI.Components.Views.DawInterop;
+using MudBlazor;
 
 namespace Concerto.Client.UI.Components.Views;
 
@@ -15,6 +16,7 @@ public partial class Daw : IAsyncDisposable
     [Inject] IJSRuntime JS { get; set; } = null!;
     [Inject] DawService DawService { get; set; } = null!;
     [Inject] NavigationManager Navigation { get; set; } = null!;
+    [Inject] IDialogService DialogService { get; set; } = null!;
 
     [CascadingParameter] LayoutState LayoutState { get; set; } = new();
 
@@ -24,7 +26,7 @@ public partial class Daw : IAsyncDisposable
     public const string dawId = "daw";
 
     bool DawInitialized { get; set; } = false;
-    DawInterop DawInterop { get; } = new DawInterop();
+    DawInterop DawInterop { get; set; } = null!;
 
     private bool _selectActive = true;
     private bool _shiftActive = false;
@@ -40,7 +42,8 @@ public partial class Daw : IAsyncDisposable
     public long? SessionId { get; set; }
     private long _sessionId;
 
-
+    [Parameter]
+    public long? CourseId { get; set; }
 
     private Task _updateProjectTask = Task.CompletedTask;
     private CancellationTokenSource _updateProjectCancellationTokenSource = new();
@@ -51,6 +54,8 @@ public partial class Daw : IAsyncDisposable
         get => _project ?? throw new NullReferenceException("Project is not initialized");
         set => _project = value;
     }
+    public Guid ProjectToken => Project.Token;
+
     private bool ShouldUpdate {get; set; }
 
     private bool IsPlaying { get; set; } = false;
@@ -60,9 +65,9 @@ public partial class Daw : IAsyncDisposable
     private TrackRecording? TrackRecording { get; set; }
 
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-
+        DawInterop = new(this);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -79,7 +84,7 @@ public partial class Daw : IAsyncDisposable
         await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
 
         if (!DawInitialized)
-            await DawInterop.Initialize(JS, dawId, this);
+            await DawInterop.Initialize(JS, dawId);
         else
             await DawInterop.ClearProject();
 
@@ -323,19 +328,32 @@ public partial class Daw : IAsyncDisposable
         _shiftActive = true;
     }
 
+    private bool ListenTogetherDisabled => IsRecording || IsRecordingPending || ListenTogetherPending;
     public async Task ListenTogether()
     {
-        if (ListenTogetherPending) return;
+        if (ListenTogetherDisabled) return;
 
         ListenTogetherPending = true;
         await DawHub.InvokeAsync(DawHubMethods.Server.RequestStopSharingVideo, _sessionId);
         await DawService.GenerateProjectSourceAsync(_sessionId);
         await Task.Delay(200);
 
-        var url = DawService.GetProjectSourceUrl(_sessionId);
+        var url = await DawService.GetProjectSourceUrl(_sessionId);
         url = Navigation.ToAbsoluteUri(url).ToString();
         await OnListenTogether.InvokeAsync(url);
         ListenTogetherPending = false;
+    }
+
+    private bool SaveProjectOutputDisabled => IsRecording || IsRecordingPending || ListenTogetherPending || !(_project?.Tracks.Any(t => t.SourceId is not null) ?? true);
+    public async Task SaveProjectOutput()
+    {
+        if(SaveProjectOutputDisabled) return;
+        var name = await DialogService.ShowInputStringDialog("Input file name", "File name");
+        if (name is null) return;
+        var folder = await DialogService.ShowSelectFolderDialog("Select folder", "Save here", CourseId);
+        if (folder is null) return;
+        await DawService.GenerateProjectSourceAsync(_sessionId);
+        await DawService.SaveProjectSourceAsync(_sessionId, folder.Id, name);
     }
 
     public async ValueTask DisposeAsync()
@@ -351,14 +369,16 @@ public class DawInterop : IAsyncDisposable
     private IJSObjectReference? _playlist;
     private IJSObjectReference? _ee;
     private readonly DotNetObjectReference<DawInterop> _dawInteropJsRef;
-    private DotNetObjectReference<Daw>? _dawJsRef;
-    private Daw? _daw;
+    private DotNetObjectReference<Daw> _dawJsRef;
+    private Daw _daw;
 
     private Task _setVolumeTask = Task.CompletedTask;
     private CancellationTokenSource _setVolumeCancellationTokenSource = new();
 
-    public DawInterop()
+    public DawInterop(Daw daw)
     {
+        _daw = daw;
+        _dawJsRef = DotNetObjectReference.Create(_daw);
         _dawInteropJsRef = DotNetObjectReference.Create(this);
     }
 
@@ -381,19 +401,18 @@ public class DawInterop : IAsyncDisposable
     }
 
 
-    public async Task Initialize(IJSRuntime js, string dawId, Daw? daw = null)
-    {
-        _dawJsRef?.Dispose();
-        _daw = daw;
-        if(_daw != null) _dawJsRef = DotNetObjectReference.Create(_daw);
+    private TrackJs CreateTrackJs(Track track) => TrackJs.Create(track, _daw.ProjectToken);
 
+    public async Task Initialize(IJSRuntime js, string dawId)
+    {
         _playlist = await js.InvokeAsync<IJSObjectReference>("initializeDaw", dawId, new PlaylistOptionsJs(), _dawJsRef);
         _ee = await _playlist.InvokeAsync<IJSObjectReference>("getEventEmitter");
     }
 
     public async Task LoadProject(DawProject project)
     {
-        await Playlist.InvokeVoidAsync("loadTrackList", project.Tracks.Select(TrackJs.Create));
+        var tracks = project.Tracks.Select(CreateTrackJs);
+        await Playlist.InvokeVoidAsync("loadTrackList", tracks);
     }
 
     public async Task ClearProject()
@@ -403,7 +422,7 @@ public class DawInterop : IAsyncDisposable
 
     public async Task AddTrack(Track track)
     {
-        await Playlist.InvokeVoidAsync("addTrack", TrackJs.Create(track));
+        await Playlist.InvokeVoidAsync("addTrack", CreateTrackJs(track));
     }
 
     public async Task RemoveTrack(Track track)
@@ -417,7 +436,7 @@ public class DawInterop : IAsyncDisposable
     }
     public async Task UpdateTrack(Track track, bool sourceChanged)
     {
-        await Playlist.InvokeVoidAsync("updateTrack", TrackJs.Create(track), sourceChanged);
+        await Playlist.InvokeVoidAsync("updateTrack", CreateTrackJs(track), sourceChanged);
     }
     public async Task RecordTrack(Track track)
     {
@@ -483,7 +502,7 @@ public class DawInterop : IAsyncDisposable
         if (_playlist != null) await _playlist.DisposeAsync();
         if (_ee != null) await _ee.DisposeAsync();
         _dawInteropJsRef.Dispose();
-        _dawJsRef?.Dispose();
+        _dawJsRef.Dispose();
     }
 
 
@@ -501,12 +520,12 @@ public class DawInterop : IAsyncDisposable
         public string customClass { get; set; } = string.Empty;
         public string waveOutlineColor { get; set; } = string.Empty;
 
-        public static TrackJs Create(Track track)
+        public static TrackJs Create(Track track, Guid token)
             => new TrackJs
             {
                 id = track.Id,
                 name = track.Name,
-                src = DawService.GetTrackSourceUrl(track),
+                src = DawService.GetTrackSourceUrl(track, token),
                 gain = track.Volume,
                 start = track.StartTime,
                 locked = track.SelectionState is not TrackSelectionState.Self,

@@ -30,7 +30,7 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
 builder.Services.AddHostedService<ScheduledTasksService>();
-builder.Services.AddSingleton<OneTimeTokenStore, OneTimeTokenStore>();
+builder.Services.AddSingleton<TokenStore, TokenStore>();
 builder.Services.AddSingleton<DawProjectStateService, DawProjectStateService>();
 builder.Services.AddScoped<DawService, DawService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();

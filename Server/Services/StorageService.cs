@@ -5,6 +5,7 @@ using Concerto.Server.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
+using MimeMapping;
 
 namespace Concerto.Server.Services;
 
@@ -13,9 +14,9 @@ public class StorageService
 	private readonly AppDataContext _context;
 	private readonly ILogger<StorageService> _logger;
 	private readonly IMemoryCache _memoryCache;
-	private readonly OneTimeTokenStore _oneTimeTokenStore;
+	private readonly TokenStore _oneTimeTokenStore;
 
-	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache, OneTimeTokenStore oneTimeTokenStore)
+	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache, TokenStore oneTimeTokenStore)
 	{
 		_logger = logger;
 		_context = context;
@@ -485,6 +486,7 @@ public class StorageService
 				DisplayName = fileUploadResult.DisplayFileName,
 				Extension = fileUploadResult.Extension,
 				Size = lastChunk.FileSize,
+				MimeType = MimeUtility.GetMimeMapping(fileUploadResult.Extension),
 				StorageName = fileUploadResult.StorageFileName,
 				FolderId = folderId
 			};
@@ -666,22 +668,6 @@ public class StorageService
 			await UpdateFolderCourseRecursively(subFolder, courseId, updatedFoldersIds);
 	}
 
-	internal Guid GenerateOneTimeToken(long fileId)
-	{
-		var token = Guid.NewGuid();
-		var options = new MemoryCacheEntryOptions() { Size = 1, AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2) };
-		_oneTimeTokenStore.Tokens.Set(token, fileId, options);
-		return token;
-	}
-
-	internal bool ValidateToken(long fileId, Guid token)
-	{
-		_oneTimeTokenStore.Tokens.TryGetValue(token, out long cacheFileId);
-		if (cacheFileId != fileId) return false;
-		_oneTimeTokenStore.Tokens.Remove(token);
-		return true;
-	}
-
 	internal async Task<bool> CanFolderBeMoved(long folderId, long destinationFolderId)
 	{
 		var folder = await _context.Folders.FindAsync(folderId);
@@ -730,6 +716,7 @@ public class StorageService
 			OwnerId = null,
 			DisplayName = newFilename,
 			Extension = fileInfo.Extension,
+			MimeType = MimeUtility.GetMimeMapping(fileInfo.Name),
 			Size = fileInfo.Length,
 			StorageName = storageName,
 			FolderId = session.FolderId,

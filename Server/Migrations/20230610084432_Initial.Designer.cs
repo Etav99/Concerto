@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Concerto.Server.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20230527115449_DawInitial")]
-    partial class DawInitial
+    [Migration("20230610084432_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -119,6 +119,12 @@ namespace Concerto.Server.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectId"));
+
+                    b.Property<Guid?>("AudioSourceGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AudioSourceHash")
+                        .HasColumnType("text");
 
                     b.HasKey("ProjectId");
 
@@ -288,6 +294,10 @@ namespace Concerto.Server.Migrations
 
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uuid");

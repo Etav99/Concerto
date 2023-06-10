@@ -5,6 +5,7 @@ using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using System.Net.Mime;
 using System.Text.Json;
 
@@ -16,15 +17,16 @@ namespace Concerto.Server.Controllers;
 public class StorageController : ControllerBase
 {
 	private readonly ILogger<StorageController> _logger;
-	private readonly SessionService _sessionService;
 	private readonly StorageService _storageService;
+	private readonly TokenStore _tokenStore;
+
 	private Guid UserId => HttpContext.UserId();
 
-	public StorageController(ILogger<StorageController> logger, StorageService storageService, SessionService sessionService)
+	public StorageController(ILogger<StorageController> logger, StorageService storageService, SessionService sessionService, TokenStore tokenStore)
 	{
 		_logger = logger;
 		_storageService = storageService;
-		_sessionService = sessionService;
+		_tokenStore = tokenStore;
 	}
 
 
@@ -216,23 +218,27 @@ public class StorageController : ControllerBase
 
 	[HttpGet]
 	[AllowAnonymous]
-	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token)
+	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token, [FromQuery] bool inline)
 	{
-		if (!_storageService.ValidateToken(fileId, token)) return Forbid();
+		if (!_tokenStore.ValidateToken(token, fileId, TokenStore.TokenType.File)) return Forbid();
 
 		var file = await _storageService.GetFile(fileId);
 		if (file == null) return NotFound();
 		var fileBytes = System.IO.File.OpenRead(file.Path);
 		var fileName = file.DisplayName + file.Extension;
-		return File(fileBytes, MediaTypeNames.Application.Octet, fileName);
+
+		if(inline)
+			return File(fileStream: fileBytes, contentType: file.MimeType, enableRangeProcessing: true);
+
+		return File(fileStream: fileBytes, fileDownloadName: fileName, contentType: file.MimeType, enableRangeProcessing: true);
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<Guid>> GetOneTimeToken([FromQuery] long fileId)
+	public async Task<ActionResult<Guid>> GetFileDownloadToken([FromQuery] long fileId)
 	{
 		if (!(User.IsAdmin() || await _storageService.CanReadFile(UserId, fileId))) return Forbid();
 
-		var token = _storageService.GenerateOneTimeToken(fileId);
+		var token = _tokenStore.GenerateToken(fileId, TokenStore.TokenType.File);
 		return Ok(token);
 	}
 

@@ -93,6 +93,17 @@ public static class DialogServiceExtensions
         return true;
     }
 
+    public static async Task<string?> ShowInputStringDialog(this IDialogService dialogService, string title, string placeholder)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Placeholder"] = placeholder
+        };
+        var result = await dialogService.Show<InputStringDialog>(title, parameters).Result;
+        if (result.Canceled) return null;
+        return (string)result.Data;
+    }
+
     public static async Task<bool> ShowUpdateUserDialog(this IDialogService dialogService, UserIdentity user)
     {
         var parameters = new DialogParameters
@@ -102,6 +113,16 @@ public static class DialogServiceExtensions
         var result = await dialogService.Show<UpdateUserDialog>($"Update user", parameters).Result;
         if (result.Canceled) return false;
         return true;
+    }
+
+
+    public static async Task ShowFilePreviewDialog(this IDialogService dialogService, FileItem file)
+    {
+        var parameters = new DialogParameters
+        {
+            ["File"] = file
+        };
+        await dialogService.Show<FilePreviewDialog>(file.FullName, parameters).Result;
     }
 
 }

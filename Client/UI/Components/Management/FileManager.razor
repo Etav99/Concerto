@@ -11,7 +11,7 @@
 	@if (FolderContent is not null)
 	{
 		<MudPaper Height="45px" Outlined="false" Elevation="0"
-			  Class="pl-4 py-0 mud-breadcrumbs align-content-stretch" Style="overflow-x: scroll; background-color: var(--mud-palette-surface);">
+			  Class="pl-1 py-0 mud-breadcrumbs align-content-stretch" Style="overflow-x: scroll; background-color: var(--mud-palette-surface);">
 
 			<MudIconButton Title="Back" Variant="Variant.Filled" Color="Color.Default" Icon="@Icons.Material.Filled.ArrowBack"
 					   Disabled="@(BreadCrumbs.Count <= 1)" OnClick="Back" DisableElevation="true" />
@@ -621,7 +621,7 @@
 	}
 
 
-	
+
 	public async Task DeleteFolder(FolderItem folder)
 	{
 		try
@@ -715,7 +715,11 @@
 			if (item is FolderItem folder)
 				await OpenFolder(folder);
 			else if (item is FileItem file)
-				await DownloadFile(file);
+			{
+				await DialogService.ShowFilePreviewDialog(file);
+				//await DownloadFile(file);
+			}
+
 		}
 	}
 

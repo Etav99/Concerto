@@ -49,21 +49,6 @@ else
     <div class="container pa-1">
         <div class="buttons d-flex py-1 ">
 
-            @*
-        <MudFileUpload T="IBrowserFile" Accept="video/*" Class="mt-0">
-        <ButtonTemplate>
-        <MudButton HtmlTag="label"
-        Variant="Variant.Filled"
-        Color="Color.Info"
-        DisableElevation="true"
-        StartIcon="@Icons.Material.Filled.CloudUpload"
-        for="@context">
-        Upload recording
-        </MudButton>
-        </ButtonTemplate>
-        </MudFileUpload>
-        *@
-
             @if(!IsRecordingPending)
             {
                 @if (!IsRecording)
@@ -81,10 +66,10 @@ else
             }
             else
             {
-                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecording"  Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
+                <MudButton StartIcon="@Icons.Material.Filled.CloudUpload" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecording"  Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
                     Save in course
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecordingLocally" Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
+                <MudButton StartIcon="@Icons.Material.Filled.Save" Color="Color.Success" Variant="Variant.Filled" DisableElevation="true" OnClick="SaveRecordingLocally" Disabled="@string.IsNullOrWhiteSpace(RecordingName)">
                     Save on computer
                 </MudButton>
                 <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" DisableElevation="true" OnClick="DiscardRecording"> 
@@ -165,11 +150,16 @@ else
     }
 
 
-    private string RecordingName { get; set; } = string.Empty;
+
 
     bool IsRecording { get; set; } = false;
     bool IsRecordingPending { get; set; } = false;
     IJSStreamReference? _recording = null;
+    string? _extension = null;
+    private string RecordingName { get; set; } = string.Empty;
+
+    private string RecordingFilename => $"{RecordingName}.{_extension}";
+
 
 
     private DotNetObjectReference<RecordingTool> _dotNetObjectReference = null!;
@@ -248,11 +238,12 @@ else
     }
 
     [JSInvokable]
-    public void RecordingFinished(IJSStreamReference recording)
+    public void RecordingFinished(IJSStreamReference recording, string extension)
     {
         IsRecording = false;
         IsRecordingPending = true;
         _recording = recording;
+        _extension = extension;
         RecordingName = $"Recording-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}";
         StateHasChanged();
     }
@@ -269,7 +260,7 @@ else
         if (_recording is null) return;
         if (string.IsNullOrWhiteSpace(RecordingName)) return;
 
-        StorageService.QueueFileToUpload(destinationFolder.Id, _recording, $"{RecordingName}.webm");
+        StorageService.QueueFileToUpload(destinationFolder.Id, _recording, RecordingFilename);
 
         await FinalizeRecording();
     }
@@ -277,7 +268,7 @@ else
     public async Task SaveRecordingLocally()
     {
         if (_recordingManager is null) return;
-        await _recordingManager.InvokeVoidAsync("saveLocally", "test");
+        await _recordingManager.InvokeVoidAsync("saveLocally", RecordingName);
         await FinalizeRecording();
     }
 

@@ -1864,39 +1864,57 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName);
+        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, float? startTime, float? volume);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, float? startTime, float? volume, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId);
-
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken);
-
-        /// <returns>Success</returns>
-        /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId);
+        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Guid? token);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Guid? token, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId);
+        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Guid? token);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Guid? token, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<bool> GenerateProjectSourceAsync(long? projectId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<bool> GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SaveProjectSourceAsync(long? projectId, long? destinationFolder, string filename);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SaveProjectSourceAsync(long? projectId, long? destinationFolder, string filename, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Guid> GetProjectTokenAsync(long? projectId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Guid> GetProjectTokenAsync(long? projectId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -2566,15 +2584,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName)
+        public virtual System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, float? startTime, float? volume)
         {
-            return SetTrackSourceAsync(projectId, trackId, contentType, contentDisposition, headers, length, name, fileName, System.Threading.CancellationToken.None);
+            return SetTrackSourceAsync(projectId, trackId, contentType, contentDisposition, headers, length, name, fileName, startTime, volume, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SetTrackSourceAsync(long? projectId, long? trackId, string contentType, string contentDisposition, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, long? length, string name, string fileName, float? startTime, float? volume, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/SetTrackSource");
@@ -2646,6 +2664,20 @@ namespace Concerto.Client.Services
                     {
                         content_.Add(new System.Net.Http.StringContent(ConvertToString(fileName, System.Globalization.CultureInfo.InvariantCulture)), "FileName");
                     }
+
+                    if (startTime == null)
+                        throw new System.ArgumentNullException("startTime");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(startTime, System.Globalization.CultureInfo.InvariantCulture)), "startTime");
+                    }
+
+                    if (volume == null)
+                        throw new System.ArgumentNullException("volume");
+                    else
+                    {
+                        content_.Add(new System.Net.Http.StringContent(ConvertToString(volume, System.Globalization.CultureInfo.InvariantCulture)), "volume");
+                    }
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
 
@@ -2696,15 +2728,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId)
+        public virtual System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Guid? token)
         {
-            return GetTrackSourceAsync(projectId, trackId, System.Threading.CancellationToken.None);
+            return GetTrackSourceAsync(projectId, trackId, token, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetTrackSourceAsync(long? projectId, long? trackId, System.Guid? token, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/GetTrackSource?");
@@ -2716,6 +2748,10 @@ namespace Concerto.Client.Services
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("trackId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(trackId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
+            if (token != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("token") + "=").Append(System.Uri.EscapeDataString(ConvertToString(token, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
             urlBuilder_.Length--;
 
             var client_ = _httpClient;
@@ -2773,15 +2809,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId)
+        public virtual System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Guid? token)
         {
-            return GetProjectSourceAsync(projectId, System.Threading.CancellationToken.None);
+            return GetProjectSourceAsync(projectId, token, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetProjectSourceAsync(long? projectId, System.Guid? token, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/GetProjectSource?");
@@ -2789,6 +2825,10 @@ namespace Concerto.Client.Services
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
+            if (token != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("token") + "=").Append(System.Uri.EscapeDataString(ConvertToString(token, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
             urlBuilder_.Length--;
 
             var client_ = _httpClient;
@@ -2846,7 +2886,7 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId)
+        public virtual System.Threading.Tasks.Task<bool> GenerateProjectSourceAsync(long? projectId)
         {
             return GenerateProjectSourceAsync(projectId, System.Threading.CancellationToken.None);
         }
@@ -2854,13 +2894,101 @@ namespace Concerto.Client.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="DawException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<bool> GenerateProjectSourceAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Daw/GenerateProjectSource?");
             if (projectId != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "text/plain");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<bool>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new DawException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task SaveProjectSourceAsync(long? projectId, long? destinationFolder, string filename)
+        {
+            return SaveProjectSourceAsync(projectId, destinationFolder, filename, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task SaveProjectSourceAsync(long? projectId, long? destinationFolder, string filename, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Daw/SaveProjectSource?");
+            if (projectId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (destinationFolder != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("destinationFolder") + "=").Append(System.Uri.EscapeDataString(ConvertToString(destinationFolder, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (filename != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("filename") + "=").Append(System.Uri.EscapeDataString(ConvertToString(filename, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -2897,6 +3025,85 @@ namespace Concerto.Client.Services
                         if (status_ == 200)
                         {
                             return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new DawException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Guid> GetProjectTokenAsync(long? projectId)
+        {
+            return GetProjectTokenAsync(projectId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="DawException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Guid> GetProjectTokenAsync(long? projectId, System.Threading.CancellationToken cancellationToken)
+        {
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append("Daw/GetProjectToken?");
+            if (projectId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("projectId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(projectId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Guid>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new DawException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
                         }
                         else
                         {
@@ -4714,21 +4921,21 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, bool? inline);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, bool? inline, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId);
+        System.Threading.Tasks.Task<System.Guid> GetFileDownloadTokenAsync(long? fileId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> GetFileDownloadTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
@@ -5792,15 +5999,15 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token)
+        public virtual System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, bool? inline)
         {
-            return DownloadFileAsync(fileId, token, System.Threading.CancellationToken.None);
+            return DownloadFileAsync(fileId, token, inline, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DownloadFileAsync(long? fileId, System.Guid? token, bool? inline, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append("Storage/DownloadFile?");
@@ -5811,6 +6018,10 @@ namespace Concerto.Client.Services
             if (token != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("token") + "=").Append(System.Uri.EscapeDataString(ConvertToString(token, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            if (inline != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("inline") + "=").Append(System.Uri.EscapeDataString(ConvertToString(inline, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             }
             urlBuilder_.Length--;
 
@@ -5869,18 +6080,18 @@ namespace Concerto.Client.Services
 
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId)
+        public virtual System.Threading.Tasks.Task<System.Guid> GetFileDownloadTokenAsync(long? fileId)
         {
-            return GetOneTimeTokenAsync(fileId, System.Threading.CancellationToken.None);
+            return GetFileDownloadTokenAsync(fileId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="StorageException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> GetOneTimeTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> GetFileDownloadTokenAsync(long? fileId, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append("Storage/GetOneTimeToken?");
+            urlBuilder_.Append("Storage/GetFileDownloadToken?");
             if (fileId != null)
             {
                 urlBuilder_.Append(System.Uri.EscapeDataString("fileId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(fileId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");

@@ -84,14 +84,15 @@ public class DawService : DawClient
         await stream.DisposeAsync();
     }
 
-    public static string GetProjectSourceUrl(long projectId)
+    public async Task <string> GetProjectSourceUrl(long projectId)
     {
-        return $"/Daw/GetProjectSource?projectId={projectId}&guid={Guid.NewGuid()}";
+        var token = await GetProjectTokenAsync(projectId);
+        return $"/Daw/GetProjectSource?projectId={projectId}&token={token}";
     }
 
-    public static string? GetTrackSourceUrl(Track track)
+    public static string? GetTrackSourceUrl(Track track, Guid token)
     {
         if(track.SourceId is null) return null;
-        return $"/Daw/GetTrackSource?projectId={track.ProjectId}&trackId={track.Id}";
+        return $"/Daw/GetTrackSource?projectId={track.ProjectId}&trackId={track.Id}&token={token}";
     }
 }

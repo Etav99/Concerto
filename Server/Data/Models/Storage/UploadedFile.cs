@@ -16,6 +16,7 @@ public class UploadedFile : Entity
 
 	public string DisplayName { get; set; } = string.Empty;
 	public string Extension { get; set; } = string.Empty;
+	public string MimeType { get; set; } = string.Empty;
 	public string StorageName { get; set; } = string.Empty;
 	public string Path => $"{AppSettings.Storage.StoragePath}/{StorageName}";
 }
@@ -43,6 +44,7 @@ public static partial class ViewModelConversions
 		return new FileItem(file.Id,
 			file.DisplayName,
 			file.Extension,
+			file.MimeType,
 			file.Size,
 			canManage,
 			canManage

@@ -48,6 +48,7 @@ public record FileItem(
 	long Id,
 	string Name,
 	string Extension,
+	string MimeType,
 	long Size,
 	bool CanEdit,
 	bool CanDelete

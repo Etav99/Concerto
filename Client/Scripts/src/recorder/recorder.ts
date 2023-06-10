@@ -248,7 +248,7 @@ export class RecordingManager {
         let output = this.recordingStore.getOutput();
 
         // await this.dotnetCaller.invokeMethodAsync("RecordingStateChanged", false);
-        await this.dotnetCaller.invokeMethodAsync("RecordingFinished", DotNet.createJSStreamReference(output));
+        await this.dotnetCaller.invokeMethodAsync("RecordingFinished", DotNet.createJSStreamReference(output), this.recordingStore.extension);
 
         this.videoPreview.style.display = "none";
         this.recordingPreview.style.display = "initial";
@@ -267,7 +267,7 @@ export class RecordingManager {
         window.disablePreventWindowClose("recording");
     }
 
-    public async saveLocally(filename: string = null) {
+    public async saveLocally(filename: string | null = null) {
         await this.recordingStore.saveOutputAsync(filename);
     }
 
@@ -312,7 +312,7 @@ class RecordingStore {
         return this.length >= MAX_RECORDING_SIZE;
     }
 
-    public async generateOutputAsync(filename: string | null = null) {
+    public async generateOutputAsync() {
         let recording = new Blob([...this.chunks], { type: this.mimeType });
         if ((this.extension = "webm"))
             recording = await fixWebmDuration(recording);
@@ -340,7 +340,8 @@ class RecordingStore {
             }
         }
 
-        filename = `${filename}_${getTimeStamp()}.${this.extension}`;
+        // filename = `${filename}_${getTimeStamp()}.${this.extension}`;
+        filename = `${filename}.${this.extension}`;
         filename = cleanFilename(filename);
 
         let recordingUrl = URL.createObjectURL(recording);

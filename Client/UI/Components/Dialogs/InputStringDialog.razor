@@ -1,0 +1,37 @@
+﻿@inherits DialogAutoFullscreen
+@inject ICourseService CourseService
+@inject IStorageService StorageService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+	<DialogContent>
+		<MudInput Immediate="true" @bind-Value="Input" Placeholder="@Placeholder" Label="@Placeholder" Variant="Variant.Filled" />
+	</DialogContent>
+	
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" Disabled="!CanSubmit" OnClick="Submit">OK</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[Parameter]
+	public string Placeholder { get; set; } = string.Empty;
+
+	string Input { get; set; } = string.Empty;
+
+	private bool CanSubmit => !string.IsNullOrWhiteSpace(Input);
+	private void Submit()
+	{
+		if (!CanSubmit) return;
+		Dialog.Close(DialogResult.Ok(Input));
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+
+}

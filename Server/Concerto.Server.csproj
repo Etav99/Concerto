@@ -29,6 +29,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.5" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+		<PackageReference Include="MimeMapping" Version="2.0.0" />
 		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />

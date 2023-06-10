@@ -292,6 +292,10 @@ namespace Concerto.Server.Migrations
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uuid");
 
