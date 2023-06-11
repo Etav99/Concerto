@@ -204,7 +204,7 @@ public class SessionService
 			issuer: AppSettings.Meetings.JwtAppId,
 			audience: AppSettings.Meetings.JitsiUrl.Host,
 			subject: claimsIdentity,
-			expires: DateTime.UtcNow.AddMinutes(2),
+			expires: DateTime.UtcNow.AddMinutes(5),
 			signingCredentials: credentials
 		);
 		Console.WriteLine(token.ToString());

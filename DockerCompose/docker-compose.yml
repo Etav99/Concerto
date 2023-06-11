@@ -141,7 +141,7 @@ services:
       TZ: UTC
 
       PUBLIC_URL: ${JITSI_BASE_URL:?}/
-      TOKEN_AUTH_URL: ${CONCERTO_BASE_URL:?}/app/auth/room/{room}
+      TOKEN_AUTH_URL: ${CONCERTO_BASE_URL:?}/auth/room/{room}
 
       XMPP_AUTH_DOMAIN: auth.meet-jitsi
       XMPP_BOSH_URL_BASE: http://xmpp.meet-jitsi:5280
@@ -231,6 +231,8 @@ services:
       JICOFO_AUTH_PASSWORD:
       JIGASI_XMPP_PASSWORD:
       JVB_AUTH_PASSWORD:
+
+      ENABLE_END_CONFERENCE: 0
 
       XMPP_AUTH_DOMAIN: auth.meet-jitsi
       XMPP_DOMAIN: meet-jitsi

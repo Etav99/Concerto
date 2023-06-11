@@ -4,6 +4,8 @@ import { EventEmitter } from "eventemitter3";
 import './css/main.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { getAnySupportedAudioMimeTypeAndExtension } from '../utilities/codecCheck';
+
 
 declare const DotNet: typeof import("@microsoft/dotnet-js-interop").DotNet;
 
@@ -16,6 +18,10 @@ export async function initializeDaw(containerId: string, options: any, dotNetRef
   const eventEmitter = new EventEmitter();
 
   const playlist = initWaveformPlaylist(options, eventEmitter);
+
+  var mimeType: string, extension: string;
+  [mimeType, extension] = getAnySupportedAudioMimeTypeAndExtension(); 
+  playlist.mimeType = mimeType;
 
   if(dotNetReference != null) {
     const onShift = (trackId: number, startTime: number) => dotNetReference.invokeMethodAsync('OnShift', trackId, startTime);

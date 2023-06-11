@@ -371,7 +371,7 @@
                                 <input type="range" min="0" max="1" step="0.01" value="@track.Volume.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                @oninput="async (e) => await DawInterop.SetVolume(track.Id, e.GetFloatValue())"
                                @onchange="async (e) => await SetTrackVolume(track, e.GetFloatValue())"
-                                       disabled="@(!track.IsSelfSelected || tracksVolumeDisabled)" />
+                                       disabled="@(!track.IsSelfSelected || (TrackRecording?.Id != track.Id && tracksVolumeDisabled))" />
                             </div>
 
                         </div>

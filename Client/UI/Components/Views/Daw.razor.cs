@@ -272,7 +272,7 @@ public partial class Daw : IAsyncDisposable
     private async Task UploadTrackSource(Track track, IBrowserFile file)
     {
         UploadingTrack = track;
-        await DawService.SetTrackSourceAsync(_sessionId, track.Id, file, 1);
+        await DawService.SetTrackSourceAsync(_sessionId, track.Id, file, 0, 1);
         UploadingTrack = null;
     }
 
@@ -623,5 +623,6 @@ public record TrackRecording
     {
         Id = track.Id;
         StartTime = track.StartTime;
+        Volume = track.Volume;
     }
 }

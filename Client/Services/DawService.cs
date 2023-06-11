@@ -74,9 +74,9 @@ public class DawService : DawClient
         content.Add(JsonContent.Create(sessionId, options: JsonSerializerOptions.Default), "projectId");
         content.Add(JsonContent.Create(trackId, options: JsonSerializerOptions.Default), "trackId");
         if (startTime is not null)
-        content.Add(JsonContent.Create(startTime, options: JsonSerializerOptions.Default), "startTime");
+            content.Add(JsonContent.Create(startTime, options: JsonSerializerOptions.Default), "startTime");
         if (volume is not null)
-        content.Add(JsonContent.Create(volume, options: JsonSerializerOptions.Default), "volume");
+            content.Add(JsonContent.Create(volume, options: JsonSerializerOptions.Default), "volume");
 
         var response = await _httpClient.PostAsync("/Daw/SetTrackSource", content);
         response.EnsureSuccessStatusCode();

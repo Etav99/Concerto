@@ -6,18 +6,18 @@
 @inject ISessionService SessionService
 
 <div style="@MeetingStyle">
-
-    <div>
-        <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
-            @if (_loading)
-            {
-                <LoadingIndicator Size="Size.Large" />
-            }
-        </div>
-    </div>
-
-    @if(!LayoutState.IsMobile)
+    @if (!LayoutState.IsMobile)
     {
+        <div>
+            <div id="jitsi" class="flex-grow-1 meeting" style="height: 100%; max-height: 100%;">
+                @if (_loading)
+                {
+                    <LoadingIndicator Size="Size.Large" />
+                }
+            </div>
+        </div>
+
+
         <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="ToggleDaw" />
 
         <div style="@DawStyle">
@@ -25,8 +25,20 @@
             {
                 <Daw SessionId="Session?.Id" CourseId="Session?.CourseId" OnListenTogether="PlaySharedMedia" OnRequestStopSharing="StopSharedMedia" />
             }
-        </div> 
+        </div>
     }
+    else
+    {
+        <div style="height: 100%; display: grid; grid-template-rows: min-content 1fr;">
+            <MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" Href="@_downloadJitsiUrl" Target="_blank">
+                Download Jitsi Meet app
+            </MudButton>
+            <MudButton StartIcon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" Variant="Variant.Filled" DisableElevation="true" OnClick="OpenInApp">
+                Open meeting in Jitsi Meet app (needs to be installed)
+            </MudButton>
+        </div>
+    }
+
 </div>
 
 
@@ -53,6 +65,13 @@
 
     bool _reloading = false;
 
+
+    string OpenInAppUrl(string token) => LayoutState.IsIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}{_meetingPath}?jwt={token}"
+                                              : $"intent://{AppSettingsService.AppSettings.JitsiUrl}{_meetingPath}?jwt={token}&lang=en#jitsi_meet_external_api_id=1&appData.localStorageContent=null#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
+
+    string _downloadJitsiUrl => AppSettingsService.AppSettings.JitsiAppDownloadUrl;
+
+
     protected override void OnInitialized()
     {
         _dotNetObjectReference = DotNetObjectReference.Create(this);
@@ -65,7 +84,7 @@
         var meetingPath = HttpUtility.UrlPathEncode($"{guid}");
         if (meetingPath == _meetingPath) return;
         _meetingPath = HttpUtility.UrlPathEncode($"{guid}");
-        //if (LayoutState.IsMobile) return;
+        if (LayoutState.IsMobile) return;
         await StartMeeting();
     }
 
@@ -80,6 +99,14 @@
         StateHasChanged();
     }
 
+    private async Task OpenInApp()
+    {
+        if (Session is null) return;
+        var token = await SessionService.GetMeetingTokenAsync(Session.MeetingGuid);
+        var url = OpenInAppUrl(token);
+        Console.WriteLine(url);
+        await JS.InvokeVoidAsync("open", url);
+    }
 
     [JSInvokable]
     public async Task OnVideoConferenceLeft()

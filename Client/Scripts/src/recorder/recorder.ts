@@ -1,5 +1,6 @@
 import { url } from 'inspector';
 import fixWebmDuration from 'webm-duration-fix';
+import { getAnySupportedVideoMimeTypeAndExtension } from '../utilities/codecCheck';
 declare const DotNet: typeof import("@microsoft/dotnet-js-interop").DotNet;
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
@@ -17,8 +18,6 @@ declare global {
     }
 }
 
-const FILE_EXTENSIONS = ["mp4", "webm", "ogg", "x-matroska"];
-const CODECS = ["vp9", "vp9.0", "vp8", "vp8.0", "avc1", "av1", "h265", "h.265", "h264", "h.264"];
 const MAX_RECORDING_SIZE = 10 * 1024 * 1024 * 1024;
 
 export async function initializeRecordingManager(videoPreviewParentId?: string, dotNetCaller?: DotNetObject): Promise<RecordingManager> {
@@ -32,18 +31,6 @@ export async function initializeRecordingManager(videoPreviewParentId?: string, 
     }
     window.recordingManager = recordingManager;
     return recordingManager;
-}
-
-function getMimeTypeAndExtension(): [string, string]   {
-    for (const ext of FILE_EXTENSIONS) {
-        for (const codec of CODECS) {
-            var mimeType = `video/${ext};codecs=${codec},opus`;
-            if (MediaRecorder.isTypeSupported(mimeType)) {
-                return [mimeType, ext];
-            }
-        }
-    }
-    throw new Error("Browser doesn't support any of the codecs");
 }
 
 function getTimeStamp(): string {
@@ -136,7 +123,7 @@ export class RecordingManager {
         this.recordingPreview.classList.add("preview");
 
         var mimeType: string, extension: string;
-        [mimeType, extension] = getMimeTypeAndExtension();
+        [mimeType, extension] = getAnySupportedVideoMimeTypeAndExtension();
         this.recordingStore = new RecordingStore(mimeType, extension);
 
         this.audioOutput = this.audioContext.createMediaStreamDestination();
