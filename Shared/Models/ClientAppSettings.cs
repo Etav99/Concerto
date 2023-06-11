@@ -8,6 +8,8 @@ public class ClientAppSettings
 	public string PostLogoutUrl { get; set; } = string.Empty;
 
 	public Uri JitsiUrl { get; set; } = null!;
+	public string JitsiHost => JitsiUrl.Host;
+
 	public string JitsiAppDownloadUrl { get; set; } = string.Empty;
 
 	public long FileSizeLimit { get; set; }

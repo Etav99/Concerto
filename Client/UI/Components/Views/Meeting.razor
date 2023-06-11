@@ -66,8 +66,8 @@
     bool _reloading = false;
 
 
-    string OpenInAppUrl(string token) => LayoutState.IsIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiUrl}{_meetingPath}?jwt={token}"
-                                              : $"intent://{AppSettingsService.AppSettings.JitsiUrl}{_meetingPath}?jwt={token}&lang=en#jitsi_meet_external_api_id=1&appData.localStorageContent=null#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
+    string OpenInAppUrl(string token) => LayoutState.IsIos ? $"org.jitsi.meet://{AppSettingsService.AppSettings.JitsiHost}/{_meetingPath}?jwt={token}"
+                                              : $"intent://{AppSettingsService.AppSettings.JitsiHost}/{_meetingPath}?jwt={token}&lang=en#jitsi_meet_external_api_id=1&appData.localStorageContent=null#Intent;scheme=org.jitsi.meet;package=org.jitsi.meet;end";
 
     string _downloadJitsiUrl => AppSettingsService.AppSettings.JitsiAppDownloadUrl;
 
