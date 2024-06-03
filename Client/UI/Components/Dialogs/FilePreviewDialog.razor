@@ -44,7 +44,7 @@
 					<img src="@_url" class="@previewClass" />
                     break;
 				case "video":
-					<video src="@_url" controls class="@previewClass"></video>
+					<video src="@_url" controls playsinline class="@previewClass"></video>
                     break;
 				case "audio":
 					<div class="@audioPreviewClass">
@@ -52,9 +52,9 @@
 					</div>
 					break;
 				default:
-					if(_fullMimeType == "application/pdf")
+					if(_fullMimeType == "application/pdf" && !LayoutState.IsIos)
 					{
-						<object src="@_url" type="@_fullMimeType" class="@previewClass">
+						<object data="@_url" type="@_fullMimeType" class="@previewClass">
 							<p>Your browser doesn't support PDF preview</p>
 						</object>
 					}

@@ -186,6 +186,9 @@
 				<MudTh>
 						Size
 				</MudTh>
+				<MudTh>
+						Owner
+				</MudTh>
 				<MudTh></MudTh>
 			</HeaderContent>
 
@@ -218,6 +221,9 @@
 						</MudStack>
 					</MudTd>
 					<MudTd DataLabel="Size"></MudTd>
+					<MudTd DataLabel="Owner">
+						<MudText Typo="Typo.body2">@folder.OwnerFullName</MudText>
+					</MudTd>
 					<MudTd Style="text-align: right">
 						<MudMenu Dense="true">
 							<ActivatorContent>
@@ -299,6 +305,9 @@
 					</MudTd>
 					<MudTd DataLabel="Size">
 						<MudText Typo="Typo.body2">@file.Size.ToFileSizeString()</MudText>
+					</MudTd>
+					<MudTd DataLabel="Owner">
+						<MudText Typo="Typo.body2">@file.OwnerFullName</MudText>
 					</MudTd>
 					<MudTd Style="text-align: right">
 						@if (!HideManagementButtons)

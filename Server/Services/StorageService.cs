@@ -63,6 +63,10 @@ public class StorageService
 
 		await _context.Entry(folder).Collection(c => c.SubFolders).LoadAsync();
 		await _context.Entry(folder).Collection(c => c.Files).LoadAsync();
+		await _context.Entry(folder).Reference(f => f.Owner).LoadAsync();
+
+		// Load owners of subfolders
+		await _context.Entry(folder).Collection(f => f.SubFolders).Query().Include(f => f.Owner).LoadAsync();
 
 		// get sessions folder if course root
 		if (folder.IsCourseRoot)
@@ -76,6 +80,7 @@ public class StorageService
 
 		var subFolders = new List<Dto.FolderItem>();
 		foreach (var subFolder in folder.SubFolders)
+		{
 			if (isAdmin)
 			{
 				subFolders.Add(subFolder.ToFolderItem(true, true, await CanDeleteFolder(userId, subFolder.Id)));
@@ -87,8 +92,12 @@ public class StorageService
 				var canDelete = await CanDeleteFolder(userId, subFolder.Id);
 				subFolders.Add(subFolder.ToFolderItem(canWrite, canEdit, canDelete));
 			}
+		}
 
 		var files = new List<Dto.FileItem>();
+
+		// Load owner for each file
+		await _context.Entry(folder).Collection(f => f.Files).Query().Include(f => f.Owner).LoadAsync();
 		foreach (var file in folder.Files)
 		{
 			var canManageFile = isAdmin || await CanManageFile(userId, file.Id);

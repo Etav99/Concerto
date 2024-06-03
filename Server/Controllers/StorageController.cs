@@ -225,12 +225,11 @@ public class StorageController : ControllerBase
 		var file = await _storageService.GetFile(fileId);
 		if (file == null) return NotFound();
 		var fileBytes = System.IO.File.OpenRead(file.Path);
-		var fileName = file.DisplayName + file.Extension;
 
 		if(inline)
 			return File(fileStream: fileBytes, contentType: file.MimeType, enableRangeProcessing: true);
 
-		return File(fileStream: fileBytes, fileDownloadName: fileName, contentType: file.MimeType, enableRangeProcessing: true);
+		return File(fileStream: fileBytes, fileDownloadName: file.DisplayName + file.Extension, contentType: file.MimeType, enableRangeProcessing: true);
 	}
 
 	[HttpGet]

@@ -276,7 +276,7 @@
                            DisableElevation="true" Variant="Variant.Filled"
                            Color="Color.Info" Icon="@CustomIcons.Share" />
 
-                <MudIconButton OnClick="RequestStopSharing" D
+                <MudIconButton OnClick="RequestStopSharing"
                            DisableElevation="true" Variant="Variant.Filled"
                            Color="Color.Info" Icon="@CustomIcons.Share" Class="crossed-out" />
 
@@ -364,7 +364,7 @@
                             }
                             else
                             {
-                                <MudIconButton OnClick="() => SelectTrack(track)" Disabled="trackControlsDisabled"
+                                <MudIconButton OnClick="() => SelectTrack(track)" Disabled="trackControlsDisabled || track.IsOtherSelected"
                                    DisableElevation="true" Variant="Variant.Filled" Size="Size.Small"
                                    Color="Color.Success" Icon="@Icons.Material.Filled.Edit" />
                             }

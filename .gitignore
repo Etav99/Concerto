@@ -5,7 +5,6 @@ bin
 compose
 keycloak
 Client/NPM/node_modules
-Client/wwwroot/index.html
 Client/wwwroot/js/node
 
 ChromeDebugUserData

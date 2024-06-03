@@ -71,8 +71,10 @@ public static partial class ViewModelConversions
 {
 	public static FolderItem ToFolderItem(this Folder folder, bool canWrite, bool canEdit, bool canDelete)
 	{
-		return new FolderItem(folder.Id,
+		return new FolderItem(
+			folder.Id,
 			folder.Name,
+			folder.Owner?.FullName ?? "-",
 			canWrite,
 			canEdit,
 			canDelete,

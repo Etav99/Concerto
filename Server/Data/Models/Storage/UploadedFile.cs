@@ -11,6 +11,7 @@ public class UploadedFile : Entity
 	public Folder Folder { get; set; } = null!;
 
 	public Guid? OwnerId { get; set; }
+	public User? Owner { get; set; }
 
 	public long Size { get; set; }
 
@@ -46,6 +47,7 @@ public static partial class ViewModelConversions
 			file.Extension,
 			file.MimeType,
 			file.Size,
+			file.Owner?.FullName ?? "-",
 			canManage,
 			canManage
 		);

@@ -185,7 +185,13 @@ public class CourseService
 		if (course == null) return false;
 
 		await _context.Entry(course).Reference(c => c.RootFolder).LoadAsync();
+		await _context.Entry(course).Collection(c => c.Sessions).LoadAsync();
 		await _context.Entry(course).Reference(c => c.SessionsFolder).LoadAsync();
+
+		await using var transaction = _context.Database.BeginTransaction();
+
+		_context.RemoveRange(course.Sessions);
+		await _context.SaveChangesAsync();
 
 		if (course.RootFolder != null)
 			await _storageService.DeleteFolder(course.RootFolder.Id);
@@ -195,6 +201,8 @@ public class CourseService
 
 		_context.Remove(course);
 		await _context.SaveChangesAsync();
+
+		await transaction.CommitAsync();
 
 		return true;
 	}

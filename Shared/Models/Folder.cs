@@ -35,6 +35,7 @@ public class FolderContentItemIdEqualityComparer : IEqualityComparer<FolderConte
 public record FolderItem(
 	long Id,
 	string Name,
+	string OwnerFullName,
 	bool CanWrite,
 	bool CanEdit,
 	bool CanDelete,
@@ -50,6 +51,7 @@ public record FileItem(
 	string Extension,
 	string MimeType,
 	long Size,
+	string OwnerFullName,
 	bool CanEdit,
 	bool CanDelete
 ) : FolderContentItem(Id, Name, CanEdit, CanDelete)

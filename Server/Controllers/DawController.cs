@@ -152,7 +152,7 @@ public class DawController : ControllerBase
 
 		var tag = new EntityTagHeaderValue($"\"{hash}\"");
 
-        return File(fileStream: fileStream, fileDownloadName: "Project", lastModified: null, contentType: "audio/*", entityTag: tag, enableRangeProcessing: true);
+        return File(fileStream: fileStream, lastModified: null, contentType: "audio/mp3", entityTag: tag, enableRangeProcessing: true);
     }
 
 	[HttpPost]

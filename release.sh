@@ -23,25 +23,25 @@ docker buildx build \
 	--tag etav/concerto_server:${VERSION} \
 	--file ./Server/Dockerfile .
 	
-docker buildx build \
-	--platform linux/amd64,linux/arm64 \
-	--progress=plain \
-	--pull --push \
-	--tag etav/concerto_proxy:${VERSION} \
-	--file ./DockerCompose/nginx/Dockerfile ./DockerCompose/nginx
-	
-docker buildx build \
-	--platform linux/amd64,linux/arm64 \
-	--progress=plain \
-	--pull --push \
-	--tag etav/kask:${VERSION} \
-	--file ./DockerCompose/nginx_kask_sim/Dockerfile ./DockerCompose/nginx_kask_sim
-
-cd JitsiDocker
-make buildx_web
-make buildx_jibri
-make buildx_jvb
-cd ..
+# docker buildx build \
+# 	--platform linux/amd64,linux/arm64 \
+# 	--progress=plain \
+# 	--pull --push \
+# 	--tag etav/concerto_proxy:${VERSION} \
+# 	--file ./DockerCompose/nginx/Dockerfile ./DockerCompose/nginx
+# 	
+# docker buildx build \
+# 	--platform linux/amd64,linux/arm64 \
+# 	--progress=plain \
+# 	--pull --push \
+# 	--tag etav/kask:${VERSION} \
+# 	--file ./DockerCompose/nginx_kask_sim/Dockerfile ./DockerCompose/nginx_kask_sim
+# 
+# cd JitsiDocker
+# make buildx_web
+# make buildx_jibri
+# make buildx_jvb
+# cd ..
 
 
 #docker-compose -f DockerCompose/docker-compose.release.yml build && \
