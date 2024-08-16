@@ -43,7 +43,7 @@ public partial class Daw : IAsyncDisposable
     private long _sessionId;
 
     [Parameter]
-    public long? CourseId { get; set; }
+    public long? WorkspaceId { get; set; }
 
     private Track? UploadingTrack { get; set; }
 
@@ -365,7 +365,7 @@ public partial class Daw : IAsyncDisposable
         if(SaveProjectOutputDisabled) return;
         var name = await DialogService.ShowInputStringDialog("Input file name", "File name");
         if (name is null) return;
-        var folder = await DialogService.ShowSelectFolderDialog("Select folder", "Save here", CourseId);
+        var folder = await DialogService.ShowSelectFolderDialog("Select folder", "Save here", WorkspaceId);
         if (folder is null) return;
         await DawService.GenerateProjectSourceAsync(_sessionId);
         await DawService.SaveProjectSourceAsync(_sessionId, folder.Id, name);

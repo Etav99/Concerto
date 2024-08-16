@@ -205,7 +205,7 @@ else
 	public string? Title { get; set; } = null!;
 
 	[Parameter]
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 
 	bool Loading => Posts is null;
 
@@ -251,7 +251,7 @@ else
 	private async Task LoadMorePosts()
 	{
 		var oldestPostId = Posts?.LastOrDefault()?.Id;
-		var posts = (await ForumService.GetPostsAsync(CourseId, oldestPostId, OnlyRelatedToFile?.Id)).ToList();
+		var posts = (await ForumService.GetPostsAsync(WorkspaceId, oldestPostId, OnlyRelatedToFile?.Id)).ToList();
 		_morePostsAvailable = posts.Count == 10;
 		if (Posts is null) Posts = new List<Post>();
 		Posts.AddRange(posts);
@@ -296,7 +296,7 @@ else
 
 	private void CreatePost()
 	{
-		_createPostRequest = new CreatePostRequest(CourseId);
+		_createPostRequest = new CreatePostRequest(WorkspaceId);
 		_createPostFiles = new(new FolderContentItemIdEqualityComparer());
 	}
 
@@ -438,7 +438,7 @@ else
 
 	private async Task EditReferencedFiles(HashSet<FileItem> referencedFiles)
 	{
-		await DialogService.ShowSelectFilesDialog(referencedFiles, CourseId);
+		await DialogService.ShowSelectFilesDialog(referencedFiles, WorkspaceId);
 	}
 
 	private void CloseCreatePostFileChip(MudChip chip)

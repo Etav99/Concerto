@@ -4,7 +4,7 @@
 
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 
 
 @if (Loading)
@@ -13,11 +13,11 @@
 }
 else
 {
-	<MudTable T="CourseListItem" Items="Courses" Hover="true" Elevation="0" Filter="new Func<CourseListItem, bool>(CourseFilter)"
+	<MudTable T="WorkspaceListItem" Items="Workspaces" Hover="true" Elevation="0" Filter="new Func<WorkspaceListItem, bool>(WorkspaceFilter)"
 		  Style="@TableStyle" Class="@Class" Height="100%" FixedHeader="true" FixedFooter="true" Outlined="true"
 		  RowsPerPage="PageSize.Default" RowStyle="cursor: pointer;" OnRowClick="OnRowClick">
 		<ToolBarContent>
-			<MudText Class="mr-2" Typo="Typo.subtitle1">Your courses</MudText>
+			<MudText Class="mr-2" Typo="Typo.subtitle1">Your workspaces</MudText>
 			<MudSpacer/>
 			<MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
 					  Class="mt-0 mr-2" Style="" />
@@ -29,8 +29,8 @@ else
 					<MudIconButton Title="Refresh" DisableElevation="true" Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Variant="Variant.Filled" OnClick="Initialize" />
 					@if (ManagementEnabled)
 					{
-						<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name">
-							<MudIconButton Title="Create course" DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateCourse" Disabled="false" />
+						<AuthorizeView Policy="@AuthorizationPolicies.IsModerator.Name">
+							<MudIconButton Title="Create workspace" DisableElevation="true" Icon="@Icons.Material.Filled.AddBox" Color="Color.Default" Variant="Variant.Filled" OnClick="CreateWorkspace" Disabled="false" />
 						</AuthorizeView>
 					}
 				}
@@ -47,10 +47,10 @@ else
 
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name">
+							<AuthorizeView Policy="@AuthorizationPolicies.IsModerator.Name">
 								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.AddBox"
-									  OnClick="CreateCourse" OnTouch="CreateCourse" Disabled="false">
-									Create course
+									  OnClick="CreateWorkspace" OnTouch="CreateWorkspace" Disabled="false">
+									Create workspace
 								</MudMenuItemW>
 							</AuthorizeView>
 						}
@@ -61,10 +61,10 @@ else
 		</ToolBarContent>
 		<HeaderContent>
 			<MudTh>
-				<MudTableSortLabel SortBy="new Func<CourseListItem, object>(x => x.Name)">Course name</MudTableSortLabel>
+				<MudTableSortLabel SortBy="new Func<WorkspaceListItem, object>(x => x.Name)">Workspace name</MudTableSortLabel>
 			</MudTh>
 			<MudTh>
-				<MudTableSortLabel SortBy="new Func<CourseListItem, object>(x => x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel>
+				<MudTableSortLabel SortBy="new Func<WorkspaceListItem, object>(x => x.CreatedDate)" InitialDirection="SortDirection.Descending">Creation date</MudTableSortLabel>
 			</MudTh>
 			<MudTh></MudTh>
 		</HeaderContent>
@@ -82,11 +82,11 @@ else
 						<MudIconButton Title="Actions" DisableElevation="true" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" Variant="Variant.Filled"/>
 					</ActivatorContent>
 					<ChildContent>
-						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnTouch="() => SelectCourse(context)" OnClick="() => SelectCourse(context)">@SelectLabel</MudMenuItemW>
+						<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@SelectIcon" OnTouch="() => SelectWorkspace(context)" OnClick="() => SelectWorkspace(context)">@SelectLabel</MudMenuItemW>
 						@if (ManagementEnabled)
 						{
-							<AuthorizeView Policy="@AuthorizationPolicies.IsTeacher.Name" Context="auth">
-								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CopyAll" OnTouch="() => CloneCourse(context)" OnClick="() => CloneCourse(context)">Clone</MudMenuItemW>
+							<AuthorizeView Policy="@AuthorizationPolicies.IsModerator.Name" Context="auth">
+								<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.CopyAll" OnTouch="() => CloneWorkspace(context)" OnClick="() => CloneWorkspace(context)">Clone</MudMenuItemW>
 							</AuthorizeView>
 						}
 
@@ -105,7 +105,7 @@ else
 	[CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
 	[Parameter]
-	public EventCallback<long> OnCourseSelected { get; set; }
+	public EventCallback<long> OnWorkspaceSelected { get; set; }
 
 	private string TableStyle => LayoutState.Xs
 	? $"min-height: 245px; display:grid; grid-template-rows: 0fr 0fr 1fr; {Style}"
@@ -121,18 +121,18 @@ else
 	public bool ManagementEnabled { get; set; } = true;
 
 	[Parameter]
-	public IEnumerable<long> WithoutCourseIds { get; set; } = Enumerable.Empty<long>();
+	public IEnumerable<long> WithoutWorkspaceIds { get; set; } = Enumerable.Empty<long>();
 
 	private string searchString = string.Empty;
 
-	private bool Loading => Courses is null;
+	private bool Loading => Workspaces is null;
 
-	private IEnumerable<CourseListItem>? Courses { get; set; }
+	private IEnumerable<WorkspaceListItem>? Workspaces { get; set; }
 
 
 	protected async Task Initialize()
 	{
-		Courses = (await CourseService.GetCurrentUserCoursesAsync()).ExceptBy(WithoutCourseIds, x => x.Id);
+		Workspaces = (await WorkspaceService.GetCurrentUserWorkspacesAsync()).ExceptBy(WithoutWorkspaceIds, x => x.Id);
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -140,60 +140,60 @@ else
 		await Initialize();
 	}
 
-	private async Task SelectCourse(CourseListItem course)
+	private async Task SelectWorkspace(WorkspaceListItem workspace)
 	{
-		await OnCourseSelected.InvokeAsync(course.Id);
+		await OnWorkspaceSelected.InvokeAsync(workspace.Id);
 	}
 
-	private async Task DeleteCourse(CourseListItem course)
+	private async Task DeleteWorkspace(WorkspaceListItem workspace)
 	{
-		if (!await DialogService.ShowConfirmationDialog("Delete course","delete", "course", course.Name, true)) return;
+		if (!await DialogService.ShowConfirmationDialog("Delete workspace","delete", "workspace", workspace.Name, true)) return;
 		try
 		{
-			await CourseService.DeleteCourseAsync(course.Id);
-			Snackbar.Add($"Course {course.Name} deleted", Severity.Success);
+			await WorkspaceService.DeleteWorkspaceAsync(workspace.Id);
+			Snackbar.Add($"Workspace {workspace.Name} deleted", Severity.Success);
 			await Initialize();
 		}
 		catch
 		{
-			Snackbar.Add($"Failed to delete course {course.Name}.", Severity.Error);
+			Snackbar.Add($"Failed to delete workspace {workspace.Name}.", Severity.Error);
 		}
 	}
 
-	private async Task OnRowClick(TableRowClickEventArgs<CourseListItem> rowClick)
+	private async Task OnRowClick(TableRowClickEventArgs<WorkspaceListItem> rowClick)
 	{
-		await SelectCourse(rowClick.Item);
+		await SelectWorkspace(rowClick.Item);
 	}
 
-	private async Task CreateCourse()
+	private async Task CreateWorkspace()
 	{
-		var newCourseId = await DialogService.ShowCreateCourseDialog();
-		if (newCourseId > 0)
+		var newWorkspaceId = await DialogService.ShowCreateWorkspaceDialog();
+		if (newWorkspaceId > 0)
 		{
-			CourseService.GetCurrentUserCoursesAsync().AndForget();
-			await OnCourseSelected.InvokeAsync(newCourseId);
+			WorkspaceService.GetCurrentUserWorkspacesAsync().AndForget();
+			await OnWorkspaceSelected.InvokeAsync(newWorkspaceId);
 		}
 	}
 
-	private async Task CloneCourse(CourseListItem course)
+	private async Task CloneWorkspace(WorkspaceListItem workspace)
 	{
-		var parameters = new DialogParameters { ["CourseToClone"] = course };
-		var name = $"Clone course {course.Name}";
-		var result = await DialogService.Show<CloneCourseDialog>(name, parameters).Result;
+		var parameters = new DialogParameters { ["WorkspaceToClone"] = workspace };
+		var name = $"Clone workspace {workspace.Name}";
+		var result = await DialogService.Show<CloneWorkspaceDialog>(name, parameters).Result;
 		if (result.Canceled) return;
-		var clonedCourseId = (long)result.Data;
-		if (clonedCourseId > 0)
+		var clonedWorkspaceId = (long)result.Data;
+		if (clonedWorkspaceId > 0)
 		{
-			CourseService.GetCurrentUserCoursesAsync().AndForget();
-			await OnCourseSelected.InvokeAsync(clonedCourseId);
+			WorkspaceService.GetCurrentUserWorkspacesAsync().AndForget();
+			await OnWorkspaceSelected.InvokeAsync(clonedWorkspaceId);
 		}
 	}
 
-	private bool CourseFilter(CourseListItem course)
+	private bool WorkspaceFilter(WorkspaceListItem workspace)
 	{
 		if (string.IsNullOrWhiteSpace(searchString))
 			return true;
-		if (course.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+		if (workspace.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
 			return true;
 		return false;
 	}

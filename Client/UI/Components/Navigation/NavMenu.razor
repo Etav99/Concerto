@@ -9,10 +9,10 @@
 	<AuthorizeView >
 		@if(!LayoutState.IsMobile)
 		{
-			<MudNavLink Href="recorder" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Camera">Recording tool</MudNavLink>
+			<MudNavLink Href="recorder" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Camera">Video recorder</MudNavLink>
 		}
-		<MudNavLink Href="courses" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Courses</MudNavLink>
-		<CoursesNavGroup/>
+		<MudNavLink Href="workspaces" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Workspaces">Workspaces</MudNavLink>
+		<WorkspacesNavGroup/>
 	</AuthorizeView>
 </MudNavMenu>
 

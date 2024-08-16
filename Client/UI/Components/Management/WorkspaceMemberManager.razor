@@ -1,6 +1,6 @@
 ﻿@inherits MudComponentBase
 
-<MudTable Comparer="_comparer" T="CourseUser" Items="Items" Loading="Loading" Filter="new Func<CourseUser, bool>(Filter)"
+<MudTable Comparer="_comparer" T="WorkspaceUser" Items="Items" Loading="Loading" Filter="new Func<WorkspaceUser, bool>(Filter)"
           RowClassFunc="RowClassFunc" ReadOnly="true" AllowUnsorted="false"
           RowsPerPage="PageSize.Default"
           SortLabel="Sort By" Dense="true" Hover="true" Outlined="true" FixedFooter="true" FixedHeader="true"
@@ -44,26 +44,26 @@
         }
 
         <MudTh Style="padding-right: 0">
-            <MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x))">Member</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<WorkspaceUser, object>(x => SelectedWorkspaceUsers.Contains(x))">Member</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].FirstName)">Name</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<WorkspaceUser, object>(x => Users[x.UserId].FirstName)">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<WorkspaceUser, object>(x => Users[x.UserId].LastName)" InitialDirection="SortDirection.Ascending">Surname</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<CourseUser, object>(x => Users[x.UserId].Username)">Username</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<WorkspaceUser, object>(x => Users[x.UserId].Username)">Username</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<CourseUser, object>(x => SelectedCourseUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<WorkspaceUser, object>(x => SelectedWorkspaceUsers.Contains(x) ? x.Role.ToDisplayString() : string.Empty)">Role</MudTableSortLabel>
         </MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
 
     <RowTemplate>
         <MudTd DataLabel="Member">
-            <MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Disabled="Editing" Checked="@SelectedCourseUsers.Contains(context)" />
+            <MudCheckBox Class="py-2" T="bool" CheckedChanged="() => CheckedChanged(context)" Dense="true" Disabled="Editing" Checked="@SelectedWorkspaceUsers.Contains(context)" />
         </MudTd>
         @if (!LayoutState.Xs)
         {
@@ -77,7 +77,7 @@
         {
 
             <MudTd DataLabel="Role" Style="min-width: 200px;">
-                <CourseRolePicker @bind-Value="context.Role" />
+                <WorkspaceRolePicker @bind-Value="context.Role" />
             </MudTd>
 
             <MudTd DataLabel="Actions" Style="justify-content: space-between;">
@@ -89,7 +89,7 @@
         }
         else
         {
-            @if (SelectedCourseUsers.Contains(context))
+            @if (SelectedWorkspaceUsers.Contains(context))
             {
                 <MudTd DataLabel="Role" Style="min-width: 200px;">
                     @context.Role.ToDisplayString()
@@ -139,16 +139,16 @@
     [CascadingParameter] LayoutState LayoutState { get; set; } = LayoutState.Default;
 
     [Parameter]
-    public HashSet<CourseUser> SelectedCourseUsers { get; set; } = new(new CourseUserIdEqualityComparer());
+    public HashSet<WorkspaceUser> SelectedWorkspaceUsers { get; set; } = new(new WorkspaceUserIdEqualityComparer());
 
     [Parameter]
-    public EventCallback<HashSet<CourseUser>> SelectedCourseUsersChanged { get; set; }
+    public EventCallback<HashSet<WorkspaceUser>> SelectedWorkspaceUsersChanged { get; set; }
 
     [Parameter]
-    public HashSet<CourseUser> ExistingCourseUsers { get; set; } = null!;
+    public HashSet<WorkspaceUser> ExistingWorkspaceUsers { get; set; } = null!;
 
     [Parameter]
-    public HashSet<CourseUser> AvailableCourseUsers { get; set; } = null!;
+    public HashSet<WorkspaceUser> AvailableWorkspaceUsers { get; set; } = null!;
 
     [Parameter]
     public Dictionary<Guid, User> Users { get; set; } = null!;
@@ -161,25 +161,25 @@
     Size Size => LayoutState.Xs ? Size.Small : Size.Medium;
 
 
-    private bool? _selectAllState => SelectedCourseUsers.Count == Items.Count() ? true : SelectedCourseUsers.Count > 0 ? null : false;
+    private bool? _selectAllState => SelectedWorkspaceUsers.Count == Items.Count() ? true : SelectedWorkspaceUsers.Count > 0 ? null : false;
 
-    bool Loading => AvailableCourseUsers is null || Users is null;
+    bool Loading => AvailableWorkspaceUsers is null || Users is null;
 
-    IEnumerable<CourseUser> CurrentMembers => AvailableCourseUsers.Where(x => ExistingCourseUsers.Contains(x) || SelectedCourseUsers.Contains(x));
-    IEnumerable<CourseUser> Items => Loading ? new HashSet<CourseUser>() : !_addMembers ? CurrentMembers : AvailableCourseUsers;
+    IEnumerable<WorkspaceUser> CurrentMembers => AvailableWorkspaceUsers.Where(x => ExistingWorkspaceUsers.Contains(x) || SelectedWorkspaceUsers.Contains(x));
+    IEnumerable<WorkspaceUser> Items => Loading ? new HashSet<WorkspaceUser>() : !_addMembers ? CurrentMembers : AvailableWorkspaceUsers;
 
     private string _searchString = "";
     bool _addMembers = false;
 
-    private CourseUser? _editedUser;
+    private WorkspaceUser? _editedUser;
     bool Editing => _editedUser is not null;
 
-    private CourseUserIdEqualityComparer _comparer = new();
+    private WorkspaceUserIdEqualityComparer _comparer = new();
 
     private void ApplyEdit()
     {
         _editedUser = null;
-        SelectedCourseUsersChanged.InvokeAsync().AndForget();
+        SelectedWorkspaceUsersChanged.InvokeAsync().AndForget();
         StateHasChanged();
     }
 
@@ -193,14 +193,14 @@
 
     }
 
-    private void RestoreUser(CourseUser user)
+    private void RestoreUser(WorkspaceUser user)
     {
-        CourseUser? existingUser;
-        var existing = ExistingCourseUsers.TryGetValue(user, out existingUser);
+        WorkspaceUser? existingUser;
+        var existing = ExistingWorkspaceUsers.TryGetValue(user, out existingUser);
         if (existing && existingUser is not null)
         {
             user.Role = existingUser.Role;
-            SelectedCourseUsersChanged.InvokeAsync().AndForget();
+            SelectedWorkspaceUsersChanged.InvokeAsync().AndForget();
             StateHasChanged();
         }
     }
@@ -212,25 +212,25 @@
         {
             case true:
             case null:
-                SelectedCourseUsers.ExceptWith(Items);
+                SelectedWorkspaceUsers.ExceptWith(Items);
                 break;
             case false:
-                SelectedCourseUsers.UnionWith(Items.Where(x => Filter(x)).ToHashSet(new CourseUserIdEqualityComparer()));
+                SelectedWorkspaceUsers.UnionWith(Items.Where(x => Filter(x)).ToHashSet(new WorkspaceUserIdEqualityComparer()));
                 break;
         }
-        SelectedCourseUsersChanged.InvokeAsync().AndForget();
+        SelectedWorkspaceUsersChanged.InvokeAsync().AndForget();
         StateHasChanged();
     }
 
-    private void CheckedChanged(CourseUser user)
+    private void CheckedChanged(WorkspaceUser user)
     {
-        if (SelectedCourseUsers.Contains(user)) SelectedCourseUsers.Remove(user);
-        else SelectedCourseUsers.Add(user);
-        SelectedCourseUsersChanged.InvokeAsync().AndForget();
+        if (SelectedWorkspaceUsers.Contains(user)) SelectedWorkspaceUsers.Remove(user);
+        else SelectedWorkspaceUsers.Add(user);
+        SelectedWorkspaceUsersChanged.InvokeAsync().AndForget();
     }
 
 
-    private bool Filter(CourseUser user)
+    private bool Filter(WorkspaceUser user)
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
@@ -248,34 +248,34 @@
         return false;
     }
 
-    private bool IsModified(CourseUser courseUser)
+    private bool IsModified(WorkspaceUser workspaceUser)
     {
-        CourseUser? existingCourseUser;
-        var existing = ExistingCourseUsers.TryGetValue(courseUser, out existingCourseUser);
-        if (existing && existingCourseUser is not null)
+        WorkspaceUser? existingWorkspaceUser;
+        var existing = ExistingWorkspaceUsers.TryGetValue(workspaceUser, out existingWorkspaceUser);
+        if (existing && existingWorkspaceUser is not null)
         {
-            return existingCourseUser.Role != courseUser.Role;
+            return existingWorkspaceUser.Role != workspaceUser.Role;
         }
         return false;
     }
 
-    private string RowClassFunc(CourseUser courseUser, int rowNumber)
+    private string RowClassFunc(WorkspaceUser workspaceUser, int rowNumber)
     {
-        if (ExistingCourseUsers is null)
+        if (ExistingWorkspaceUsers is null)
             return string.Empty;
 
-        if (_editedUser?.UserId == courseUser.UserId)
+        if (_editedUser?.UserId == workspaceUser.UserId)
         {
             return "row-colored row-edited";
         }
 
-        CourseUser? existingCourseUser;
-        var existing = ExistingCourseUsers.TryGetValue(courseUser, out existingCourseUser);
-        var selected = SelectedCourseUsers.Contains(courseUser);
+        WorkspaceUser? existingWorkspaceUser;
+        var existing = ExistingWorkspaceUsers.TryGetValue(workspaceUser, out existingWorkspaceUser);
+        var selected = SelectedWorkspaceUsers.Contains(workspaceUser);
 
         if (selected && existing)
         {
-            if (existingCourseUser!.Role != courseUser.Role) return "row-colored row-modified"; // Modified
+            if (existingWorkspaceUser!.Role != workspaceUser.Role) return "row-colored row-modified"; // Modified
             return string.Empty; // Unchanged}
         }
         if (selected && !existing) return "row-colored row-new"; // New

@@ -1,0 +1,41 @@
+﻿@implements IDisposable
+@inject IWorkspaceService WorkspaceService
+
+<MudNavGroup Class="hidden" Title="Workspaces" Icon="@Icons.Material.Filled.MenuBook" ExpandIcon="@Icons.Material.Filled.ArrowDownward" Expanded="true">
+	@if (_workspacesList is null)
+	{
+		<MudNavLink Href="#">
+			<MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true"/>
+		</MudNavLink>
+	}
+	else
+	{
+		@foreach (var workspace in _workspacesList.OrderByDescending(c => c.Id).Take(30))
+		{
+			<MudNavLink title="@workspace.Name" Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Href="@($"workspaces/{workspace.Id}")" Match="NavLinkMatch.Prefix">@workspace.Name</MudNavLink>
+		}
+	}
+
+</MudNavGroup>
+
+@code {
+	IEnumerable<WorkspaceListItem>? _workspacesList;
+
+	private void SetWorkspacesList(object? sender, IEnumerable<WorkspaceListItem> workspacesList)
+	{
+		_workspacesList = workspacesList;
+		StateHasChanged();
+	}
+
+	protected override void OnInitialized()
+	{
+		WorkspaceService.UserWorkspacesFetchEventHandler += SetWorkspacesList;
+		WorkspaceService.GetCurrentUserWorkspacesAsync().AndForget();
+	}
+
+	public void Dispose()
+	{
+		WorkspaceService.UserWorkspacesFetchEventHandler -= SetWorkspacesList;
+	}
+
+}

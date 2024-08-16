@@ -1,5 +1,5 @@
 ﻿@inherits DialogAutoFullscreen
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 @inject ISnackbar Snackbar
 @inject IStorageService StorageService
 
@@ -20,7 +20,7 @@
 			<MudStack Spacing="4">
 				<MudTextField Disabled="_permanent" @bind-Value="_request.Name" T="string" Label="Folder name"></MudTextField>
 				<FolderTypePicker Disabled="_permanent" @bind-Value="_request.Type"></FolderTypePicker>
-				<FolderPermissionPicker @bind-Value="_request.CoursePermission" Inherited="_parentPermissionType"/>
+				<FolderPermissionPicker @bind-Value="_request.WorkspacePermission" Inherited="_parentPermissionType"/>
 
 				<MudPaper Elevation="0" Outlined="true" Class="d-flex flex-column" Style="overflow: auto;">
 					<MudText Class="ml-4 align-self-start"> User specific permissions
@@ -28,7 +28,7 @@
 						<MudIcon Class="d-inline-block" Icon="@Icons.Material.Filled.Info"/>
 					</MudTooltip>
 					</MudText>
-					<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="CourseUsers"
+					<UserFolderPermissionPicker @bind-UserFolderPermissions="_request.UserPermissions" ParentUserFolderPermissions="ParentUserFolderPermissions" Users="WorkspaceUsers"
 											Style="min-heigh: 400px; max-height:calc(100vh - 450px);" />
 				</MudPaper>
 			</MudStack>
@@ -49,7 +49,7 @@
 
 	private FolderPermissionType? _parentPermissionType;
 	public HashSet<UserFolderPermission> ParentUserFolderPermissions { get; set; } = null!;
-	private HashSet<User>? CourseUsers;
+	private HashSet<User>? WorkspaceUsers;
 
 	// Form
 	private UpdateFolderRequest _request = null!;
@@ -61,17 +61,17 @@
 		Loading = true;
 		var folderSettings = await StorageService.GetFolderSettingsAsync(EditedFolderId);
 		_permanent = folderSettings.IsPermanent;
-		CourseUsers = (await CourseService.GetCourseUsersAsync(folderSettings.CourseId)).ToHashSet();
+		WorkspaceUsers = (await WorkspaceService.GetWorkspaceUsersAsync(folderSettings.WorkspaceId)).ToHashSet();
 		_request = new UpdateFolderRequest(folderSettings.Id)
 		{
 			Name = folderSettings.Name,
 			Type = folderSettings.Type,
-			CoursePermission = folderSettings.CoursePermission,
+			WorkspacePermission = folderSettings.WorkspacePermission,
 			UserPermissions = new HashSet<UserFolderPermission>(folderSettings.UserPermissions),
 			forceInherit = false
 		};
 		ParentUserFolderPermissions = folderSettings.ParentUserPermissions.ToHashSet();
-		_parentPermissionType = folderSettings.ParentCoursePermission?.Type;
+		_parentPermissionType = folderSettings.ParentWorkspacePermission?.Type;
 		Loading = false;
 	}
 

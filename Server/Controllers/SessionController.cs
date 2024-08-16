@@ -12,23 +12,23 @@ namespace Concerto.Server.Controllers;
 [Authorize]
 public class SessionController : ControllerBase
 {
-	private readonly CourseService _courseService;
+	private readonly WorkspaceService _workspaceService;
 	private readonly ILogger<SessionController> _logger;
 	private readonly SessionService _sessionService;
 	private Guid UserId => HttpContext.UserId();
 
 
-	public SessionController(ILogger<SessionController> logger, CourseService courseService, SessionService sessionService)
+	public SessionController(ILogger<SessionController> logger, WorkspaceService workspaceService, SessionService sessionService)
 	{
 		_logger = logger;
-		_courseService = courseService;
+		_workspaceService = workspaceService;
 		_sessionService = sessionService;
 	}
 
 	[HttpPost]
 	public async Task<ActionResult<long>> CreateSession([FromBody] CreateSessionRequest request)
 	{
-		if (!User.IsAdmin() && !await _courseService.CanManageCourseSessions(request.CourseId, UserId)) return Forbid();
+		if (!User.IsAdmin() && !await _workspaceService.CanManageWorkspaceSessions(request.WorkspaceId, UserId)) return Forbid();
 
 		var sessionId = await _sessionService.CreateSession(request, UserId);
 		if (sessionId is not null) return Ok(sessionId);
@@ -54,10 +54,10 @@ public class SessionController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<SessionListItem>>> GetCourseSessions(long courseId)
+	public async Task<ActionResult<IEnumerable<SessionListItem>>> GetWorkspaceSessions(long workspaceId)
 	{
-		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
-		return Ok(await _sessionService.GetCourseSessions(courseId));
+		if (!User.IsAdmin() && !await _workspaceService.IsUserWorkspaceMember(UserId, workspaceId)) return Forbid();
+		return Ok(await _sessionService.GetWorkspaceSessions(workspaceId));
 	}
 
 	[HttpGet]

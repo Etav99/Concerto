@@ -1,5 +1,5 @@
 ﻿@attribute [Authorize]
-@page "/courses/{CourseId:long}/sessions/{SelectedSessionId:long}"
+@page "/workspaces/{WorkspaceId:long}/sessions/{SelectedSessionId:long}"
 
 @inject NavigationManager NavigationManager;
 @inject IBreadcrumbsService BreadcrumbsService;
@@ -20,7 +20,7 @@ else
 
         <Header>
             <MudLink Class="mud-tab px-1"
-                 Color="Color.Default" Underline="Underline.None" OnClick="@(() => NavigationManager.NavigateTo($"courses/{CourseId}"))">
+                 Color="Color.Default" Underline="Underline.None" OnClick="@(() => NavigationManager.NavigateTo($"workspaces/{WorkspaceId}"))">
                 <MudIcon Class="text-icon" Size="Size.Small" Icon="@Icons.Material.Filled.ArrowBack" />
             </MudLink>
         </Header>
@@ -35,13 +35,13 @@ else
                          Class="flex-grow-1" Style="height: 100%;" Elevation="0" />
             </MudTabPanel>
 
-            <MudTabPanel Text="Course content">
-                <FileManager InitialFolderId="SelectedSession!.CourseRootFolderId"
+            <MudTabPanel Text="Workspace content">
+                <FileManager InitialFolderId="SelectedSession!.WorkspaceRootFolderId"
                          Class="flex-grow-1" Style="height: 100%;" Elevation="0" />
             </MudTabPanel>
 
-            <MudTabPanel Text="Course forum">
-                <Forum CourseId="CourseId" Title="Course forum" />
+            <MudTabPanel Text="Workspace forum">
+                <Forum WorkspaceId="WorkspaceId" Title="Workspace forum" />
             </MudTabPanel>
 
             @if (SelectedSession!.CanManage)
@@ -60,7 +60,7 @@ else
     public long SelectedSessionId { get; set; }
 
     [Parameter]
-    public long CourseId { get; set; }
+    public long WorkspaceId { get; set; }
 
     private Session? SelectedSession { get; set; }
 
@@ -76,22 +76,22 @@ else
         catch
         {
             Snackbar.Add("Session does not exists or you don't have access", Severity.Error);
-            NavigationManager.NavigateTo($"courses/{CourseId}");
+            NavigationManager.NavigateTo($"workspaces/{WorkspaceId}");
             return;
         }
 
         BreadcrumbsService.Set(
             Icons.Material.Filled.MeetingRoom,
             SelectedSession.Name,
-            new BreadcrumbItem("Courses", "courses"),
-            new BreadcrumbItem(SelectedSession.CourseName, $"courses/{SelectedSession.CourseId}"),
+            new BreadcrumbItem("Workspaces", "workspaces"),
+            new BreadcrumbItem(SelectedSession.WorkspaceName, $"workspaces/{SelectedSession.WorkspaceId}"),
             new BreadcrumbItem(SelectedSession.Name, null, true)
         );
     }
 
     private void OnSessionDeleted()
     {
-        NavigationManager.NavigateTo($"courses/{SelectedSession!.CourseId}");
+        NavigationManager.NavigateTo($"workspaces/{SelectedSession!.WorkspaceId}");
     }
 
     private async void OnSessionUpdated()

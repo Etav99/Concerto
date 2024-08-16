@@ -49,14 +49,14 @@ namespace Concerto.Shared.Extensions
 				.Build();
 			}
 		}
-		public static class IsTeacher
+		public static class IsModerator
 		{
-			public const string Name = "IsTeacher";
+			public const string Name = "IsModerator";
 			public static AuthorizationPolicy Policy()
 			{
 				return new AuthorizationPolicyBuilder()
 				.RequireAuthenticatedUser()
-				.RequireAssertion(c => c.User.IsTeacher() || c.User.IsAdmin())
+				.RequireAssertion(c => c.User.IsModerator() || c.User.IsAdmin())
 				.Build();
 			}
 		}

@@ -7,7 +7,7 @@ namespace Concerto.Server.Hubs;
 [Authorize]
 public class NotificationHub : Hub
 {
-	private readonly CourseService _courseService;
+	private readonly WorkspaceService _workspaceService;
 	private readonly ForumService _forumService;
 
 	private readonly ILogger<NotificationHub> _logger;
@@ -18,27 +18,27 @@ public class NotificationHub : Hub
 		ILogger<NotificationHub> logger,
 		ForumService chatService,
 		UserService userService,
-		CourseService courseService,
+		WorkspaceService workspaceService,
 		StorageService storageService
 	)
 	{
 		_logger = logger;
 		_forumService = chatService;
 		_userService = userService;
-		_courseService = courseService;
+		_workspaceService = workspaceService;
 		_storageService = storageService;
 	}
 
 	private long? UserId => (long?)Context.GetHttpContext()?.Items["AppUserId"];
 
-	public static string ForumGroup(long courseId)
+	public static string ForumGroup(long workspaceId)
 	{
-		return $"Forum-{courseId}";
+		return $"Forum-{workspaceId}";
 	}
 
-	public static string FolderGroup(long courseId)
+	public static string FolderGroup(long workspaceId)
 	{
-		return $"Folder-{courseId}";
+		return $"Folder-{workspaceId}";
 	}
 
 	public override async Task OnConnectedAsync()
@@ -47,14 +47,14 @@ public class NotificationHub : Hub
 	}
 
 
-	public async Task SubscribeForum(long courseId)
+	public async Task SubscribeForum(long workspaceId)
 	{
-		await Groups.AddToGroupAsync(Context.ConnectionId, ForumGroup(courseId));
+		await Groups.AddToGroupAsync(Context.ConnectionId, ForumGroup(workspaceId));
 	}
 
-	public async Task UnsubscribeForum(long courseId)
+	public async Task UnsubscribeForum(long workspaceId)
 	{
-		await Groups.RemoveFromGroupAsync(Context.ConnectionId, ForumGroup(courseId));
+		await Groups.RemoveFromGroupAsync(Context.ConnectionId, ForumGroup(workspaceId));
 	}
 }
 

@@ -12,24 +12,24 @@ namespace Concerto.Server.Controllers;
 [Authorize]
 public class ForumController : ControllerBase
 {
-	private readonly CourseService _courseService;
+	private readonly WorkspaceService _workspaceService;
 	private readonly ForumService _forumService;
 	private readonly ILogger<ForumController> _logger;
 
-	public ForumController(ILogger<ForumController> logger, ForumService forumService, CourseService courseService)
+	public ForumController(ILogger<ForumController> logger, ForumService forumService, WorkspaceService workspaceService)
 	{
 		_logger = logger;
 		_forumService = forumService;
-		_courseService = courseService;
+		_workspaceService = workspaceService;
 	}
 
 	private Guid UserId => HttpContext.UserId();
 
 	[HttpPost]
-	public async Task<ActionResult<IEnumerable<Post>>> GetPosts(long courseId, long? beforeId = null, long? relatedToFileId = null)
+	public async Task<ActionResult<IEnumerable<Post>>> GetPosts(long workspaceId, long? beforeId = null, long? relatedToFileId = null)
 	{
-		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, courseId)) return Forbid();
-		return Ok(await _forumService.GetPosts(courseId, UserId, User.IsAdmin(), beforeId, relatedToFileId));
+		if (!User.IsAdmin() && !await _workspaceService.IsUserWorkspaceMember(UserId, workspaceId)) return Forbid();
+		return Ok(await _forumService.GetPosts(workspaceId, UserId, User.IsAdmin(), beforeId, relatedToFileId));
 	}
 
 	[HttpPost]
@@ -42,7 +42,7 @@ public class ForumController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Post>> CreatePost([FromBody] CreatePostRequest request)
 	{
-		if (!User.IsAdmin() && !await _courseService.IsUserCourseMember(UserId, request.CourseId)) return Forbid();
+		if (!User.IsAdmin() && !await _workspaceService.IsUserWorkspaceMember(UserId, request.WorkspaceId)) return Forbid();
 		var createdPost = await _forumService.CreatePost(request, UserId);
 		return createdPost != null ? Ok(createdPost) : BadRequest();
 	}

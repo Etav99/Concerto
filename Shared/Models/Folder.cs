@@ -5,9 +5,9 @@ namespace Concerto.Shared.Models.Dto;
 
 public record FolderContent
 {
-	public FolderPermission CoursePermission { get; init; } = null!;
+	public FolderPermission WorkspacePermission { get; init; } = null!;
 	public FolderItem Self { get; init; } = null!;
-	public long CourseId { get; init; }
+	public long WorkspaceId { get; init; }
 	public virtual IEnumerable<FolderItem> SubFolders { get; init; } = Enumerable.Empty<FolderItem>();
 	public virtual IEnumerable<FileItem> Files { get; init; } = Enumerable.Empty<FileItem>();
 }
@@ -42,7 +42,7 @@ public record FolderItem(
 	FolderType Type
 ) : FolderContentItem(Id, Name, CanEdit, CanDelete)
 {
-	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
+	public bool IsPermanent => Type is FolderType.WorkspaceRoot or FolderType.Sessions;
 }
 
 public record FileItem(
@@ -63,15 +63,15 @@ public record FolderSettings(
 	long Id,
 	string Name,
 	Guid? OwnerId,
-	long CourseId,
+	long WorkspaceId,
 	FolderType Type,
-	FolderPermission CoursePermission,
-	FolderPermission? ParentCoursePermission,
+	FolderPermission WorkspacePermission,
+	FolderPermission? ParentWorkspacePermission,
 	IEnumerable<UserFolderPermission> UserPermissions,
 	IEnumerable<UserFolderPermission> ParentUserPermissions
 ) : EntityModel(Id)
 {
-	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
+	public bool IsPermanent => Type is FolderType.WorkspaceRoot or FolderType.Sessions;
 }
 public record UserFolderPermission(User User, FolderPermission Permission)
 {
@@ -103,7 +103,7 @@ public enum FolderPermissionType
 
 public enum FolderType
 {
-	CourseRoot,
+	WorkspaceRoot,
 	Sessions,
 	Sheets,
 	Recordings,
@@ -119,7 +119,7 @@ public static class FolderTypeExtensions
 	{
 		return type switch
 		{
-			FolderType.CourseRoot => "Course Root",
+			FolderType.WorkspaceRoot => "Workspace Root",
 			FolderType.Sessions => "Session recordings",
 			FolderType.Sheets => "Music scores",
 			FolderType.Recordings => "Recordings",
@@ -137,7 +137,7 @@ public record CreateFolderRequest
 	public long ParentId { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public FolderType Type { get; set; } = FolderType.Other;
-	public FolderPermission CoursePermission { get; set; } = null!;
+	public FolderPermission WorkspacePermission { get; set; } = null!;
 }
 
 public record UpdateFolderRequest : EntityModel
@@ -146,7 +146,7 @@ public record UpdateFolderRequest : EntityModel
 
 	public string Name { get; set; } = null!;
 	public FolderType Type { get; set; }
-	public FolderPermission CoursePermission { get; set; } = null!;
+	public FolderPermission WorkspacePermission { get; set; } = null!;
 	public virtual HashSet<UserFolderPermission> UserPermissions { get; set; } = null!;
 	public bool forceInherit { get; set; }
 }

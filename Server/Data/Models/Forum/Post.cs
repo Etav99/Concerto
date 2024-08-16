@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Concerto.Server.Data.Models;
 
-[Index(nameof(CourseId))]
+[Index(nameof(WorkspaceId))]
 public class Post : Entity
 {
 	[Required] public Guid AuthorId { get; set; }
 
 	public User Author { get; set; } = null!;
 
-	[Required] public long CourseId { get; set; }
+	[Required] public long WorkspaceId { get; set; }
 
-	public Course Course { get; set; } = null!;
+	public Workspace Workspace { get; set; } = null!;
 
 	[Required] public DateTime CreatedAt { get; set; }
 
@@ -47,7 +47,7 @@ public class Comment : Entity
 
 public enum PostType
 {
-	CoursePost,
+	WorkspacePost,
 	SessionPost
 }
 
@@ -57,7 +57,7 @@ public static partial class ViewModelConversions
 	{
 		return new Dto.Post(post.Id,
 			Author: post.Author.ToViewModel(),
-			CourseId: post.CourseId,
+			WorkspaceId: post.WorkspaceId,
 			CreatedAt: post.CreatedAt,
 			Title: post.Title,
 			Content: post.Content,

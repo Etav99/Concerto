@@ -45,21 +45,21 @@ public static class DialogServiceExtensions
         await dialogService.Show<InfoDialog>(title, parameters).Result;
     }
 
-    public static async Task<long> ShowCreateCourseDialog(this IDialogService dialogService)
+    public static async Task<long> ShowCreateWorkspaceDialog(this IDialogService dialogService)
     {
         // var options = new DialogOptions() { FullScreen = true,  };
-        var result = await dialogService.Show<CreateCourseDialog>("Create new course").Result;
+        var result = await dialogService.Show<CreateWorkspaceDialog>("Create new workspace").Result;
         if (result.Canceled) return -1;
         return (long)result.Data;
     }
 
-    public static async Task<FolderItem?> ShowSelectFolderDialog(this IDialogService dialogService, string title, string selectButtonText, long? initialCourseId = null, IEnumerable<long>? excludedIds = null, IEnumerable<long>? excludedWithChildrenIds = null)
+    public static async Task<FolderItem?> ShowSelectFolderDialog(this IDialogService dialogService, string title, string selectButtonText, long? initialWorkspaceId = null, IEnumerable<long>? excludedIds = null, IEnumerable<long>? excludedWithChildrenIds = null)
     {
 		var parameters = new DialogParameters
         {
 			["ExcludedIds"] = excludedIds,
 			["ExcludedWithChildrenIds"] = excludedWithChildrenIds,
-            ["InitialCourseId"] = initialCourseId,
+            ["InitialWorkspaceId"] = initialWorkspaceId,
 			["SelectButtonText"] = selectButtonText,
 		};
 		var result = await dialogService.Show<SelectFolderDialog>(title, parameters).Result;
@@ -67,26 +67,26 @@ public static class DialogServiceExtensions
 		return (FolderItem)result.Data;
     }
 
-    public static async Task<bool> ShowSelectFilesDialog(this IDialogService dialogService, HashSet<FileItem> selectedFiles, long courseId)
+    public static async Task<bool> ShowSelectFilesDialog(this IDialogService dialogService, HashSet<FileItem> selectedFiles, long workspaceId)
     {
         var options = new DialogOptions() { FullScreen = true, MaxWidth = MaxWidth.Large };
         var parameters = new DialogParameters
         {
             ["SelectedFiles"] = selectedFiles,
-            ["CourseId"] = courseId
+            ["WorkspaceId"] = workspaceId
         };
         var result = await dialogService.Show<SelectFilesDialog>("Select files", parameters, options).Result;
         if (result.Canceled) return false;
         return true;
     }
 
-    public static async Task<bool> ShowPostsRelatedToFileDialog(this IDialogService dialogService, long courseId, FileItem file)
+    public static async Task<bool> ShowPostsRelatedToFileDialog(this IDialogService dialogService, long workspaceId, FileItem file)
     {
         var options = new DialogOptions() { FullScreen = true, MaxWidth = MaxWidth.Large };
         var parameters = new DialogParameters
         {
             ["File"] = file,
-            ["CourseId"] = courseId
+            ["WorkspaceId"] = workspaceId
         };
         var result = await dialogService.Show<PostsRelatedToFileDialog>($"Posts related to {file.FullName}", parameters, options).Result;
         if (result.Canceled) return false;

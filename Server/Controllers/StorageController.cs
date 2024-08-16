@@ -18,19 +18,14 @@ public class StorageController : ControllerBase
 {
 	private readonly ILogger<StorageController> _logger;
 	private readonly StorageService _storageService;
-	private readonly TokenStore _tokenStore;
 
 	private Guid UserId => HttpContext.UserId();
 
-	public StorageController(ILogger<StorageController> logger, StorageService storageService, SessionService sessionService, TokenStore tokenStore)
+	public StorageController(ILogger<StorageController> logger, StorageService storageService, SessionService sessionService)
 	{
 		_logger = logger;
 		_storageService = storageService;
-		_tokenStore = tokenStore;
 	}
-
-
-
 
 	[HttpGet]
 	public async Task<ActionResult<FolderContent>> GetFolderContent([FromQuery] long folderId)
@@ -214,31 +209,6 @@ public class StorageController : ControllerBase
 		await _storageService.CopyFolders(folderIds, request.DestinationFolderId, UserId);
 		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, UserId);
 		return Ok();
-	}
-
-	[HttpGet]
-	[AllowAnonymous]
-	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token, [FromQuery] bool inline)
-	{
-		if (!_tokenStore.ValidateToken(token, fileId, TokenStore.TokenType.File)) return Forbid();
-
-		var file = await _storageService.GetFile(fileId);
-		if (file == null) return NotFound();
-		var fileBytes = System.IO.File.OpenRead(file.Path);
-
-		if(inline)
-			return File(fileStream: fileBytes, contentType: file.MimeType, enableRangeProcessing: true);
-
-		return File(fileStream: fileBytes, fileDownloadName: file.DisplayName + file.Extension, contentType: file.MimeType, enableRangeProcessing: true);
-	}
-
-	[HttpGet]
-	public async Task<ActionResult<Guid>> GetFileDownloadToken([FromQuery] long fileId)
-	{
-		if (!(User.IsAdmin() || await _storageService.CanReadFile(UserId, fileId))) return Forbid();
-
-		var token = _tokenStore.GenerateToken(fileId, TokenStore.TokenType.File);
-		return Ok(token);
 	}
 
 	[HttpPost]

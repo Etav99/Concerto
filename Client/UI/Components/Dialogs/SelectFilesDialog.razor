@@ -1,4 +1,4 @@
-﻿@inject ICourseService CourseService
+﻿@inject IWorkspaceService WorkspaceService
 @inject ISnackbar Snackbar
 @inherits DialogAutoFullscreen
 
@@ -17,7 +17,7 @@
 				</div>
 				
 				<FileManager Class="" Style="height: calc(100% - 84px)" Outlined="true" Elevation="0"
-						 SelectFilesMode="true" SelectedItems="_selectedItems" OnSelectedItemsChanged="() => StateHasChanged()" InitialFolderId="_course!.RootFolderId" />
+						 SelectFilesMode="true" SelectedItems="_selectedItems" OnSelectedItemsChanged="() => StateHasChanged()" InitialFolderId="_workspace!.RootFolderId" />
 			</div>
 		}
 	</DialogContent>
@@ -32,16 +32,16 @@
 @code {
 
 	[Parameter]
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 
-	private Course? _course;
+	private Workspace? _workspace;
 
 	[Parameter, EditorRequired]
 	public HashSet<FileItem> SelectedFiles { get; set; } = new(new FolderContentItemIdEqualityComparer());
 
 	public HashSet<FolderContentItem> _selectedItems { get; set; } = new(new FolderContentItemIdEqualityComparer());
 
-	bool Loading => _course is null;
+	bool Loading => _workspace is null;
 
 	protected override void OnInitialized()
 	{
@@ -54,7 +54,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		_course = await CourseService.GetCourseAsync(CourseId);
+		_workspace = await WorkspaceService.GetWorkspaceAsync(WorkspaceId);
 	}
 
 	private void Submit()

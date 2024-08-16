@@ -1,4 +1,4 @@
-﻿@inject ICourseService CourseService
+﻿@inject IWorkspaceService WorkspaceService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inherits DialogAutoFullscreen
@@ -7,18 +7,18 @@
 	<DialogContent>
 		<MudStack Spacing="4">
 			<MudForm @ref="_form">
-				<MudTextField Immediate="true" DebounceInterval="250" @bind-Value="_request.Name" T="string" Label="Course name" Validation="Validation.NotEmpty"></MudTextField>
+				<MudTextField Immediate="true" DebounceInterval="250" @bind-Value="_request.Name" T="string" Label="Workspace name" Validation="Validation.NotEmpty"></MudTextField>
 			</MudForm>
 
 			<MudPaper Elevation="0" Outlined="true" Class="px-3 d-flex flex-column">
-				<MudSwitch @bind-Checked="_request.CopyCourseUsers" Label="Copy members" Color="Color.Success"></MudSwitch>
-				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyRoles" Label="With roles" Disabled="!_request.CopyCourseUsers" Color="Color.Success"></MudSwitch>
+				<MudSwitch @bind-Checked="_request.CopyWorkspaceUsers" Label="Copy members" Color="Color.Success"></MudSwitch>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyRoles" Label="With roles" Disabled="!_request.CopyWorkspaceUsers" Color="Color.Success"></MudSwitch>
 			</MudPaper>
 
 			<MudPaper Elevation="0" Outlined="true" Class="px-3 d-flex flex-column">
 				<MudSwitch @bind-Checked="_request.CopyFolders" Label="Copy folders" Color="Color.Success"></MudSwitch>
 				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFiles" Label="With files" Disabled="!_request.CopyFolders" Color="Color.Success"></MudSwitch>
-				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user specific permissions" Disabled="!(_request.CopyFolders && _request.CopyCourseUsers)" Color="Color.Success"></MudSwitch>
+				<MudSwitch Class="ml-2" @bind-Checked="_request.CopyFoldersPermissions" Label="With user specific permissions" Disabled="!(_request.CopyFolders && _request.CopyWorkspaceUsers)" Color="Color.Success"></MudSwitch>
 			</MudPaper>
 
 		</MudStack>
@@ -31,22 +31,22 @@
 
 @code {
 	[Parameter]
-	public CourseListItem CourseToClone { get; set; } = null!;
+	public WorkspaceListItem WorkspaceToClone { get; set; } = null!;
 
 	private MudForm? _form = null;
 
 	private HashSet<User> _members = new(new UserIdEqualityComparer());
 
-	private bool Valid => !string.IsNullOrEmpty(_request.Name)  && (_request.CopyCourseUsers || _request.CopyFolders);
+	private bool Valid => !string.IsNullOrEmpty(_request.Name)  && (_request.CopyWorkspaceUsers || _request.CopyFolders);
 
-	private CloneCourseRequest _request = null!;
+	private CloneWorkspaceRequest _request = null!;
 
 	protected override void OnInitialized()
 	{
-		_request = new CloneCourseRequest
+		_request = new CloneWorkspaceRequest
 		{
-			CourseId = CourseToClone.Id,
-			CopyCourseUsers = true,
+			WorkspaceId = WorkspaceToClone.Id,
+			CopyWorkspaceUsers = true,
 			CopyRoles = true,
 			CopyFolders = false,
 			CopyFiles = false,
@@ -62,13 +62,13 @@
 
 		try
 		{
-			var clonedCourseId = await CourseService.CloneCourseAsync(_request);
-			Snackbar.Add($"Cloned course {CourseToClone.Name}.", Severity.Success);
-			Dialog.Close(DialogResult.Ok(clonedCourseId));
+			var clonedWorkspaceId = await WorkspaceService.CloneWorkspaceAsync(_request);
+			Snackbar.Add($"Cloned workspace {WorkspaceToClone.Name}.", Severity.Success);
+			Dialog.Close(DialogResult.Ok(clonedWorkspaceId));
 		}
 		catch
 		{
-			Snackbar.Add($"Failed to clone course {CourseToClone.Name}", Severity.Error);
+			Snackbar.Add($"Failed to clone workspace {WorkspaceToClone.Name}", Severity.Error);
 			Dialog.Cancel();
 		}
 	}

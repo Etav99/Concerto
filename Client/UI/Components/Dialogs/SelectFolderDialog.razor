@@ -1,5 +1,5 @@
 ﻿@inherits DialogAutoFullscreen
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 @inject IStorageService StorageService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -12,12 +12,12 @@
 				
 				<MudStack Row="true" AlignItems="AlignItems.Center">
 						<MudIcon Icon="@Icons.Material.Filled.ArrowRight" />
-					<MudText>@($"Course: {_selectedCourse?.Name}")</MudText>
-						<MudButton Color="Color.Info" OnClick="ChooseCourse">Change</MudButton>
+					<MudText>@($"Workspace: {_selectedWorkspace?.Name}")</MudText>
+						<MudButton Color="Color.Info" OnClick="ChooseWorkspace">Change</MudButton>
 				</MudStack>
 
 				<FileManager Class="" Style="height: calc(100% - 48px)" Outlined="true" Elevation="0"
-					             ChooseFolderMode="true" InitialFolderId="_selectedCourse!.RootFolderId"
+					             ChooseFolderMode="true" InitialFolderId="_selectedWorkspace!.RootFolderId"
 								 OnFolderLoaded="OnFolderChanged" />
 			</MudStack>
 		}
@@ -31,9 +31,9 @@
 
 
 	@code {
-	private Course? _selectedCourse;
+	private Workspace? _selectedWorkspace;
 	[Parameter]
-	public long? InitialCourseId { get; set; } = null;
+	public long? InitialWorkspaceId { get; set; } = null;
 
 	HashSet<long> _excludedFolderIds = null!;
 	[Parameter]
@@ -48,7 +48,7 @@
 
 	private bool _canChoose = false;
 
-	bool Loading => _selectedCourse is null;
+	bool Loading => _selectedWorkspace is null;
 
 	private FolderItem? _currentFolder = null;
 
@@ -64,26 +64,26 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		if (InitialCourseId is null)
-			await ChooseCourse();
+		if (InitialWorkspaceId is null)
+			await ChooseWorkspace();
 		else
-			_selectedCourse = await CourseService.GetCourseAsync(InitialCourseId.Value);
+			_selectedWorkspace = await WorkspaceService.GetWorkspaceAsync(InitialWorkspaceId.Value);
 
-		if (_selectedCourse is null)
+		if (_selectedWorkspace is null)
 			Cancel();
 
 		_excludedFolderIds = ExcludedIds?.ToHashSet() ?? new HashSet<long>();
 		_excludedWithChildrenFolderIds = ExcludedWithChildrenIds?.ToHashSet() ?? new HashSet<long>();
 	}
 
-	private async Task ChooseCourse()
+	private async Task ChooseWorkspace()
 	{
-		var name = "Select course";
-		var result = await DialogService.Show<SelectCourseDialog>(name).Result;
+		var name = "Select workspace";
+		var result = await DialogService.Show<SelectWorkspaceDialog>(name).Result;
 		if (result.Canceled) return;
-		var courseId = result.Data as long?;
-		if (courseId is null) return;
-		_selectedCourse = await CourseService.GetCourseAsync(courseId.Value);
+		var workspaceId = result.Data as long?;
+		if (workspaceId is null) return;
+		_selectedWorkspace = await WorkspaceService.GetWorkspaceAsync(workspaceId.Value);
 		StateHasChanged();
 	}
 

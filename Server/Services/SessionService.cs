@@ -23,10 +23,10 @@ public class SessionService
 		_storageService = storageService;
 	}
 
-	public async Task<(long courseId, long sessionId)> GetCourseAndSessionIds(Guid meetingGuid)
+	public async Task<(long workspaceId, long sessionId)> GetWorkspaceAndSessionIds(Guid meetingGuid)
 	{
 		var session = await _context.Sessions.Where(s => s.MeetingGuid == meetingGuid).SingleAsync();
-		return (session.CourseId, session.Id);
+		return (session.WorkspaceId, session.Id);
 	}
 
 	public async Task<Dto.Session?> GetSession(long sessionId, Guid userId, bool isAdmin)
@@ -38,7 +38,7 @@ public class SessionService
 			return null;
 
 		await _context.Entry(session)
-			.Reference(s => s.Course)
+			.Reference(s => s.Workspace)
 			.LoadAsync();
 
 		return session.ToViewModel(isAdmin || await CanManageSession(sessionId, userId));
@@ -50,8 +50,8 @@ public class SessionService
 		if (session == null)
 			return false;
 
-		var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
-		if (courseUser == null)
+		var workspaceUser = await _context.WorkspaceUsers.FindAsync(session.WorkspaceId, userId);
+		if (workspaceUser == null)
 			return false;
 
 		return true;
@@ -63,8 +63,8 @@ public class SessionService
 		if (session == null)
 			return false;
 
-		var courseUser = await _context.CourseUsers.FindAsync(session.CourseId, userId);
-		if (courseUser == null)
+		var workspaceUser = await _context.WorkspaceUsers.FindAsync(session.WorkspaceId, userId);
+		if (workspaceUser == null)
 			return false;
 
 		return true;
@@ -75,8 +75,8 @@ public class SessionService
 		var session = await _context.Sessions.FindAsync(sessionId);
 		if (session == null) return false;
 
-		var courseRole = (await _context.CourseUsers.FindAsync(session.CourseId, userId))?.Role;
-		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
+		var workspaceRole = (await _context.WorkspaceUsers.FindAsync(session.WorkspaceId, userId))?.Role;
+		return workspaceRole is WorkspaceUserRole.Admin or WorkspaceUserRole.Supervisor;
 	}
 
 	internal async Task<bool> DeleteSession(long sessionId)
@@ -104,20 +104,20 @@ public class SessionService
 
 	public async Task<long?> CreateSession(Dto.CreateSessionRequest request, Guid ownerId)
 	{
-		var course = await _context.Courses
-			.Include(r => r.CourseUsers)
+		var workspace = await _context.Workspaces
+			.Include(r => r.WorkspaceUsers)
 			.ThenInclude(ru => ru.User)
-			.FirstOrDefaultAsync(r => r.Id == request.CourseId);
+			.FirstOrDefaultAsync(r => r.Id == request.WorkspaceId);
 
-		if (course == null || !course.SessionsFolderId.HasValue)
+		if (workspace == null || !workspace.SessionsFolderId.HasValue)
 			return null;
 
 		var createFolderRequest = new Dto.CreateFolderRequest
 		{
-			ParentId = course.SessionsFolderId.Value!,
+			ParentId = workspace.SessionsFolderId.Value!,
 			Name = request.Name,
 			Type = Dto.FolderType.Sessions,
-			CoursePermission = new Dto.FolderPermission(Dto.FolderPermissionType.ReadWriteOwned, false)
+			WorkspacePermission = new Dto.FolderPermission(Dto.FolderPermissionType.ReadWriteOwned, false)
 		};
 
 		var folderId = await _storageService.CreateFolder(createFolderRequest, ownerId);
@@ -128,7 +128,7 @@ public class SessionService
 		{
 			Name = request.Name,
 			ScheduledDate = request.ScheduledDateTime.ToUniversalTime(),
-			Course = course,
+			Workspace = workspace,
 			FolderId = folderId.Value
 		};
 
@@ -137,10 +137,10 @@ public class SessionService
 		return session.Id;
 	}
 
-	internal async Task<IEnumerable<Dto.SessionListItem>> GetCourseSessions(long courseId)
+	internal async Task<IEnumerable<Dto.SessionListItem>> GetWorkspaceSessions(long workspaceId)
 	{
 		return await _context.Sessions
-			.Where(s => s.Course.Id == courseId)
+			.Where(s => s.Workspace.Id == workspaceId)
 			.Select(s => s.ToSessionListItem())
 			.ToListAsync();
 	}

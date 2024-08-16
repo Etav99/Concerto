@@ -1,6 +1,6 @@
 ﻿@attribute [Authorize]
 
-@page "/courses"
+@page "/workspaces"
 @using Concerto.Client.Services
 @using Microsoft.AspNetCore.Authorization
 @using Concerto.Client.UI.Components.Lists
@@ -11,12 +11,12 @@
 @inject ISnackbar Snackbar
 
 @inject IBreadcrumbsService BreadcrumbsService
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 
 
-<PageTitle>Courses</PageTitle>
+<PageTitle>Workspaces</PageTitle>
 
-<CoursesList Style="height: 100%;" OnCourseSelected="SelectCourse"/>
+<WorkspaceList Style="height: 100%;" OnWorkspaceSelected="SelectWorkspace"/>
 
 @code {
 
@@ -24,14 +24,14 @@
 	{
 		BreadcrumbsService.Set(
 			Icons.Material.Filled.List,
-			"Courses",
-			new BreadcrumbItem("Courses", null, true)
+			"Workspaces",
+			new BreadcrumbItem("Workspaces", null, true)
 			);
 	}
 
-	private void SelectCourse(long courseId)
+	private void SelectWorkspace(long workspaceId)
 	{
-		NavigationManager.NavigateTo($"courses/{courseId}");
+		NavigationManager.NavigateTo($"workspaces/{workspaceId}");
 	}
 
 }

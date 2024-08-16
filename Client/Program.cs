@@ -41,7 +41,7 @@ AppSettingsService appSettingsService = new AppSettingsService(new HttpClient { 
 await appSettingsService.FetchAppSettings();
 var appSettings = appSettingsService.AppSettings;
 builder.Services.AddSingleton<IAppSettingsService, AppSettingsService>(sp => appSettingsService);
-builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<DawService, DawService>();
@@ -70,7 +70,7 @@ builder.Services.AddOidcAuthentication(options =>
         options.ProviderOptions.PostLogoutRedirectUri = appSettings.PostLogoutUrl;
         options.ProviderOptions.DefaultScopes.Add("roles");
         options.AuthenticationPaths.RemoteRegisterPath = $"{appSettings.AuthorityUrl}/login-actions/registration";
-        options.UserOptions.RoleClaim = "role";
+        options.UserOptions.RoleClaim = "role";  
     })
     .AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomAccountFactory>();
 
@@ -80,7 +80,7 @@ builder.Services.AddAuthorizationCore(options =>
     options.AddPolicy(AuthorizationPolicies.IsVerified.Name, AuthorizationPolicies.IsVerified.Policy());
     options.AddPolicy(AuthorizationPolicies.IsNotVerified.Name, AuthorizationPolicies.IsNotVerified.Policy());
     options.AddPolicy(AuthorizationPolicies.IsAdmin.Name, AuthorizationPolicies.IsAdmin.Policy());
-    options.AddPolicy(AuthorizationPolicies.IsTeacher.Name, AuthorizationPolicies.IsTeacher.Policy());
+    options.AddPolicy(AuthorizationPolicies.IsModerator.Name, AuthorizationPolicies.IsModerator.Policy());
     options.DefaultPolicy = AuthorizationPolicies.IsVerified.Policy();
 });
 

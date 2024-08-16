@@ -9,8 +9,8 @@ public class AppDataContext : DbContext
 
 	public DbSet<User> Users { get; set; }
 	public DbSet<Post> ChatMessages { get; set; }
-	public DbSet<Course> Courses { get; set; }
-	public DbSet<CourseUser> CourseUsers { get; set; }
+	public DbSet<Workspace> Workspaces { get; set; }
+	public DbSet<WorkspaceUser> WorkspaceUsers { get; set; }
 	public DbSet<Session> Sessions { get; set; }
 	public DbSet<UploadedFile> UploadedFiles { get; set; }
 	public DbSet<Folder> Folders { get; set; }
@@ -25,42 +25,42 @@ public class AppDataContext : DbContext
 	{
 		modelBuilder.Ignore<Entity>();
 
-		// Course entity configuration
-		modelBuilder.Entity<Course>()
+		// Workspace entity configuration
+		modelBuilder.Entity<Workspace>()
 			.HasOne(c => c.RootFolder)
 			.WithMany()
 			.IsRequired(false)
 			.HasForeignKey(c => c.RootFolderId);
 
-		modelBuilder.Entity<Course>()
+		modelBuilder.Entity<Workspace>()
 			.HasOne(c => c.SessionsFolder)
 			.WithMany()
 			.IsRequired(false)
 			.HasForeignKey(c => c.SessionsFolderId);
 
-		modelBuilder.Entity<Course>()
+		modelBuilder.Entity<Workspace>()
 			.HasMany(c => c.Posts)
-			.WithOne(c => c.Course)
-			.HasForeignKey(c => c.CourseId)
+			.WithOne(c => c.Workspace)
+			.HasForeignKey(c => c.WorkspaceId)
 			.IsRequired()
 			.OnDelete(DeleteBehavior.Cascade);
 
-		// CourseUser entity configuration
-		modelBuilder.Entity<CourseUser>()
-			.HasKey(cu => new { cu.CourseId, cu.UserId });
+		// WorkspaceUser entity configuration
+		modelBuilder.Entity<WorkspaceUser>()
+			.HasKey(cu => new { cu.WorkspaceId, cu.UserId });
 
 		modelBuilder
-			.Entity<CourseUser>()
+			.Entity<WorkspaceUser>()
 			.HasOne(cu => cu.User)
 			.WithMany()
 			.HasForeignKey(cu => cu.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		modelBuilder
-			.Entity<CourseUser>()
-			.HasOne(cu => cu.Course)
-			.WithMany(c => c.CourseUsers)
-			.HasForeignKey(cu => cu.CourseId)
+			.Entity<WorkspaceUser>()
+			.HasOne(cu => cu.Workspace)
+			.WithMany(c => c.WorkspaceUsers)
+			.HasForeignKey(cu => cu.WorkspaceId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		// Session entity configuration
@@ -82,12 +82,12 @@ public class AppDataContext : DbContext
 			.HasForeignKey(c => c.OwnerId)
 			.OnDelete(DeleteBehavior.SetNull);
 
-		// Folder n-1 Course
+		// Folder n-1 Workspace
 		modelBuilder.Entity<Folder>()
-			.HasOne(f => f.Course)
+			.HasOne(f => f.Workspace)
 			.WithMany()
 			.IsRequired()
-			.HasForeignKey(f => f.CourseId)
+			.HasForeignKey(f => f.WorkspaceId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		// Folder n-1 Folders

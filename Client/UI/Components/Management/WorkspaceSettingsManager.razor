@@ -1,0 +1,156 @@
+﻿@inject IWorkspaceService WorkspaceService
+@inject IUserService UserService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@if (Loading)
+{
+	<MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
+}
+else
+{
+	<div style="display: grid;grid-row-gap: 2px; grid-template-rows: min-content min-content min-content 1fr; height: 100%; overflow: auto">
+		<MudStack Row="true" Style="background-color: var(--mud-palette-default)" Justify="Justify.SpaceBetween">
+			<MudButtonGroup OverrideStyles="false">
+				<MudButton OnClick="Discard" Disabled="!Changed" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Restore" Color="Color.Error">Discard</MudButton>
+				<MudButton OnClick="Save" Disabled="!Changed || !_workspaceNameValid" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Success">Save</MudButton>
+			</MudButtonGroup>
+			<MudButtonGroup OverrideStyles="false">
+				<MudButton OnClick="Delete" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Delete</MudButton>
+			</MudButtonGroup>
+		</MudStack>
+
+
+		<MudPaper Class="d-flex align-center pa-2" Elevation="0" Outlined="true">
+			<MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Person" Title="Role" />
+			<MudText>Your role: @WorkspaceSettings?.CurrentUserRole.ToDisplayString()</MudText>
+		</MudPaper>
+
+		<MudPaper Elevation="0">
+			<MudForm @ref="_workspaceNameForm" @bind-IsValid="@_workspaceNameValid">
+				<MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Title" Immediate="true" Variant="Variant.Outlined"
+						  Validation="Validation.NotEmpty" @bind-Value="Request.Name" T="string" Label="Workspace name"
+						  Margin="Margin.Dense" />
+			</MudForm>
+		</MudPaper>
+
+		<WorkspaceMemberManager SelectedWorkspaceUsers="Request.Members" SelectedWorkspaceUsersChanged="() => StateHasChanged()"
+						 ExistingWorkspaceUsers="CurrentMembers"
+						 AvailableWorkspaceUsers="AvailableMembers"
+						 Users="Users" Style=" overflow: auto; min-height: 400px;" />
+	</div>
+
+}
+
+
+
+@code {
+
+	[Parameter]
+	public long WorkspaceId { get; set; }
+
+	[Parameter]
+	public EventCallback OnWorkspaceDeleted { get; set; }
+
+	[Parameter]
+	public EventCallback OnWorkspaceUpdated { get; set; }
+
+
+	MudForm? _workspaceNameForm;
+	private bool _workspaceNameValid = false;
+
+	WorkspaceSettings? WorkspaceSettings { get; set; }
+
+	// Form
+	private UpdateWorkspaceRequest Request { get; set; } = null!;
+
+
+	bool Changed => Request.Name != WorkspaceSettings!.Name || !ChangeDetectionSet.SetEquals(Request.Members);
+	private HashSet<WorkspaceUser> ChangeDetectionSet { get; set; } = null!;
+	private HashSet<WorkspaceUser> CurrentMembers { get; set; } = null!;
+
+	private Dictionary<Guid, User> Users { get; set; } = new();
+	private HashSet<WorkspaceUser> AvailableMembers { get; set; } = null!;
+
+
+	bool Loading => WorkspaceSettings is null || Request is null || CurrentMembers is null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Initialize();
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (WorkspaceSettings is null || WorkspaceSettings.Id != WorkspaceId)
+		{
+			await Initialize();
+		}
+	}
+
+	private async Task Initialize()
+	{
+		WorkspaceSettings = null;
+		WorkspaceSettings = await WorkspaceService.GetWorkspaceSettingsAsync(WorkspaceId);
+		var users = await UserService.GetUsersAsync();
+		Users = users.ToDictionary(u => u.Id);
+
+		CurrentMembers = WorkspaceSettings.Members.ToHashSet(new WorkspaceUserIdEqualityComparer());
+		var nonMembers = users.Select(u => new WorkspaceUser(u.Id, WorkspaceUserRole.Member)).Except(CurrentMembers);
+
+		ChangeDetectionSet = CurrentMembers.ToHashSet();
+
+
+		var _initialSelectedMembers = CurrentMembers.Select(cu => cu with { }).ToHashSet(new WorkspaceUserIdEqualityComparer());
+		AvailableMembers = _initialSelectedMembers.ToHashSet(new WorkspaceUserIdEqualityComparer());
+		AvailableMembers.UnionWith(nonMembers);
+
+		Request = new UpdateWorkspaceRequest
+		{
+			WorkspaceId = WorkspaceSettings.Id,
+			Name = WorkspaceSettings.Name,
+			Description = WorkspaceSettings.Description,
+			Members = _initialSelectedMembers
+		};
+	}
+
+	private async Task Discard()
+	{
+		await Initialize();
+	}
+
+	private async Task Save()
+	{
+		_workspaceNameForm?.Validate();
+		if (!_workspaceNameValid) return;
+
+		WorkspaceSettings = null;
+		try
+		{
+			await WorkspaceService.UpdateWorkspaceAsync(Request);
+			Snackbar.Add("Workspace updated", Severity.Success);
+			OnWorkspaceUpdated.InvokeAsync().AndForget();
+		}
+		catch
+		{
+			Snackbar.Add("Failed to update workspace", Severity.Error);
+		}
+		await Initialize();
+	}
+
+	private async Task Delete()
+	{
+		if (!await DialogService.ShowConfirmationDialog("Delete workspace", "delete", "workspace", WorkspaceSettings!.Name, true)) return;
+		try
+		{
+			await WorkspaceService.DeleteWorkspaceAsync(WorkspaceSettings.Id);
+			Snackbar.Add($"{WorkspaceSettings!.Name} deleted", Severity.Success);
+			await OnWorkspaceDeleted.InvokeAsync();
+		}
+		catch
+		{
+			Snackbar.Add($"Failed to delete workspace {WorkspaceSettings!.Name}.", Severity.Error);
+		}
+	}
+
+}

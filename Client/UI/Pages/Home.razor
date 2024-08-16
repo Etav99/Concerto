@@ -7,25 +7,27 @@
 
 <PageTitle>Index</PageTitle>
 
-<div class="pa-4">
+<div class="pa-4" style="geight: 100%; display:flex;flex-direction:column;"
 	<MudText Typo="Typo.h3" GutterBottom="true">Home</MudText>
-	<MudText Class="mb-8">Welcome to Concerto</MudText>
-
 	<AuthorizeView Policy="@AuthorizationPolicies.IsNotVerified.Name">
 		<MudAlert Severity="Severity.Warning">An administrator must verify your account before accessing Concerto. Please come back later or contact your administrator.</MudAlert>
 	</AuthorizeView>
+	<MudImage Src="home.svg" Style="@ImageStyle" Elevation="0" />
+</div
 
-</div>
 
 @code {
 	[CascadingParameter]
 	public LayoutState LayoutState { get; set; } = LayoutState.Default;
 
+	string ImageFilter => LayoutState.DarkMode ? "invert(100%)" : "none";
+	string ImageStyle => $"display:block; margin-left:auto; margin-right:auto; width:50%; filter:{ImageFilter}";
+
 	protected override void OnInitialized()
 	{
 		BreadcrumbsService.Set(
 			Icons.Material.Filled.List,
-			"Courses",
+			"Workspaces",
 			new BreadcrumbItem("Home", null, true)
 			);
 	}

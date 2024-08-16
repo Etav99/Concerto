@@ -4,9 +4,9 @@ public record Session(
 	long Id,
 	string Name,
 	DateTime ScheduledDateTime,
-	long CourseId,
-	string CourseName,
-	long CourseRootFolderId,
+	long WorkspaceId,
+	string WorkspaceName,
+	long WorkspaceRootFolderId,
 	long FolderId,
 	bool CanManage,
 	Guid MeetingGuid
@@ -29,7 +29,7 @@ public record CreateSessionRequest
 {
 	public string Name { get; set; } = null!;
 	public DateTime ScheduledDateTime { get; set; }
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 }
 
 public record UpdateSessionRequest

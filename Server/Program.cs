@@ -31,13 +31,10 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
 builder.Services.AddHostedService<ScheduledTasksService>();
-builder.Services.AddSingleton<TokenStore, TokenStore>();
-builder.Services.AddSingleton<DawProjectStateService, DawProjectStateService>();
 builder.Services.AddScoped<DawService, DawService>();
-builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
-builder.Services.AddScoped<CourseService>();
+builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<IdentityManagerService>();
@@ -89,7 +86,7 @@ builder.Services.AddAuthentication(options =>
 		options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 	})
 	.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
-    {
+	{
 		options.RequireHttpsMetadata = AppSettings.Oidc.RequireHttpsMetadata;
 		options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
 		options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -102,17 +99,17 @@ builder.Services.AddAuthentication(options =>
 
 		options.SaveTokens = true;
 
-        options.CallbackPath = "/auth/signin-oidc";
-        options.SignedOutCallbackPath = "/auth/signout-callback-oidc";
+		options.CallbackPath = "/auth/signin-oidc";
+		options.SignedOutCallbackPath = "/auth/signout-callback-oidc";
 
 		options.Events = new OpenIdConnectEvents
 		{
 			OnRedirectToIdentityProvider = context =>
 			{
 				var builder = new UriBuilder(context.ProtocolMessage.RedirectUri);
-                builder.Scheme = "https";
-                builder.Port = -1;
-                context.ProtocolMessage.RedirectUri = builder.ToString();
+				builder.Scheme = "https";
+				builder.Port = -1;
+				context.ProtocolMessage.RedirectUri = builder.ToString();
 				return Task.CompletedTask;
 			}
 		};
@@ -125,7 +122,7 @@ builder.Services.AddAuthorization(options =>
 	options.AddPolicy(AuthorizationPolicies.IsVerified.Name, AuthorizationPolicies.IsVerified.Policy());
 	options.AddPolicy(AuthorizationPolicies.IsNotVerified.Name, AuthorizationPolicies.IsNotVerified.Policy());
 	options.AddPolicy(AuthorizationPolicies.IsAdmin.Name, AuthorizationPolicies.IsAdmin.Policy());
-	options.AddPolicy(AuthorizationPolicies.IsTeacher.Name, AuthorizationPolicies.IsTeacher.Policy());
+	options.AddPolicy(AuthorizationPolicies.IsModerator.Name, AuthorizationPolicies.IsModerator.Policy());
 	options.DefaultPolicy = AuthorizationPolicies.IsVerified.Policy();
 });
 

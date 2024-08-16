@@ -73,15 +73,15 @@ public class IdentityManagerService
 				throw new NotImplementedException();
 			case Role.Admin:
 				await AddToGroup(subjectId.ToString(), Groups.Admins);
-				await RemoveFromGroup(subjectId.ToString(), Groups.Teachers);
+				await RemoveFromGroup(subjectId.ToString(), Groups.Moderators);
 				break;
 			case Role.Teacher:
-				await AddToGroup(subjectId.ToString(), Groups.Teachers);
+				await AddToGroup(subjectId.ToString(), Groups.Moderators);
 				await RemoveFromGroup(subjectId.ToString(), Groups.Admins);
 				break;
 			case Role.User:
 				await RemoveFromGroup(subjectId.ToString(), Groups.Admins);
-				await RemoveFromGroup(subjectId.ToString(), Groups.Teachers);
+				await RemoveFromGroup(subjectId.ToString(), Groups.Moderators);
 				break;
 		}
 	}
@@ -160,7 +160,7 @@ public class IdentityManagerService
 	public async Task<IEnumerable<Dto.UserIdentity>> GetUsers(Guid subjectId)
 	{
 		var unverified = (await GetGroupUsers(Groups.Unverified)).Select(u => u.Id).ToHashSet();
-		var teachers = (await GetGroupUsers(Groups.Teachers)).Select(u => u.Id).ToHashSet();
+		var moderator = (await GetGroupUsers(Groups.Moderators)).Select(u => u.Id).ToHashSet();
 		var admins = (await GetGroupUsers(Groups.Admins)).Select(u => u.Id).ToHashSet();
 
 		await GetApiToken();
@@ -181,7 +181,7 @@ public class IdentityManagerService
 				role = Role.Unverified;
 			else if (admins.Contains(user.Id))
 				role = Role.Admin;
-			else if (teachers.Contains(user.Id))
+			else if (moderator.Contains(user.Id))
 				role = Role.Teacher;
 			else
 				role = Role.User;

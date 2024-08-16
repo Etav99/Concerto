@@ -4,7 +4,7 @@
 <MudDialog Style="">
 	<DialogContent>
 		<MudStack Spacing="4" Style="max-height: calc(100vh - 136px);">
-			<CoursesList OnCourseSelected="SelectCourse" ManagementEnabled="false" WithoutCourseIds="WithoutCourseIds"/>
+			<WorkspaceList OnWorkspaceSelected="SelectWorkspace" ManagementEnabled="false" WithoutWorkspaceIds="WithoutWorkspaceIds"/>
 		</MudStack>
 
 	</DialogContent>
@@ -18,7 +18,7 @@
 @code {
 
 	[Parameter]
-	public IEnumerable<long> WithoutCourseIds { get; set; } = Enumerable.Empty<long>();
+	public IEnumerable<long> WithoutWorkspaceIds { get; set; } = Enumerable.Empty<long>();
 
 	void Cancel()
 	{
@@ -32,9 +32,9 @@
 		Dialog.SetOptions(Dialog.Options);
 	}
 
-	private void SelectCourse(long courseId)
+	private void SelectWorkspace(long workspaceId)
 	{
-		Dialog.Close(DialogResult.Ok(courseId));
+		Dialog.Close(DialogResult.Ok(workspaceId));
 	}
 
 }

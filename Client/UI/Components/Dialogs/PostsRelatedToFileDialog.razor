@@ -3,7 +3,7 @@
 <MudDialog>
 		<DialogContent>
 			<div style="display: grid; grid-template-rows: 1fr; height: calc(100vh - 134px)">
-				<Forum CourseId="CourseId" OnlyRelatedToFile="File" OnNoPosts="OnNoPosts" Title="@($"Posts related to {File.FullName}")" />
+				<Forum WorkspaceId="WorkspaceId" OnlyRelatedToFile="File" OnNoPosts="OnNoPosts" Title="@($"Posts related to {File.FullName}")" />
 			</div>
 		</DialogContent>
 
@@ -18,7 +18,7 @@
 	protected MudDialogInstance Dialog { get; set; } = null!;
 
 	[Parameter]
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 
 	[Parameter]
 	public FileItem File { get; set; } = null!;

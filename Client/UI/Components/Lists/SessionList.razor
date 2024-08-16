@@ -2,7 +2,7 @@
 
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 @inject ISessionService SessionService
 
 <MudTable T="SessionListItem" Items="Sessions" Hover="true" Outlined="false" Square="true" Elevation="0" FixedHeader="true" FixedFooter="true"
@@ -70,7 +70,7 @@
 @code
 {
 	[Parameter]
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 
 	[Parameter]
 	public EventCallback<long> OnSessionSelected { get; set; }
@@ -97,8 +97,8 @@
 
 	private async Task Initialize()
 	{
-		Sessions = await SessionService.GetCourseSessionsAsync(CourseId);
-		_canManageSessions = await CourseService.CanManageCourseSessionsAsync(CourseId);
+		Sessions = await SessionService.GetWorkspaceSessionsAsync(WorkspaceId);
+		_canManageSessions = await WorkspaceService.CanManageWorkspaceSessionsAsync(WorkspaceId);
 	}
 
 	protected override async Task OnParametersSetAsync()
@@ -108,7 +108,7 @@
 
 	private async Task CreateSession()
 	{
-		var parameters = new DialogParameters { ["CourseId"] = CourseId };
+		var parameters = new DialogParameters { ["WorkspaceId"] = WorkspaceId };
 		var result = await DialogService.Show<CreateSessionDialog>("Create new session", parameters).Result;
 		if (result.Canceled) return;
 		await Initialize();

@@ -6,7 +6,7 @@
 		<MudStack Spacing="4">
 			<MudTextField @bind-Value="_folderRequest.Name" T="string" Label="Folder name"></MudTextField>
 			<FolderTypePicker @bind-Value="_folderRequest.Type"></FolderTypePicker>
-			<FolderPermissionPicker @bind-Value="_folderRequest.CoursePermission" Inherited="ParentFolderPermission"/>
+			<FolderPermissionPicker @bind-Value="_folderRequest.WorkspacePermission" Inherited="ParentFolderPermission"/>
 		</MudStack>
 	</DialogContent>
 	<DialogActions>
@@ -37,7 +37,7 @@
 			Name = string.Empty,
 			ParentId = ParentFolderId,
 			Type = FolderType.Other,
-			CoursePermission = ParentFolderPermission != null ? new FolderPermission(ParentFolderPermission.Value, true)
+			WorkspacePermission = ParentFolderPermission != null ? new FolderPermission(ParentFolderPermission.Value, true)
 				: new FolderPermission(FolderPermissionType.Read, false)
 		};
 	}

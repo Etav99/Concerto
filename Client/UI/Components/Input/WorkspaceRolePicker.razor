@@ -1,0 +1,28 @@
+﻿<div>
+	<MudSelect T="WorkspaceUserRole" Style="min-width: 200px;" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Value="Value" ValueChanged="ValueChanged" AnchorOrigin="Origin.BottomCenter">
+		<MudSelectItem Value="@(WorkspaceUserRole.Admin)">@WorkspaceUserRole.Admin.ToDisplayString()</MudSelectItem>
+		<MudSelectItem Value="@(WorkspaceUserRole.Supervisor)">@WorkspaceUserRole.Supervisor.ToDisplayString()</MudSelectItem>
+		<MudSelectItem Value="@(WorkspaceUserRole.Member)">@WorkspaceUserRole.Member.ToDisplayString()</MudSelectItem>
+	</MudSelect>
+</div>
+
+
+
+@code {
+
+	[Parameter]
+	public WorkspaceUserRole Value { get; set; }
+
+	[Parameter]
+	public EventCallback<WorkspaceUserRole> ValueChanged { get; set; }
+
+	[Parameter]
+	public EventCallback<WorkspaceUserRole> OnChange { get; set; }
+
+	async Task Selected(WorkspaceUserRole role)
+	{
+		await ValueChanged.InvokeAsync(role);
+		await OnChange.InvokeAsync(role);
+	}
+
+}

@@ -12,8 +12,6 @@ public class DawHub : Hub
 {
 	private readonly ILogger<DawHub> _logger;
 
-	private readonly DawService _dawService;
-
 	public DawHub(ILogger<DawHub> logger) {
 		_logger = logger;
 	}

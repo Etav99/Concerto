@@ -55,15 +55,15 @@ public class ClientNotificationService
     private EventHandler<Comment>? OnCommentUpdateReceived { get; set; }
 
 
-    public async Task SubscribeForum(long courseId)
+    public async Task SubscribeForum(long workspaceId)
     {
         await ConnectAsync();
-        await Connection.InvokeAsync("SubscribeForum", courseId);
+        await Connection.InvokeAsync("SubscribeForum", workspaceId);
     }
 
-    public async Task UnsubscribeForum(long courseId)
+    public async Task UnsubscribeForum(long workspaceId)
     {
-        if (Connected) await Connection.InvokeAsync("UnsubscribeForum", courseId);
+        if (Connected) await Connection.InvokeAsync("UnsubscribeForum", workspaceId);
     }
 
     public async Task ConnectAsync()

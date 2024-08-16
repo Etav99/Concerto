@@ -14,14 +14,12 @@ public class StorageService
 	private readonly AppDataContext _context;
 	private readonly ILogger<StorageService> _logger;
 	private readonly IMemoryCache _memoryCache;
-	private readonly TokenStore _oneTimeTokenStore;
 
-	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache, TokenStore oneTimeTokenStore)
+	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache)
 	{
 		_logger = logger;
 		_context = context;
 		_memoryCache = memoryCache;
-		_oneTimeTokenStore = oneTimeTokenStore;
 	}
 
 	// Create
@@ -30,20 +28,20 @@ public class StorageService
 		var parent = await _context.Folders.FindAsync(request.ParentId);
 		if (parent == null) return null;
 
-		var rootParentOrNotInheriting = parent.IsCourseRoot || !request.CoursePermission.Inherited;
+		var rootParentOrNotInheriting = parent.IsWorkspaceRoot || !request.WorkspacePermission.Inherited;
 
-		var coursePermission = rootParentOrNotInheriting
-			? request.CoursePermission.ToEntity(false)
-			: parent.CoursePermission with { Inherited = true };
+		var workspacePermission = rootParentOrNotInheriting
+			? request.WorkspacePermission.ToEntity(false)
+			: parent.WorkspacePermission with { Inherited = true };
 
 		var newFolder = new Folder
 		{
 			Name = request.Name,
 			OwnerId = ownerId,
 			ParentId = parent.Id,
-			CourseId = parent.CourseId,
-			CoursePermission = coursePermission,
-			Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity()
+			WorkspaceId = parent.WorkspaceId,
+			WorkspacePermission = workspacePermission,
+			Type = request.Type == Dto.FolderType.WorkspaceRoot ? FolderType.Other : request.Type.ToEntity()
 		};
 
 		// Inherit permissions from parent;
@@ -68,14 +66,14 @@ public class StorageService
 		// Load owners of subfolders
 		await _context.Entry(folder).Collection(f => f.SubFolders).Query().Include(f => f.Owner).LoadAsync();
 
-		// get sessions folder if course root
-		if (folder.IsCourseRoot)
+		// get sessions folder if workspace root
+		if (folder.IsWorkspaceRoot)
 		{
-			var course = await _context.Courses.FindAsync(folder.CourseId);
-			if (course == null) return null;
-			await _context.Entry(course).Reference(c => c.SessionsFolder).LoadAsync();
-			if (course.SessionsFolder == null) return null;
-			folder.SubFolders.Add(course.SessionsFolder);
+			var workspace = await _context.Workspaces.FindAsync(folder.WorkspaceId);
+			if (workspace == null) return null;
+			await _context.Entry(workspace).Reference(c => c.SessionsFolder).LoadAsync();
+			if (workspace.SessionsFolder == null) return null;
+			folder.SubFolders.Add(workspace.SessionsFolder);
 		}
 
 		var subFolders = new List<Dto.FolderItem>();
@@ -121,9 +119,9 @@ public class StorageService
 		{
 			Self = selfFolderItem,
 			SubFolders = subFolders,
-			CourseId = folder.CourseId,
+			WorkspaceId = folder.WorkspaceId,
 			Files = files,
-			CoursePermission = folder.CoursePermission.ToViewModel()
+			WorkspacePermission = folder.WorkspacePermission.ToViewModel()
 		};
 	}
 
@@ -140,10 +138,10 @@ public class StorageService
 
 		return new Dto.FolderSettings(folder.Id,
 			folder.Name,
-			CoursePermission: folder.CoursePermission.ToViewModel(),
+			WorkspacePermission: folder.WorkspacePermission.ToViewModel(),
 			OwnerId: folder.OwnerId,
-			CourseId: folder.CourseId,
-			ParentCoursePermission: folder.Parent?.CoursePermission.ToViewModel(),
+			WorkspaceId: folder.WorkspaceId,
+			ParentWorkspacePermission: folder.Parent?.WorkspacePermission.ToViewModel(),
 			Type: folder.Type.ToViewModel(),
 			UserPermissions: folder.UserPermissions.Select(fp => fp.ToViewModel()),
 			ParentUserPermissions: parentUserPermissions.Select(fp => fp.ToViewModel())
@@ -168,17 +166,17 @@ public class StorageService
 	private async Task<FolderPermissionType?> UserPermissionInFolder(Guid userId, Folder? folder)
 	{
 		if (folder == null) return null;
-		// Null if user not in folder's course
-		var courseUserRole = (await _context.CourseUsers.FindAsync(folder.CourseId, userId))?.Role;
-		if (courseUserRole == null) return null;
+		// Null if user not in folder's workspace
+		var workspaceUserRole = (await _context.WorkspaceUsers.FindAsync(folder.WorkspaceId, userId))?.Role;
+		if (workspaceUserRole == null) return null;
 
-		// Maximum permission if user is owner, folder's course admin or supervisor
-		if (folder.OwnerId == userId || courseUserRole is CourseUserRole.Supervisor or CourseUserRole.Admin)
+		// Maximum permission if user is owner, folder's workspace admin or supervisor
+		if (folder.OwnerId == userId || workspaceUserRole is WorkspaceUserRole.Supervisor or WorkspaceUserRole.Admin)
 			return FolderPermissionType.Max;
 
-		// User specific permission if exists (higher precedence than course permission)
+		// User specific permission if exists (higher precedence than workspace permission)
 		var userFolderPermissionType = (await _context.UserFolderPermissions.FindAsync(userId, folder.Id))?.Permission.Type;
-		return userFolderPermissionType ?? folder.CoursePermission.Type;
+		return userFolderPermissionType ?? folder.WorkspacePermission.Type;
 	}
 
 	internal async Task<bool> CanReadInFolder(Guid userId, long folderId)
@@ -203,8 +201,8 @@ public class StorageService
 		// If permanent then only admin or supervisor can edit
 		if (folder.IsPermanent)
 		{
-			var courseUserRole = (await _context.CourseUsers.FindAsync(folder.CourseId, userId))?.Role;
-			return courseUserRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
+			var workspaceUserRole = (await _context.WorkspaceUsers.FindAsync(folder.WorkspaceId, userId))?.Role;
+			return workspaceUserRole is WorkspaceUserRole.Admin or WorkspaceUserRole.Supervisor;
 		}
 
 		// True if ReadWrite in folder's parent and folder
@@ -270,13 +268,13 @@ public class StorageService
 		if (!folder.IsPermanent)
 		{
 			folder.Name = request.Name;
-			folder.Type = request.Type == Dto.FolderType.CourseRoot ? FolderType.Other : request.Type.ToEntity();
+			folder.Type = request.Type == Dto.FolderType.WorkspaceRoot ? FolderType.Other : request.Type.ToEntity();
 		}
 
-		if (request.CoursePermission.Inherited)
-			folder.CoursePermission = folder.CoursePermission with { Inherited = true };
+		if (request.WorkspacePermission.Inherited)
+			folder.WorkspacePermission = folder.WorkspacePermission with { Inherited = true };
 		else
-			folder.CoursePermission = request.CoursePermission.ToEntity();
+			folder.WorkspacePermission = request.WorkspacePermission.ToEntity();
 
 		await _context.Entry(folder).Collection(f => f.UserPermissions).LoadAsync();
 		var userPermissionsList = folder.UserPermissions.ToList();
@@ -320,7 +318,7 @@ public class StorageService
 
 	private async Task InheritPermissions(Folder parentFolder, Folder subFolder, bool forceInherit)
 	{
-		if (subFolder.CoursePermission.Inherited) subFolder.CoursePermission = parentFolder.CoursePermission with { Inherited = true };
+		if (subFolder.WorkspacePermission.Inherited) subFolder.WorkspacePermission = parentFolder.WorkspacePermission with { Inherited = true };
 
 		await _context.Entry(parentFolder).Collection(f => f.UserPermissions).LoadAsync();
 		await _context.Entry(subFolder).Collection(f => f.UserPermissions).LoadAsync();
@@ -562,31 +560,31 @@ public class StorageService
 
 		foreach (var folderId in folderIdsList)
 		{
-			var folderCopy = await CreateFolderCopy(folderId, destinationFolder.CourseId, true, false, userId);
+			var folderCopy = await CreateFolderCopy(folderId, destinationFolder.WorkspaceId, true, false, userId);
 			if (folderCopy is not null) destinationFolder.SubFolders.Add(folderCopy);
 		}
 
 		await _context.SaveChangesAsync();
 	}
 
-	internal async Task<Folder?> CreateFolderCopy(long folderId, long courseId, bool withFiles, bool withFolderPermissions, Guid? newOwner = null)
+	internal async Task<Folder?> CreateFolderCopy(long folderId, long workspaceId, bool withFiles, bool withFolderPermissions, Guid? newOwner = null)
 	{
 		var folderCopy = await _context.Folders.AsNoTracking().SingleOrDefaultAsync(f => f.Id == folderId);
 		if (folderCopy == null)
 			return null;
 
-		await CopyFolderRecursively(folderCopy, courseId, withFiles, withFolderPermissions, newOwner);
+		await CopyFolderRecursively(folderCopy, workspaceId, withFiles, withFolderPermissions, newOwner);
 		return folderCopy;
 	}
 
-	private async Task CopyFolderRecursively(Folder copiedFolder, long courseId, bool withFiles, bool withFolderPermissions, Guid? newOwner = null)
+	private async Task CopyFolderRecursively(Folder copiedFolder, long workspaceId, bool withFiles, bool withFolderPermissions, Guid? newOwner = null)
 	{
 		var subFolders = await _context.Folders
 			.AsNoTracking()
 			.Where(f => f.ParentId == copiedFolder.Id)
 			.ToListAsync();
 
-		foreach (var subFolder in subFolders) await CopyFolderRecursively(subFolder, courseId, withFiles, withFolderPermissions);
+		foreach (var subFolder in subFolders) await CopyFolderRecursively(subFolder, workspaceId, withFiles, withFolderPermissions);
 
 		if (withFolderPermissions)
 		{
@@ -619,7 +617,7 @@ public class StorageService
 		copiedFolder.SubFolders = subFolders;
 		copiedFolder.Id = 0;
 		copiedFolder.ParentId = null;
-		copiedFolder.CourseId = courseId;
+		copiedFolder.WorkspaceId = workspaceId;
 		if (newOwner.HasValue) copiedFolder.OwnerId = newOwner.Value;
 		if (copiedFolder.Type is FolderType.Sessions) copiedFolder.Type = FolderType.Recordings;
 	}
@@ -640,23 +638,23 @@ public class StorageService
 		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
 		if (destinationFolder is null) return;
 
-		foreach (var folderId in folderIds) await MoveFolder(folderId, destinationFolderId, destinationFolder.CourseId);
+		foreach (var folderId in folderIds) await MoveFolder(folderId, destinationFolderId, destinationFolder.WorkspaceId);
 		await _context.SaveChangesAsync();
 	}
 
-	private async Task MoveFolder(long folderId, long destinationFolderId, long? courseId = null)
+	private async Task MoveFolder(long folderId, long destinationFolderId, long? workspaceId = null)
 	{
 		var movedFolder = await _context.Folders.FindAsync(folderId);
 		if (movedFolder == null)
 			return;
 
 		movedFolder.ParentId = destinationFolderId;
-		if (courseId.HasValue && movedFolder.CourseId != courseId)
+		if (workspaceId.HasValue && movedFolder.WorkspaceId != workspaceId)
 		{
 			HashSet<long> updatedFoldersIds = new();
-			await UpdateFolderCourseRecursively(movedFolder, courseId.Value, updatedFoldersIds);
+			await UpdateFolderWorkspaceRecursively(movedFolder, workspaceId.Value, updatedFoldersIds);
 
-			// Remove user specific permissions if the folder is moved to another course
+			// Remove user specific permissions if the folder is moved to another workspace
 			var userPermissions = await _context.UserFolderPermissions
 				.Where(ufp => updatedFoldersIds.Contains(ufp.FolderId))
 				.ToListAsync();
@@ -664,9 +662,9 @@ public class StorageService
 		}
 	}
 
-	private async Task UpdateFolderCourseRecursively(Folder folder, long courseId, HashSet<long> updatedFoldersIds)
+	private async Task UpdateFolderWorkspaceRecursively(Folder folder, long workspaceId, HashSet<long> updatedFoldersIds)
 	{
-		folder.CourseId = courseId;
+		folder.WorkspaceId = workspaceId;
 		updatedFoldersIds.Add(folder.Id);
 
 		var subFolders = await _context.Folders
@@ -674,7 +672,7 @@ public class StorageService
 			.ToListAsync();
 
 		foreach (var subFolder in subFolders)
-			await UpdateFolderCourseRecursively(subFolder, courseId, updatedFoldersIds);
+			await UpdateFolderWorkspaceRecursively(subFolder, workspaceId, updatedFoldersIds);
 	}
 
 	internal async Task<bool> CanFolderBeMoved(long folderId, long destinationFolderId)
@@ -684,7 +682,7 @@ public class StorageService
 		var destinationFolder = await _context.Folders.FindAsync(destinationFolderId);
 		if (destinationFolder is null) return false;
 
-		if (folder.CourseId != destinationFolder.CourseId) return true;
+		if (folder.WorkspaceId != destinationFolder.WorkspaceId) return true;
 
 		long? parentId = destinationFolder.ParentId;
 		while (parentId != null)

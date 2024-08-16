@@ -3,7 +3,7 @@ using Concerto.Server.Data.Models;
 using Concerto.Shared.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using Comment = Concerto.Shared.Models.Dto.Comment;
-using CourseUserRole = Concerto.Server.Data.Models.CourseUserRole;
+using WorkspaceUserRole = Concerto.Server.Data.Models.WorkspaceUserRole;
 using Post = Concerto.Shared.Models.Dto.Post;
 
 namespace Concerto.Server.Services;
@@ -11,14 +11,14 @@ namespace Concerto.Server.Services;
 public class ForumService
 {
 	private readonly AppDataContext _context;
-	private readonly CourseService _courseService;
+	private readonly WorkspaceService _workspaceService;
 	private readonly ILogger<ForumService> _logger;
 
-	public ForumService(ILogger<ForumService> logger, AppDataContext context, CourseService courseService)
+	public ForumService(ILogger<ForumService> logger, AppDataContext context, WorkspaceService workspaceService)
 	{
 		_context = context;
 		_logger = logger;
-		_courseService = courseService;
+		_workspaceService = workspaceService;
 	}
 
 	internal async Task<Post?> CreatePost(CreatePostRequest request, Guid userId)
@@ -29,7 +29,7 @@ public class ForumService
 
 		var post = new Data.Models.Post
 		{
-			CourseId = request.CourseId,
+			WorkspaceId = request.WorkspaceId,
 			AuthorId = userId,
 			Title = request.Title,
 			Content = request.Content,
@@ -46,12 +46,12 @@ public class ForumService
 		return post.ToViewModel(0, true, true);
 	}
 
-	internal async Task<IEnumerable<Post>> GetPosts(long courseId, Guid userId, bool isAdmin = false, long? beforeId = null, long? relatedToFileId = null)
+	internal async Task<IEnumerable<Post>> GetPosts(long workspaceId, Guid userId, bool isAdmin = false, long? beforeId = null, long? relatedToFileId = null)
 	{
 		const int pageSize = 10;
 
 		var query = _context.Posts
-			.Where(p => p.CourseId == courseId);
+			.Where(p => p.WorkspaceId == workspaceId);
 
 		if (beforeId != null) query = query.Where(p => p.Id < beforeId);
 		if (relatedToFileId != null)
@@ -185,7 +185,7 @@ public class ForumService
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;
 
-		return await _courseService.IsUserCourseMember(userId, post.CourseId);
+		return await _workspaceService.IsUserWorkspaceMember(userId, post.WorkspaceId);
 	}
 
 	internal async Task<bool> CanEditPost(Guid userId, long postId)
@@ -203,9 +203,9 @@ public class ForumService
 
 		if (post.AuthorId == userId) return true;
 
-		var courseRole = (await _context.CourseUsers.FindAsync(post.CourseId, userId))?.Role;
+		var workspaceRole = (await _context.WorkspaceUsers.FindAsync(post.WorkspaceId, userId))?.Role;
 
-		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
+		return workspaceRole is WorkspaceUserRole.Admin or WorkspaceUserRole.Supervisor;
 	}
 
 	internal async Task<bool> CanEditComment(long commentId, Guid userId)
@@ -226,9 +226,9 @@ public class ForumService
 		var post = await _context.Posts.FindAsync(comment.PostId);
 		if (post == null) return false;
 
-		var courseRole = (await _context.CourseUsers.FindAsync(post.CourseId, userId))?.Role;
+		var workspaceRole = (await _context.WorkspaceUsers.FindAsync(post.WorkspaceId, userId))?.Role;
 
-		return courseRole is CourseUserRole.Admin or CourseUserRole.Supervisor;
+		return workspaceRole is WorkspaceUserRole.Admin or WorkspaceUserRole.Supervisor;
 	}
 
 	internal async Task<bool> CanAccessPost(Guid userId, long postId)
@@ -236,7 +236,7 @@ public class ForumService
 		var post = await _context.Posts.FindAsync(postId);
 		if (post == null) return false;
 
-		return await _courseService.IsUserCourseMember(userId, post.CourseId);
+		return await _workspaceService.IsUserWorkspaceMember(userId, post.WorkspaceId);
 	}
 }
 

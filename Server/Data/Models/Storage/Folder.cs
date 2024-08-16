@@ -9,8 +9,8 @@ public class Folder : Entity
 	public string Name { get; set; } = null!;
 	public FolderType Type { get; set; } = FolderType.Other;
 
-	public long CourseId { get; set; }
-	public Course Course { get; set; } = null!;
+	public long WorkspaceId { get; set; }
+	public Workspace Workspace { get; set; } = null!;
 
 	public Guid? OwnerId { get; set; }
 	public User? Owner { get; set; }
@@ -21,33 +21,33 @@ public class Folder : Entity
 	public virtual ICollection<Folder> SubFolders { get; set; } = null!;
 	public virtual ICollection<UploadedFile> Files { get; set; } = null!;
 
-	public FolderPermission CoursePermission { get; set; } = null!;
+	public FolderPermission WorkspacePermission { get; set; } = null!;
 	public virtual ICollection<UserFolderPermission> UserPermissions { get; set; } = null!;
 
-	public bool IsCourseRoot => Type is FolderType.CourseRoot;
-	public bool IsPermanent => Type is FolderType.CourseRoot or FolderType.Sessions;
+	public bool IsWorkspaceRoot => Type is FolderType.WorkspaceRoot;
+	public bool IsPermanent => Type is FolderType.WorkspaceRoot or FolderType.Sessions;
 
-	public static Folder NewRoot(long courseId)
+	public static Folder NewRoot(long workspaceId)
 	{
-		// Create course root folder, with default read permissions for course members
+		// Create workspace root folder, with default read permissions for workspace members
 		var rootFolder = new Folder
 		{
-			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
-			CourseId = courseId,
+			WorkspacePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
+			WorkspaceId = workspaceId,
 			Name = "Root",
-			Type = FolderType.CourseRoot,
+			Type = FolderType.WorkspaceRoot,
 		};
 
 		return rootFolder;
 	}
 
-	public static Folder NewSessionsFolder(long courseId)
+	public static Folder NewSessionsFolder(long workspaceId)
 	{
-		// Create course sessions folder, with default read permissions for course members
+		// Create workspace sessions folder, with default read permissions for workspace members
 		var sessionsFolder = new Folder
 		{
-			CoursePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
-			CourseId = courseId,
+			WorkspacePermission = new FolderPermission { Inherited = false, Type = FolderPermissionType.Read },
+			WorkspaceId = workspaceId,
 			Name = "Sessions",
 			Type = FolderType.Sessions
 		};
@@ -57,7 +57,7 @@ public class Folder : Entity
 
 public enum FolderType
 {
-	CourseRoot,
+	WorkspaceRoot,
 	Sessions,
 	Sheets,
 	Recordings,
@@ -86,7 +86,7 @@ public static partial class ViewModelConversions
 	{
 		return type switch
 		{
-			FolderType.CourseRoot => Dto.FolderType.CourseRoot,
+			FolderType.WorkspaceRoot => Dto.FolderType.WorkspaceRoot,
 			FolderType.Sessions => Dto.FolderType.Sessions,
 			FolderType.Sheets => Dto.FolderType.Sheets,
 			FolderType.Recordings => Dto.FolderType.Recordings,
@@ -102,7 +102,7 @@ public static partial class ViewModelConversions
 	{
 		return type switch
 		{
-			Dto.FolderType.CourseRoot => FolderType.CourseRoot,
+			Dto.FolderType.WorkspaceRoot => FolderType.WorkspaceRoot,
 			Dto.FolderType.Sessions => FolderType.Sessions,
 			Dto.FolderType.Sheets => FolderType.Sheets,
 			Dto.FolderType.Recordings => FolderType.Recordings,

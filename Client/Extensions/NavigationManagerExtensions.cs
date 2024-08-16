@@ -4,9 +4,9 @@ namespace Concerto.Client.Extensions;
 
 public static class NavigationManagerExtensions
 {
-    public static void ToCourse(this NavigationManager navigation, long courseId, string tab)
+    public static void ToWorkspace(this NavigationManager navigation, long workspaceId, string tab)
     {
-        navigation.NavigateTo($"courses/{courseId}/{tab}");
+        navigation.NavigateTo($"workspaces/{workspaceId}/{tab}");
     }
 }
 

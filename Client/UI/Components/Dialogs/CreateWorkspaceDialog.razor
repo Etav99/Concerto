@@ -1,0 +1,60 @@
+﻿@inject IWorkspaceService WorkspaceService
+@inject ISnackbar Snackbar
+@inherits DialogAutoFullscreen
+
+
+<MudDialog Class="" Style="max-height: 100vh; overflow:auto;" ContentStyle="" ClassContent="d-flex flex-column">
+	<DialogContent>
+
+		<MudForm @ref="form" @bind-IsValid="valid" Style="min-width: 550px">
+			<MudTextField Required="true" RequiredError="Workspace name cannot be empty" Variant="Variant.Outlined" Class="my-2" @bind-Value="_name" T="string" Label="Workspace name" Margin="Margin.Dense"></MudTextField>
+			<MudTextField Variant="Variant.Outlined" Class="my-2" @bind-Value="_description" T="string" Label="Workspace description" Margin="Margin.Dense"></MudTextField>
+		</MudForm>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit" Disabled="!form?.IsValid ?? true">Create</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	private string? _name;
+	private string? _description;
+
+	MudForm form;
+	bool valid;
+
+
+	private async Task Submit()
+	{
+		if (string.IsNullOrEmpty(_name))
+		{
+			Snackbar.Add("Workspace name cannot be empty", Severity.Error);
+			return;
+		}
+
+		// Move to workspace manager
+		var request = new CreateWorkspaceRequest
+		{
+			Name = _name,
+			Description = _description ?? string.Empty,
+		};
+
+		try
+		{
+			var newWorkspaceId = await WorkspaceService.CreateWorkspaceForCurrentUserAsync(request);
+			Snackbar.Add("Workspace created", Severity.Success);
+			Dialog.Close(DialogResult.Ok(newWorkspaceId));
+		}
+		catch
+		{
+			Snackbar.Add("Failed to create workspace", Severity.Error);
+		}
+	}
+
+	void Cancel()
+	{
+		Dialog.Cancel();
+	}
+}

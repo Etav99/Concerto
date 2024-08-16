@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MimeMapping;
+using Nito.AsyncEx;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -23,16 +24,15 @@ public class DawService
     private readonly ILogger<DawService> _logger;
     private readonly IHubContext<DawHub> _dawHubContext;
     private readonly AppDataContext _context;
-    private readonly DawProjectStateService _dawProjectStateService;
-    private readonly TokenStore _tokenStore;
 
-	public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context, DawProjectStateService dawProjectStateService, TokenStore tokenStore)
+    private static AsyncLock ProjectGenerationLock = new();
+    public static Dictionary<long, SemaphoreSlim> ProjectGenerationAsyncLocks { get; } =  new();
+
+	public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context)
 	{
 		_logger = logger;
 		_dawHubContext = dawHubContext;
 		_context = context;
-		_dawProjectStateService = dawProjectStateService;
-		_tokenStore = tokenStore;
 	}
 
 	public async Task<Dto.DawProject> GetProject(long projectId, Guid userId)
@@ -206,7 +206,7 @@ public class DawService
         var project = await _context.DawProjects.FindAsync(projectId);
         if(project is null) throw new Exception($"Project with id {projectId} not found");
 
-        var mutex = await _dawProjectStateService.GetProjectGenerationLock(projectId);
+        var mutex = await GetProjectGenerationLock(projectId);
         await mutex.WaitAsync();
 
         if(!File.Exists(project?.AudioSourcePath)) throw new Exception($"Project with id {projectId} has no audio source file");
@@ -240,13 +240,13 @@ public class DawService
         finally
         {
             mutex.Release();
-            await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
+            await ReturnProjectGenerationLock(projectId);
         }
     }
 
     public async Task<bool> GenerateProjectSource(long projectId)
     {
-        var mutex = await _dawProjectStateService.GetProjectGenerationLock(projectId);
+        var mutex = await GetProjectGenerationLock(projectId);
         await mutex.WaitAsync();
         try
         {
@@ -255,10 +255,43 @@ public class DawService
         finally
         {
             mutex.Release();
-            await _dawProjectStateService.ReturnProjectGenerationLock(projectId);
+            await ReturnProjectGenerationLock(projectId);
         }
     }
 
+
+
+    public async Task<SemaphoreSlim> GetProjectGenerationLock(long projectId)
+    {
+        using(await ProjectGenerationLock.LockAsync())
+        {
+            ProjectGenerationAsyncLocks.TryGetValue(projectId, out var projectLock);
+            if (projectLock is not null)
+            {
+                return projectLock;
+            }
+            else
+            {
+                var newLock = new SemaphoreSlim(1, 1);
+                ProjectGenerationAsyncLocks.Add(projectId, newLock);
+                return newLock;
+            }
+        }
+    }
+
+    public async Task ReturnProjectGenerationLock(long projectId)
+    {
+        using(await ProjectGenerationLock.LockAsync())
+        {
+            if (!ProjectGenerationAsyncLocks.TryGetValue(projectId, out var projectLock))
+                return;
+
+            if (projectLock.CurrentCount == 0)
+                return;
+
+            ProjectGenerationAsyncLocks.Remove(projectId);
+        }
+    }
 
     public async Task<bool> GenerateProjectSourceInternal(long projectId)
     {
@@ -343,7 +376,6 @@ public class DawService
 
     }
 
-
     private async Task NotifyProjectChanged(long projectId)
     {
         await _dawHubContext
@@ -351,5 +383,38 @@ public class DawService
             .Group(DawHub.DawProjectGroup(projectId))
             .SendAsync(DawHubMethods.Client.OnProjectChanged, projectId);
     }
+
+    public static MemoryCache Tokens { get; } = new MemoryCache(
+		new MemoryCacheOptions
+		{
+			SizeLimit = 100_000
+		}
+	);
+
+    public static MemoryCacheEntryOptions DefaultEntryOptions = new()
+	{
+		Size = 1,
+		SlidingExpiration = TimeSpan.FromMinutes(5),
+	};
+
+    public Guid GenerateToken(long resourceId, TokenType tokenType)
+	{
+		var token = Guid.NewGuid();
+		Tokens.Set(token, (resourceId, tokenType), DefaultEntryOptions);
+		return token;
+	}
+
+	internal bool ValidateToken(Guid token, long resourceId, TokenType tokenType)
+	{
+		Tokens.TryGetValue(token, out (long, TokenType) val);
+		if (val.Item1 != resourceId || val.Item2 != tokenType) return false;
+		return true;
+	}
+
+	public enum TokenType
+	{
+		File,
+		DawProject
+	}
 
 }

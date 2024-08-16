@@ -192,7 +192,7 @@ public static class FolderContentItemExtensions
     {
         return type switch
         {
-            FolderType.CourseRoot => Icons.Material.Filled.Home,
+            FolderType.WorkspaceRoot => Icons.Material.Filled.Home,
             FolderType.Sessions => Icons.Material.Filled.VideoCameraFront,
             FolderType.Sheets => Icons.Material.Filled.MusicNote,
             FolderType.Recordings => Icons.Material.Filled.VideoCameraFront,

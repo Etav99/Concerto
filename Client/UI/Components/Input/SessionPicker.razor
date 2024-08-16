@@ -1,13 +1,13 @@
 ﻿@*@inject IUserService UserService
-@inject ICourseService CourseService
+@inject IWorkspaceService WorkspaceService
 
 <MudPaper Elevation="0" Outlined="true" Class="pa-4">
 	<MudText>@Label</MudText>
 	<MudStack Spacing="4">
 		<MudStack Spacing="4">
 			<MudStack Row="true">
-				<MudAutocomplete T="Course" Label="Select course" @ref="_selectCourseAutocomplete"
-								 ValueChanged="@OnCourseSelected" SearchFunc="@SearchCourses" Variant="Variant.Outlined"
+				<MudAutocomplete T="Workspace" Label="Select workspace" @ref="_selectWorkspaceAutocomplete"
+								 ValueChanged="@OnWorkspaceSelected" SearchFunc="@SearchWorkspaces" Variant="Variant.Outlined"
 								 ShowProgressIndicator="true" ProgressIndicatorColor="@Color.Default"
 								 ToStringFunc="@(r => r == null ? null : $"{r.Name}")" />
 
@@ -44,8 +44,8 @@
     [Parameter]
     public string Label { get; set; } = string.Empty;
 
-    private MudAutocomplete<Course>? _selectCourseAutocomplete;
-    private Course? _selectedCourse;
+    private MudAutocomplete<Workspace>? _selectWorkspaceAutocomplete;
+    private Workspace? _selectedWorkspace;
     private MudAutocomplete<Session>? _selectSessionAutocomplete;
     private HashSet<Session> _selectedSessions = new HashSet<Session>();
 
@@ -63,31 +63,31 @@
     {
         _selectedSessions.Add(session);
         _selectSessionAutocomplete?.Reset();
-        _selectCourseAutocomplete?.Reset();
+        _selectWorkspaceAutocomplete?.Reset();
         await SelectedSessionsChanged.InvokeAsync(SelectedSessions);
     }
 
-    private async Task OnCourseSelected(Course course)
+    private async Task OnWorkspaceSelected(Workspace workspace)
     {
-        _selectedCourse = await CourseService.GetCourseAsync(course.Id); ;
+        _selectedWorkspace = await WorkspaceService.GetWorkspaceAsync(workspace.Id); ;
     }
 
-    private async Task<IEnumerable<Course>> SearchCourses(string searchString)
+    private async Task<IEnumerable<Workspace>> SearchWorkspaces(string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
-            return CourseService.Courses;
-        return CourseService.Courses.WhereAsync(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
+            return WorkspaceService.Workspaces;
+        return WorkspaceService.Workspaces.WhereAsync(c => (c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task<IEnumerable<Session>> SearchSessions(string searchString)
     {
-        if (_selectedCourse is null) return Enumerable.Empty<Session>();
-        await CourseService.LoadCourseSessionsAsync(_selectedCourse.Id);
+        if (_selectedWorkspace is null) return Enumerable.Empty<Session>();
+        await WorkspaceService.LoadWorkspaceSessionsAsync(_selectedWorkspace.Id);
         if (string.IsNullOrWhiteSpace(searchString))
         {
-            return CourseService.CourseSessions[_selectedCourse.Id].WhereAsync(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
+            return WorkspaceService.WorkspaceSessions[_selectedWorkspace.Id].WhereAsync(s => !_selectedSessions.Any(s2 => s2.Id == s.Id));
         }
-        return CourseService.CourseSessions[_selectedCourse.Id].WhereAsync(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
+        return WorkspaceService.WorkspaceSessions[_selectedWorkspace.Id].WhereAsync(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) && !_selectedSessions.Contains(s));
     }
 }
 *@

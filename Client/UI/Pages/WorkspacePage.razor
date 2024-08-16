@@ -1,0 +1,108 @@
+﻿@attribute [Authorize]
+@page "/workspaces/{SelectedWorkspaceId:long}"
+
+@inject NavigationManager NavigationManager
+@inject IWorkspaceService WorkspaceService;
+@inject ISnackbar Snackbar;
+@inject IBreadcrumbsService BreadcrumbsService;
+
+<PageTitle>Workspace</PageTitle>
+
+@if (Loading)
+{
+    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="100%"></MudSkeleton>
+}
+else
+{
+    <MudTabs @ref="_tabs" Outlined="true" Position="Position.Top" HeaderPosition="TabHeaderPosition.Before"
+         ApplyEffectsToContainer="true" Class="" PanelClass="panel-height-maximum" Style="height: calc(100%);">
+
+
+        <Header>
+            <MudLink Class="mud-tab px-1"
+                 Color="Color.Default" Underline="Underline.None" OnClick="@(() => NavigationManager.NavigateTo("workspaces"))">
+                <MudIcon Class="text-icon" Size="Size.Small" Icon="@Icons.Material.Filled.ArrowBack" />
+            </MudLink>
+        </Header>
+
+        <ChildContent>
+            <MudTabPanel Text="Content">
+                <FileManager InitialFolderId="SelectedWorkspace!.RootFolderId"
+                         Class="" Style="height: 100%;" Elevation="0" />
+            </MudTabPanel>
+
+            <MudTabPanel Text="Sessions">
+                <SessionList Style="flex: 1 1 auto; height: 100%; width: 100%;" Class="flex-shrink-1 pa-2" WorkspaceId="SelectedWorkspaceId" OnSessionSelected="OnSessionSelected" />
+            </MudTabPanel>
+
+            <MudTabPanel Text="Forum">
+                <Forum WorkspaceId="SelectedWorkspaceId" Title="Workspace forum" />
+            </MudTabPanel>
+
+            @if (SelectedWorkspace!.CanManage)
+            {
+                <MudTabPanel Text="Settings">
+                    <WorkspaceSettingsManager WorkspaceId="SelectedWorkspaceId" OnWorkspaceDeleted="OnWorkspaceDeleted" OnWorkspaceUpdated="OnWorkspaceUpdated" />
+                </MudTabPanel>
+            }
+        </ChildContent>
+
+
+    </MudTabs>
+}
+
+
+@code {
+
+    [Parameter]
+    public long SelectedWorkspaceId { get; set; }
+
+    private Workspace? SelectedWorkspace { get; set; }
+
+    MudTabs? _tabs;
+
+
+    bool _loading;
+    private bool Loading => _loading || SelectedWorkspace is null;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SelectedWorkspace is not null && SelectedWorkspace.Id == SelectedWorkspaceId) return;
+        _loading = true;
+        try
+        {
+            SelectedWorkspace = await WorkspaceService.GetWorkspaceAsync(SelectedWorkspaceId);
+        }
+        catch (WorkspaceException)
+        {
+            Snackbar.Add("Workspace does not exist or you don't have access", Severity.Error);
+            NavigationManager.NavigateTo("workspaces");
+        }
+        _loading = false;
+        if (SelectedWorkspace != null)
+            BreadcrumbsService.Set(
+                Icons.Material.Filled.MenuBook,
+                SelectedWorkspace?.Name ?? string.Empty,
+                new BreadcrumbItem("Workspaces", "workspaces"),
+                new BreadcrumbItem(SelectedWorkspace?.Name, null, true)
+                );
+    }
+
+    private void OnSessionSelected(long sessionId)
+    {
+        NavigationManager.NavigateTo($"workspaces/{SelectedWorkspaceId}/sessions/{sessionId}");
+    }
+
+    private void OnWorkspaceDeleted()
+    {
+        NavigationManager.NavigateTo("workspaces");
+    }
+
+    private async void OnWorkspaceUpdated()
+    {
+        await OnParametersSetAsync();
+        WorkspaceService.GetCurrentUserWorkspacesAsync().AndForget();
+    }
+
+}

@@ -7,14 +7,14 @@
 @inject IStorageService StorageService
 @inject ISnackbar Snackbar;
 
-<MudPaper Class="@Class" Style="@Style" Elevation="@Elevation" Outlined="@Outlined">
+<MudPaper Class="@Class" Style="@($"display: flex; flex-direction: column; {Style}")" Elevation="@Elevation" Outlined="@Outlined">
 	@if (FolderContent is not null)
 	{
-		<MudPaper Height="45px" Outlined="false" Elevation="0"
-			  Class="pl-1 py-0 mud-breadcrumbs align-content-stretch" Style="overflow-x: scroll; background-color: var(--mud-palette-surface);">
+		<MudPaper Height="45px" Outlined="false" Elevation="0" 
+				  Class="pl-1 py-0 mud-breadcrumbs align-content-stretch" Style="flex: 1 0 auto; overflow-x: auto; overflow-y: hidden; background-color: var(--mud-palette-surface);">
 
 			<MudIconButton Title="Back" Variant="Variant.Filled" Color="Color.Default" Icon="@Icons.Material.Filled.ArrowBack"
-					   Disabled="@(BreadCrumbs.Count <= 1)" OnClick="Back" DisableElevation="true" />
+					   Disabled="@(BreadCrumbs.Count <= 1)" OnClick="Back" DisableElevation="true" Size="Size.Small" />
 
 			@if (LayoutState.SmAndUp)
 			foreach (var breadcrumb in BreadCrumbs)
@@ -46,7 +46,7 @@
 		
 		<MudTable @ref="_table" T="FolderContentItem" Comparer="_comparer" Items="FolderContentItems" MultiSelection="false"
 			  Loading="_loading" Filter="new Func<FolderContentItem, bool>(FolderContentItemFilter)" SortLabel="Sort By"
-			  Class="" Style="height: calc(100% - 45px)" Outlined="false" Height="@($"calc(100% - {TableContentHeightDiff})")" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
+				  Class="" Style="flex: 1 1 100%; display: flex; flex-direction: column;" Outlined="false" Height="@($"auto; flex: 1 0 0;")" Hover="true" Elevation="0" FixedHeader="true" FixedFooter="true"
 			  OnRowClick="OnRowClick" RowStyle="cursor: pointer;" RowClassFunc="RowClassFunc" AllowUnsorted="false" Dense="true">
 			<ToolBarContent>
 
@@ -209,7 +209,7 @@
 				{
 					<MudTd DataLabel="Name" Style="">
 						<MudStack Row="true">
-							<MudIcon Size="Size.Medium" Class="color-folder-yellow" Icon="@Icons.Material.Filled.Folder" />
+							<MudIcon Size="Size.Medium" Class="color-folder-yellow" Icon="@Icons.Material.Sharp.Folder" />
 							<MudText Typo="Typo.body2">@context.Name</MudText>
 						</MudStack>
 					</MudTd>
@@ -351,7 +351,7 @@
 											Download
 										</MudMenuItemW>
 										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Forum"
-									  OnClick="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.CourseId, file)" OnTouch="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.CourseId, file)">
+									  OnClick="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.WorkspaceId, file)" OnTouch="async () => await DialogService.ShowPostsRelatedToFileDialog(FolderContent.WorkspaceId, file)">
 											Show related posts
 										</MudMenuItemW>
 										<MudMenuItemW IconSize="Size.Small" IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit"
@@ -588,7 +588,7 @@
 		var excluded = new long[] { FolderContent.Self.Id };
 		var excludedWithChildren = folderIds;
 
-		var destinationFolder = await DialogService.ShowSelectFolderDialog("Move items to", "Move here", FolderContent.CourseId, excluded, excludedWithChildren);
+		var destinationFolder = await DialogService.ShowSelectFolderDialog("Move items to", "Move here", FolderContent.WorkspaceId, excluded, excludedWithChildren);
 		if (destinationFolder is null) return;
 
 		var moveRequest = new MoveFolderItemsRequest
@@ -613,7 +613,7 @@
 		var excluded = new long[] { FolderContent.Self.Id };
 		var excludedWithChildren = folderIds;
 
-		var destinationFolder = await DialogService.ShowSelectFolderDialog("Copy items to", "Copy here", FolderContent.CourseId, excluded, excludedWithChildren);
+		var destinationFolder = await DialogService.ShowSelectFolderDialog("Copy items to", "Copy here", FolderContent.WorkspaceId, excluded, excludedWithChildren);
 		if (destinationFolder is null) return;
 
 		var copyRequest = new CopyFolderItemsRequest
@@ -667,7 +667,7 @@
 		var parameters = new DialogParameters
 			{
 				["ParentFolderId"] = FolderContent!.Self.Id,
-				["ParentFolderPermission"] = FolderContent.CoursePermission.Type
+				["ParentFolderPermission"] = FolderContent.WorkspacePermission.Type
 			};
 		var name = "Create folder";
 		var result = await DialogService.Show<CreateFolderDialog>(name, parameters).Result;

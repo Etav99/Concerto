@@ -20,7 +20,7 @@
 	MudDialogInstance Dialog { get; set; } = null!;
 
 	[Parameter]
-	public long CourseId { get; set; }
+	public long WorkspaceId { get; set; }
 
 	private string? _sessionName;
 	private DateTime? _date = DateTime.Today.AddDays(1);
@@ -30,7 +30,7 @@
 	{
 		if (string.IsNullOrEmpty(_sessionName))
 		{
-			Snackbar.Add("Course name cannot be empty", Severity.Error);
+			Snackbar.Add("Workspace name cannot be empty", Severity.Error);
 			return;
 		}
 		if (!_time.HasValue)
@@ -45,12 +45,12 @@
 			return;
 		}
 
-		// Move to course manager
+		// Move to workspace manager
 		var createSessionRequest = new CreateSessionRequest
 		{
 			Name = _sessionName,
 			ScheduledDateTime = _date.Value + _time.Value,
-			CourseId = CourseId
+			WorkspaceId = WorkspaceId
 		};
 
 		try

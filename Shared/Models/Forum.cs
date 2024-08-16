@@ -2,7 +2,7 @@
 
 public record Post(
 	long Id,
-	long CourseId,
+	long WorkspaceId,
 	DateTime CreatedAt,
 	User Author,
 	bool Edited,
@@ -59,7 +59,7 @@ public record Comment(
 	public string Content { get; set; } = Content;
 }
 
-public record CreatePostRequest(long CourseId)
+public record CreatePostRequest(long WorkspaceId)
 {
 	public string Title { get; set; } = string.Empty;
 	public string Content { get; set; } = string.Empty;

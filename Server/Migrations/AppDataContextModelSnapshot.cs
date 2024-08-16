@@ -55,60 +55,6 @@ namespace Concerto.Server.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long?>("RootFolderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("SessionsFolderId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RootFolderId");
-
-                    b.HasIndex("SessionsFolderId");
-
-                    b.ToTable("Courses");
-                });
-
-            modelBuilder.Entity("Concerto.Server.Data.Models.CourseUser", b =>
-                {
-                    b.Property<long>("CourseId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CourseId", "UserId");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CourseUsers");
-                });
-
             modelBuilder.Entity("Concerto.Server.Data.Models.DawProject", b =>
                 {
                     b.Property<long>("ProjectId")
@@ -136,9 +82,6 @@ namespace Concerto.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("CourseId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -152,13 +95,16 @@ namespace Concerto.Server.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("CourseId");
+                    b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Folders");
                 });
@@ -178,9 +124,6 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("CourseId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -191,11 +134,14 @@ namespace Concerto.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Post");
                 });
@@ -207,9 +153,6 @@ namespace Concerto.Server.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("CourseId")
-                        .HasColumnType("bigint");
 
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
@@ -226,14 +169,17 @@ namespace Concerto.Server.Migrations
                     b.Property<DateTime>("ScheduledDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("CourseId");
+                    b.HasKey("Id");
 
                     b.HasIndex("FolderId")
                         .IsUnique();
 
                     b.HasIndex("MeetingGuid");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Sessions");
                 });
@@ -312,6 +258,8 @@ namespace Concerto.Server.Migrations
 
                     b.HasIndex("FolderId");
 
+                    b.HasIndex("OwnerId");
+
                     b.ToTable("UploadedFiles");
                 });
 
@@ -355,6 +303,60 @@ namespace Concerto.Server.Migrations
                     b.ToTable("UserFolderPermissions");
                 });
 
+            modelBuilder.Entity("Concerto.Server.Data.Models.Workspace", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("RootFolderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SessionsFolderId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RootFolderId");
+
+                    b.HasIndex("SessionsFolderId");
+
+                    b.ToTable("Workspaces");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.WorkspaceUser", b =>
+                {
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("WorkspaceId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("WorkspaceUsers");
+                });
+
             modelBuilder.Entity("PostUploadedFile", b =>
                 {
                     b.Property<long>("PostId")
@@ -389,48 +391,8 @@ namespace Concerto.Server.Migrations
                     b.Navigation("Post");
                 });
 
-            modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>
-                {
-                    b.HasOne("Concerto.Server.Data.Models.Folder", "RootFolder")
-                        .WithMany()
-                        .HasForeignKey("RootFolderId");
-
-                    b.HasOne("Concerto.Server.Data.Models.Folder", "SessionsFolder")
-                        .WithMany()
-                        .HasForeignKey("SessionsFolderId");
-
-                    b.Navigation("RootFolder");
-
-                    b.Navigation("SessionsFolder");
-                });
-
-            modelBuilder.Entity("Concerto.Server.Data.Models.CourseUser", b =>
-                {
-                    b.HasOne("Concerto.Server.Data.Models.Course", "Course")
-                        .WithMany("CourseUsers")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Concerto.Server.Data.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Concerto.Server.Data.Models.Folder", b =>
                 {
-                    b.HasOne("Concerto.Server.Data.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Concerto.Server.Data.Models.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
@@ -441,7 +403,13 @@ namespace Concerto.Server.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.OwnsOne("Concerto.Server.Data.Models.FolderPermission", "CoursePermission", b1 =>
+                    b.HasOne("Concerto.Server.Data.Models.Workspace", "Workspace")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Concerto.Server.Data.Models.FolderPermission", "WorkspacePermission", b1 =>
                         {
                             b1.Property<long>("FolderId")
                                 .HasColumnType("bigint");
@@ -460,14 +428,14 @@ namespace Concerto.Server.Migrations
                                 .HasForeignKey("FolderId");
                         });
 
-                    b.Navigation("Course");
-
-                    b.Navigation("CoursePermission")
-                        .IsRequired();
-
                     b.Navigation("Owner");
 
                     b.Navigation("Parent");
+
+                    b.Navigation("Workspace");
+
+                    b.Navigation("WorkspacePermission")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Post", b =>
@@ -478,34 +446,34 @@ namespace Concerto.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Concerto.Server.Data.Models.Course", "Course")
+                    b.HasOne("Concerto.Server.Data.Models.Workspace", "Workspace")
                         .WithMany("Posts")
-                        .HasForeignKey("CourseId")
+                        .HasForeignKey("WorkspaceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Author");
 
-                    b.Navigation("Course");
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Session", b =>
                 {
-                    b.HasOne("Concerto.Server.Data.Models.Course", "Course")
-                        .WithMany("Sessions")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Concerto.Server.Data.Models.Folder", "Folder")
                         .WithOne()
                         .HasForeignKey("Concerto.Server.Data.Models.Session", "FolderId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.HasOne("Concerto.Server.Data.Models.Workspace", "Workspace")
+                        .WithMany("Sessions")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Folder");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.Track", b =>
@@ -533,7 +501,13 @@ namespace Concerto.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Concerto.Server.Data.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId");
+
                     b.Navigation("Folder");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.UserFolderPermission", b =>
@@ -580,6 +554,40 @@ namespace Concerto.Server.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Concerto.Server.Data.Models.Workspace", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.Folder", "RootFolder")
+                        .WithMany()
+                        .HasForeignKey("RootFolderId");
+
+                    b.HasOne("Concerto.Server.Data.Models.Folder", "SessionsFolder")
+                        .WithMany()
+                        .HasForeignKey("SessionsFolderId");
+
+                    b.Navigation("RootFolder");
+
+                    b.Navigation("SessionsFolder");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.WorkspaceUser", b =>
+                {
+                    b.HasOne("Concerto.Server.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concerto.Server.Data.Models.Workspace", "Workspace")
+                        .WithMany("WorkspaceUsers")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Workspace");
+                });
+
             modelBuilder.Entity("PostUploadedFile", b =>
                 {
                     b.HasOne("Concerto.Server.Data.Models.Post", null)
@@ -593,15 +601,6 @@ namespace Concerto.Server.Migrations
                         .HasForeignKey("ReferencedFilesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Concerto.Server.Data.Models.Course", b =>
-                {
-                    b.Navigation("CourseUsers");
-
-                    b.Navigation("Posts");
-
-                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("Concerto.Server.Data.Models.DawProject", b =>
@@ -621,6 +620,15 @@ namespace Concerto.Server.Migrations
             modelBuilder.Entity("Concerto.Server.Data.Models.Post", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("Concerto.Server.Data.Models.Workspace", b =>
+                {
+                    b.Navigation("Posts");
+
+                    b.Navigation("Sessions");
+
+                    b.Navigation("WorkspaceUsers");
                 });
 #pragma warning restore 612, 618
         }

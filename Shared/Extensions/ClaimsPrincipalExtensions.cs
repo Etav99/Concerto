@@ -9,7 +9,7 @@ public static class ClaimsPrincipalExtensions
 		return user.IsInRole("admin");
 	}
 
-	public static bool IsTeacher(this ClaimsPrincipal user)
+	public static bool IsModerator(this ClaimsPrincipal user)
 	{
 		return user.IsInRole("teacher");
 	}
