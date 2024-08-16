@@ -78,42 +78,7 @@ builder.Services.AddAuthentication(options =>
 				}
 			};
 		}
-	)
-	.AddCookie(options =>
-	{
-		options.Cookie.Path = $"{AppSettings.Web.BasePath}/auth";
-		options.Cookie.SameSite = SameSiteMode.Strict;
-		options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-	})
-	.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
-	{
-		options.RequireHttpsMetadata = AppSettings.Oidc.RequireHttpsMetadata;
-		options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-		options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-		options.Authority = AppSettings.Oidc.Authority;
-		options.ClientId = AppSettings.Oidc.ServerClientId;
-		options.ClientSecret = AppSettings.Oidc.ServerClientSecret;
-		options.ResponseType = "code";
-		options.Scope.Add("openid");
-
-		options.SaveTokens = true;
-
-		options.CallbackPath = "/auth/signin-oidc";
-		options.SignedOutCallbackPath = "/auth/signout-callback-oidc";
-
-		options.Events = new OpenIdConnectEvents
-		{
-			OnRedirectToIdentityProvider = context =>
-			{
-				var builder = new UriBuilder(context.ProtocolMessage.RedirectUri);
-				builder.Scheme = "https";
-				builder.Port = -1;
-				context.ProtocolMessage.RedirectUri = builder.ToString();
-				return Task.CompletedTask;
-			}
-		};
-	});
+	);
 
 
 builder.Services.AddAuthorization(options =>
