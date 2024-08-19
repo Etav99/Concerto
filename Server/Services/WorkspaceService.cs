@@ -7,11 +7,11 @@ namespace Concerto.Server.Services;
 
 public class WorkspaceService
 {
-	private readonly AppDataContext _context;
+	private readonly ConcertoDbContext _context;
 	private readonly ILogger<WorkspaceService> _logger;
 	private readonly StorageService _storageService;
 
-	public WorkspaceService(ILogger<WorkspaceService> logger, AppDataContext context, StorageService storageService)
+	public WorkspaceService(ILogger<WorkspaceService> logger, ConcertoDbContext context, StorageService storageService)
 	{
 		_logger = logger;
 		_context = context;

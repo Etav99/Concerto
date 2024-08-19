@@ -11,11 +11,11 @@ namespace Concerto.Server.Services;
 
 public class StorageService
 {
-	private readonly AppDataContext _context;
+	private readonly ConcertoDbContext _context;
 	private readonly ILogger<StorageService> _logger;
 	private readonly IMemoryCache _memoryCache;
 
-	public StorageService(ILogger<StorageService> logger, AppDataContext context, IMemoryCache memoryCache)
+	public StorageService(ILogger<StorageService> logger, ConcertoDbContext context, IMemoryCache memoryCache)
 	{
 		_logger = logger;
 		_context = context;

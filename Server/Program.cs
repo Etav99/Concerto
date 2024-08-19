@@ -93,10 +93,10 @@ builder.Services.AddAuthorization(options =>
 
 
 // Configure database context
-builder.Services.AddDbContext<AppDataContext>(options =>
+builder.Services.AddDbContext<ConcertoDbContext>(options =>
 	options.UseNpgsql(AppSettings.Database.DbString)
 );
-builder.Services.AddScoped<AppDataContext>();
+builder.Services.AddScoped<ConcertoDbContext>();
 
 // Configure the HTTP request pipeline.
 if (builder.Environment.IsDevelopment())
@@ -155,7 +155,7 @@ using var badRequestListener = new BadRequestEventListener(diagnosticSource, (ba
 });
 
 await using var scope = app.Services.CreateAsyncScope();
-await using (var db = scope.ServiceProvider.GetService<AppDataContext>())
+await using (var db = scope.ServiceProvider.GetService<ConcertoDbContext>())
 {
 	if (db == null) throw new NullReferenceException("Error while getting database context.");
 

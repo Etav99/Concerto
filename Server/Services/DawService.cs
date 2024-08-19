@@ -22,16 +22,14 @@ namespace Concerto.Server.Services;
 public class DawService
 {
     private readonly ILogger<DawService> _logger;
-    private readonly IHubContext<DawHub> _dawHubContext;
-    private readonly AppDataContext _context;
+    private readonly ConcertoDbContext _context;
 
     private static AsyncLock ProjectGenerationLock = new();
     public static Dictionary<long, SemaphoreSlim> ProjectGenerationAsyncLocks { get; } =  new();
 
-	public DawService(ILogger<DawService> logger, IHubContext<DawHub> dawHubContext, AppDataContext context)
+	public DawService(ILogger<DawService> logger, ConcertoDbContext context)
 	{
 		_logger = logger;
-		_dawHubContext = dawHubContext;
 		_context = context;
 	}
 
@@ -65,28 +63,24 @@ public class DawService
         return track.ToViewModel(userId);
     }
 
-    public async Task DeleteTrack(long projectId, long trackId)
+    public async Task<bool> DeleteTrack(long projectId, long trackId, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        if (track is null) return;
+        if (track is null) return false;
+        if (track.SelectedByUserId != userId) return false;
+
         _context.Tracks.Remove(track);
         await _context.SaveChangesAsync();
-
-
-        await Task.WhenAll(
-            NotifyProjectChanged(projectId),
-            track.AudioSourceGuid is not null ? FileExtensions.DeleteAsync(track.AudioSourcePath) : Task.CompletedTask
-        );
-
-        await NotifyProjectChanged(projectId);
+        await (track.AudioSourceGuid is not null ? FileExtensions.DeleteAsync(track.AudioSourcePath) : Task.CompletedTask);
+        return true;
     }
 
-    public async Task AddTrack(long projectId, string trackName)
+    public async Task<bool> AddTrack(long projectId, string trackName)
     {
         var track = new Track(projectId, trackName);
         _context.Tracks.Add(track);
         await _context.SaveChangesAsync();
-        await NotifyProjectChanged(projectId);
+        return true;
     }
 
     public async Task<FileStream> GetTrackSourceStream(long projectId, long trackId)
@@ -106,47 +100,50 @@ public class DawService
         return (new FileStream(project.AudioSourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, AppSettings.Storage.StreamBufferSize, FileOptions.Asynchronous), project.AudioSourceHash);
     }
 
-    public async Task SetTrackName(long projectId, long trackId, string trackName, Guid userId)
+    public async Task<bool> SetTrackName(long projectId, long trackId, string trackName, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        if (track is null) return;
-        if(track.SelectedByUserId != userId) return;
+        if (track is null) return false;
+        if(track.SelectedByUserId != userId) return false;
 
         track.Name = trackName;
         await _context.SaveChangesAsync();
-        await NotifyProjectChanged(track.ProjectId);
+        return true;
     }
 
-    public async Task SetTrackStartTime(long projectId, long trackId, float startTime)
+    public async Task<bool> SetTrackStartTime(long projectId, long trackId, float startTime, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        if (track is null) return;
+        if (track is null) return false;
+        if (track.SelectedByUserId != userId) return false;
+
+        if (track.StartTime == startTime) return false;
+
         track.StartTime = startTime;
         await _context.SaveChangesAsync();
-
-        await NotifyProjectChanged(track.ProjectId);
+        return true;
     }
 
-    public async Task SetTrackVolume(long projectId, long trackId, float volume)
+    public async Task<bool> SetTrackVolume(long projectId, long trackId, float volume, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        if (track is null) return;
+        if (track is null) return false;
+        if (track.SelectedByUserId != userId) return false;
+        if(track.Volume == volume) return false;
+
         track.Volume = volume;
         await _context.SaveChangesAsync();
-
-        await NotifyProjectChanged(track.ProjectId);
+        return true;
     }
 
     public async Task<bool> SelectTrack(long projectId, long trackId, Guid userId)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
         if (track is null) return false;
-        if (track.SelectedByUserId is not null && track.SelectedByUserId != userId) return false;
-        if (track.SelectedByUserId == userId) return true;
+        if (track.SelectedByUserId is not null) return false;
 
         track.SelectedByUserId = userId;
         await _context.SaveChangesAsync();
-        await NotifyProjectChanged(track.ProjectId);
         return true;
     }
 
@@ -154,20 +151,18 @@ public class DawService
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
         if (track is null) return false;
-        if (track.SelectedByUserId is null) return true;
         if (track.SelectedByUserId != userId) return false;
 
         track.SelectedByUserId = null;
         await _context.SaveChangesAsync();
-        await NotifyProjectChanged(track.ProjectId);
         return true;
     }
 
-    public async Task SetTrackSource(long projectId, long trackId, IFormFile sourceFile, float? startTime = null, float? volume = null)
+    public async Task<bool> SetTrackSource(long projectId, long trackId, IFormFile sourceFile, Guid userId, float? startTime = null, float? volume = null)
     {
         var track = await _context.Tracks.FindAsync(projectId, trackId);
-        if (track is null)
-            throw new Exception($"Track with id {trackId} not found");
+        if (track is null) return false;
+        if (track.SelectedByUserId != userId) return false;
 
         var oldSourceGuid = track.AudioSourceGuid;
         track.AudioSourceGuid = Guid.NewGuid();
@@ -192,12 +187,8 @@ public class DawService
             track.Volume = Math.Clamp(volume.Value, 0, 1);
 
         await _context.SaveChangesAsync();
-
-        await Task.WhenAll(
-            NotifyProjectChanged(track.ProjectId),
-            oldSourceGuid.HasValue ? FileExtensions.DeleteAsync(Track.GetAudioSourcePath(oldSourceGuid.Value)) : Task.CompletedTask
-        );
-
+        await (oldSourceGuid.HasValue ? FileExtensions.DeleteAsync(Track.GetAudioSourcePath(oldSourceGuid.Value)) : Task.CompletedTask);
+        return true;
     }
 
 
@@ -374,14 +365,6 @@ public class DawService
                 await FileExtensions.DeleteAsync(oldSourcePath);
         }
 
-    }
-
-    private async Task NotifyProjectChanged(long projectId)
-    {
-        await _dawHubContext
-            .Clients
-            .Group(DawHub.DawProjectGroup(projectId))
-            .SendAsync(DawHubMethods.Client.OnProjectChanged, projectId);
     }
 
     public static MemoryCache Tokens { get; } = new MemoryCache(

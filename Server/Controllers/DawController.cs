@@ -5,6 +5,7 @@ using Concerto.Shared.Constants;
 using Concerto.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
@@ -19,14 +20,17 @@ public class DawController : ControllerBase
 	private readonly SessionService _sessionService;
 	private readonly StorageService _storageService;
 
+	private readonly IHubContext<DawHub> _dawHubContext;
+
 	private Guid UserId => HttpContext.UserId();
 
-	public DawController(ILogger<DawController> logger, DawService dawService, SessionService sessionService, StorageService storageService)
+	public DawController(ILogger<DawController> logger, DawService dawService, SessionService sessionService, StorageService storageService, IHubContext<DawHub> dawHubContext)
 	{
 		_logger = logger;
 		_dawService = dawService;
 		_sessionService = sessionService;
 		_storageService = storageService;
+		_dawHubContext = dawHubContext;
 	}
 
 	[HttpGet]
@@ -53,7 +57,10 @@ public class DawController : ControllerBase
 	public async Task<ActionResult> DeleteTrack(long projectId, long trackId)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.DeleteTrack(projectId, trackId);
+		
+		if(await _dawService.DeleteTrack(projectId, trackId, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
 	}
 
@@ -62,7 +69,9 @@ public class DawController : ControllerBase
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		if (trackName == null) trackName = string.Empty;
-        await _dawService.AddTrack(projectId, trackName);
+
+		if(await _dawService.AddTrack(projectId, trackName))
+			await NotifyProjectChanged(projectId);
 		return Ok();
     }
 
@@ -70,7 +79,10 @@ public class DawController : ControllerBase
 	public async Task<IActionResult> SetTrackStartTime(long projectId, long trackId, float startTime)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.SetTrackStartTime(projectId, trackId, startTime);
+		
+		if(await _dawService.SetTrackStartTime(projectId, trackId, startTime, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
 	}
 
@@ -78,16 +90,21 @@ public class DawController : ControllerBase
 	public async Task<IActionResult> SetTrackVolume(long projectId, long trackId, float volume)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.SetTrackVolume(projectId, trackId, volume);
+
+		if(await _dawService.SetTrackVolume(projectId, trackId, volume, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
-			
 	}
 
 	[HttpPost]
 	public async Task<IActionResult> SelectTrack(long projectId, long trackId)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.SelectTrack(projectId, trackId, UserId);
+
+		if(await _dawService.SelectTrack(projectId, trackId, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
 	}
 
@@ -95,7 +112,10 @@ public class DawController : ControllerBase
 	public async Task<IActionResult> UnselectTrack(long projectId, long trackId)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.UnselectTrack(projectId, trackId, UserId);
+
+		if(await _dawService.UnselectTrack(projectId, trackId, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
     }
 
@@ -105,7 +125,9 @@ public class DawController : ControllerBase
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
-		await _dawService.SetTrackSource(projectId, trackId, file, startTime, volume);
+		if(await _dawService.SetTrackSource(projectId, trackId, file, UserId, startTime, volume))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
 	}
 
@@ -115,7 +137,10 @@ public class DawController : ControllerBase
 	{
 		if(name is null) name = string.Empty;
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		await _dawService.SetTrackName(projectId, trackId, name, UserId);
+
+		if(await _dawService.SetTrackName(projectId, trackId, name, UserId))
+			await NotifyProjectChanged(projectId);
+
 		return Ok();
     }
 
@@ -177,4 +202,12 @@ public class DawController : ControllerBase
 		var token = _dawService.GenerateToken(projectId, DawService.TokenType.DawProject);
 		return Ok(token);
 	}
+
+    internal async Task NotifyProjectChanged(long projectId)
+    {
+        await _dawHubContext
+            .Clients
+            .Group(DawHub.DawProjectGroup(projectId))
+            .SendAsync(DawHubMethods.Client.OnProjectChanged, projectId);
+    }
 }

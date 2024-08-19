@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Concerto.Server.Migrations
 {
-    [DbContext(typeof(AppDataContext))]
+    [DbContext(typeof(ConcertoDbContext))]
     partial class AppDataContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

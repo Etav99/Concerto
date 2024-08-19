@@ -10,11 +10,11 @@ namespace Concerto.Server.Services;
 
 public class ForumService
 {
-	private readonly AppDataContext _context;
+	private readonly ConcertoDbContext _context;
 	private readonly WorkspaceService _workspaceService;
 	private readonly ILogger<ForumService> _logger;
 
-	public ForumService(ILogger<ForumService> logger, AppDataContext context, WorkspaceService workspaceService)
+	public ForumService(ILogger<ForumService> logger, ConcertoDbContext context, WorkspaceService workspaceService)
 	{
 		_context = context;
 		_logger = logger;

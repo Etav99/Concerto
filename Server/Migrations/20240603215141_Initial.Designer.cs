@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Concerto.Server.Migrations
 {
-    [DbContext(typeof(AppDataContext))]
+    [DbContext(typeof(ConcertoDbContext))]
     [Migration("20240603215141_Initial")]
     partial class Initial
     {

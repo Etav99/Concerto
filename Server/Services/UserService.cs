@@ -9,11 +9,11 @@ namespace Concerto.Server.Services;
 
 public class UserService
 {
-	private readonly AppDataContext _context;
+	private readonly ConcertoDbContext _context;
 	private readonly IdentityManagerService _identityManagerService;
 	private readonly ILogger<UserService> _logger;
 
-	public UserService(ILogger<UserService> logger, AppDataContext context, IdentityManagerService identityManagerService)
+	public UserService(ILogger<UserService> logger, ConcertoDbContext context, IdentityManagerService identityManagerService)
 	{
 		_logger = logger;
 		_context = context;

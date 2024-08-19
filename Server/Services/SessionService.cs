@@ -12,11 +12,11 @@ namespace Concerto.Server.Services;
 
 public class SessionService
 {
-	private readonly AppDataContext _context;
+	private readonly ConcertoDbContext _context;
 	private readonly StorageService _storageService;
 	private readonly ILogger<SessionService> _logger;
 
-	public SessionService(ILogger<SessionService> logger, AppDataContext context, StorageService storageService)
+	public SessionService(ILogger<SessionService> logger, ConcertoDbContext context, StorageService storageService)
 	{
 		_logger = logger;
 		_context = context;
