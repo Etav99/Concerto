@@ -210,26 +210,5 @@ public class StorageController : ControllerBase
 		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, UserId);
 		return Ok();
 	}
-
-	[HttpPost]
-	[AllowAnonymous]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<Guid>> RecordingFinished([FromBody] RecordingFinishedRequest request)
-	{
-		if(request.RecorderKey != AppSettings.Meetings.RecorderKey) return Unauthorized();
-
-		try
-		{
-			await _storageService.SaveRecording(request.MeetingId, request.FilePath);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error while saving recording");
-			return BadRequest();
-		}
-		return Ok();
-	}
 }
 

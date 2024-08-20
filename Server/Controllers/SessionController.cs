@@ -1,5 +1,6 @@
 ﻿using Concerto.Server.Middlewares;
 using Concerto.Server.Services;
+using Concerto.Server.Settings;
 using Concerto.Shared.Extensions;
 using Concerto.Shared.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
@@ -15,14 +16,16 @@ public class SessionController : ControllerBase
 	private readonly WorkspaceService _workspaceService;
 	private readonly ILogger<SessionController> _logger;
 	private readonly SessionService _sessionService;
+	private readonly StorageService _storageService;
 	private Guid UserId => HttpContext.UserId();
 
 
-	public SessionController(ILogger<SessionController> logger, WorkspaceService workspaceService, SessionService sessionService)
+	public SessionController(ILogger<SessionController> logger, WorkspaceService workspaceService, SessionService sessionService, StorageService storageService)
 	{
 		_logger = logger;
 		_workspaceService = workspaceService;
 		_sessionService = sessionService;
+		_storageService = storageService;
 	}
 
 	[HttpPost]
@@ -85,6 +88,28 @@ public class SessionController : ControllerBase
 	{
 		if (!User.IsAdmin() && !await _sessionService.CanAccessSession(meetingGuid, UserId)) return Forbid();
 		return await _sessionService.GenerateMeetingToken(UserId, meetingGuid);
+	}
+
+
+	[HttpPost]
+	[AllowAnonymous]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<ActionResult<Guid>> RecordingFinished([FromBody] RecordingFinishedRequest request)
+	{
+		if(request.RecorderKey != AppSettings.Meetings.RecorderKey) return Unauthorized();
+
+		try
+		{
+			await _storageService.SaveRecording(request.MeetingId, request.FilePath);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error while saving recording");
+			return BadRequest();
+		}
+		return Ok();
 	}
 }
 
