@@ -5,7 +5,22 @@
 		width: "100%",
 		height: "100%",
 		parentNode: document.querySelector(`#${parentId}`),
-		lang: 'en'
+		lang: 'en',
+
+		configOverwrite: {
+			recordingService: {
+				enabled: true,
+				sharingEnabled: false,
+				hideStorageWarning: true,
+			},
+
+			disableModeratorIndicator: true
+		},
+
+		interfaceConfigOverwrite: {
+			DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+			SHOW_JITSI_WATERMARK: false,
+		}
 	};
 	const api = new JitsiMeetExternalAPI(domain, options);
 	api.executeCommand('overwriteConfig',
