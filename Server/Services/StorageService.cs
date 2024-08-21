@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using MimeMapping;
+using Newtonsoft.Json.Linq;
+using static Concerto.Server.Services.DawService;
 
 namespace Concerto.Server.Services;
 
@@ -744,4 +746,39 @@ public class StorageService
 		if(fileInfo.DirectoryName != null)
 			Directory.Delete(fileInfo.DirectoryName, true);
 	}
+
+
+	public Guid GenerateToken(long resourceId, TokenType tokenType)
+	{
+		var token = Guid.NewGuid();
+		Tokens.Set(token, (resourceId, tokenType), DefaultEntryOptions);
+		return token;
+	}
+
+	internal bool ValidateToken(Guid token, long resourceId, TokenType tokenType)
+	{
+		Tokens.TryGetValue(token, out (long, TokenType) val);
+		if (val.Item1 != resourceId || val.Item2 != tokenType) return false;
+		return true;
+	}
+
+	public enum TokenType
+	{
+		File,
+		DawProject
+	}
+
+    public static MemoryCache Tokens { get; } = new MemoryCache(
+		new MemoryCacheOptions
+		{
+			SizeLimit = 100_000
+		}
+	);
+
+    public static MemoryCacheEntryOptions DefaultEntryOptions = new()
+	{
+		Size = 1,
+		SlidingExpiration = TimeSpan.FromMinutes(120),
+	};
+
 }

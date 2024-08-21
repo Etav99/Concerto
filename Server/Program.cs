@@ -23,6 +23,11 @@ var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("C
 // Add services to the container.
 // IdentityModelEventSource.ShowPII = true; 
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 1_000_000_000;
+});
+
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 

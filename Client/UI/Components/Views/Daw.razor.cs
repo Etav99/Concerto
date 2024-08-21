@@ -560,7 +560,7 @@ public class DawInterop : IAsyncDisposable
 
     public record PlaylistOptionsJs
     {
-        public int samplesPerPixel { get; set; } = 3000;
+        public int samplesPerPixel { get; set; } = 4096;
         public int waveHeight { get; set; } = 162;
 
         public int barWidth { get; set; } = 1;
@@ -576,7 +576,7 @@ public class DawInterop : IAsyncDisposable
 
         public bool isAutomaticScroll {get; set; } = true;
 
-        public int[] zoomLevels { get; set; } = new[] { 100, 250, 500, 1000, 3000, 5000 };
+        public int[] zoomLevels { get; set; } = new[] { 128, 256, 512, 1024, 2048, 4096, 8192, 16384 };
     }
 
     public record PlaylistColorsJs

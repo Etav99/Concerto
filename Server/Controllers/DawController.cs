@@ -40,7 +40,7 @@ public class DawController : ControllerBase
 		var project = await _dawService.GetProject(sessionId, UserId);
 		if (project == null) return NotFound();
 
-		project.Token = _dawService.GenerateToken(sessionId, DawService.TokenType.DawProject);
+		project.Token = _storageService.GenerateToken(sessionId, StorageService.TokenType.DawProject);
 		return project;
 	}
 
@@ -148,7 +148,7 @@ public class DawController : ControllerBase
 	[AllowAnonymous]
 	public async Task<IActionResult> GetTrackSource([FromQuery] long projectId, [FromQuery] long trackId, [FromQuery] Guid token)
 	{
-		if(!_dawService.ValidateToken(token, projectId, DawService.TokenType.DawProject)) return Forbid();
+		if(!_storageService.ValidateToken(token, projectId, StorageService.TokenType.DawProject)) return Forbid();
 
 		var fileStream = await _dawService.GetTrackSourceStream(projectId, trackId);
         return File(fileStream, "audio/*", "Track", true);
@@ -158,7 +158,7 @@ public class DawController : ControllerBase
 	[AllowAnonymous]
 	public async Task<IActionResult> GetProjectSource([FromQuery] long projectId, [FromQuery] Guid token)
 	{
-		if(!_dawService.ValidateToken(token, projectId, DawService.TokenType.DawProject)) return Forbid();
+		if(!_storageService.ValidateToken(token, projectId, StorageService.TokenType.DawProject)) return Forbid();
 
 		var (fileStream, hash) = await _dawService.GetProjectSourceStream(projectId);
 
@@ -199,7 +199,7 @@ public class DawController : ControllerBase
 	public async Task<ActionResult<Guid>> GetProjectToken(long projectId)
 	{
 		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		var token = _dawService.GenerateToken(projectId, DawService.TokenType.DawProject);
+		var token = _storageService.GenerateToken(projectId, StorageService.TokenType.DawProject);
 		return Ok(token);
 	}
 

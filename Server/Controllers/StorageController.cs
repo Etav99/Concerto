@@ -210,5 +210,30 @@ public class StorageController : ControllerBase
 		await _storageService.CopyFiles(fileIds, request.DestinationFolderId, UserId);
 		return Ok();
 	}
+
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<ActionResult> DownloadFile([FromQuery] long fileId, [FromQuery] Guid token, [FromQuery] bool inline)
+	{
+		if (!_storageService.ValidateToken(token, fileId, StorageService.TokenType.File)) return Forbid();
+
+		var file = await _storageService.GetFile(fileId);
+		if (file == null) return NotFound();
+		var fileBytes = System.IO.File.OpenRead(file.Path);
+
+		if(inline)
+			return File(fileStream: fileBytes, contentType: file.MimeType, enableRangeProcessing: true);
+
+		return File(fileStream: fileBytes, fileDownloadName: file.DisplayName + file.Extension, contentType: file.MimeType, enableRangeProcessing: true);
+	}
+
+	[HttpGet]
+	public async Task<ActionResult<Guid>> GetFileDownloadToken([FromQuery] long fileId)
+	{
+		if (!(User.IsAdmin() || await _storageService.CanReadFile(UserId, fileId))) return Forbid();
+
+		var token = _storageService.GenerateToken(fileId, StorageService.TokenType.File);
+		return Ok(token);
+	}
 }
 

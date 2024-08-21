@@ -169,7 +169,7 @@ public class DawService
 
         await using (var inputStream = sourceFile.OpenReadStream())
         {
-            var inputPipe = new StreamPipeSource(sourceFile.OpenReadStream());
+            var inputPipe = new StreamPipeSource(inputStream);
             await FFMpegArguments
                 .FromPipeInput(inputPipe)
                 .OutputToFile(track.AudioSourcePath, true, opts =>
@@ -308,7 +308,7 @@ public class DawService
             var hash = mD5.ComputeHash(Encoding.UTF8.GetBytes(toHash));
             hashString = Convert.ToHexString(hash);
         }
-        if(hashString == project.AudioSourceHash) return true;
+        if(hashString == project.AudioSourceHash) return false;
 
 
         var oldSourcePath = project.AudioSourceGuid is null ? null : project.AudioSourcePath;
@@ -316,9 +316,19 @@ public class DawService
         project.AudioSourceGuid = Guid.NewGuid();
 
         // Generate combined audio source
-        var floatFormat = CultureInfo.InvariantCulture.NumberFormat;
+        var numberFormat = CultureInfo.InvariantCulture.NumberFormat;
         var adelay = string.Concat(
-            tracks.Select((t, i) => $"[{i}]volume={t.Volume.ToString(floatFormat)}[v{i}];[v{i}]adelay={t.StartTimeMilis}|{t.StartTimeMilis}[a{i}];")
+            tracks.Select((t, i) =>
+            {
+                // trim if negative start time
+                if (t.StartTime < 0)
+                {
+                    double trimStart = Math.Abs(t.StartTime);
+                    return $"[{i}]atrim=start={trimStart.ToString(numberFormat)}[t{i}];[t{i}]volume={t.Volume.ToString(numberFormat)}[a{i}];";
+                }
+                // delay if positive start time
+                return $"[{i}]volume={t.Volume.ToString(numberFormat)}[v{i}];[v{i}]adelay=delays={t.StartTimeMilis}:all=1[a{i}];";
+            })
         );
         var amix = string.Concat(
             tracks.Select((t, i) => $"[a{i}]")
@@ -328,11 +338,11 @@ public class DawService
         var filterComplex = $"-filter_complex {adelay}{amix}";
 
 
-        var trackStreams = tracks.Select(t => File.OpenRead(t.AudioSourcePath)).ToList();
+        var trackStreams = tracks.Select(t => (t.AudioSourcePath)).ToList();
 
-        FFMpegArguments ffmpeg = FFMpegArguments.FromPipeInput(new StreamPipeSource(trackStreams.First()));
+        FFMpegArguments ffmpeg = FFMpegArguments.FromFileInput(trackStreams.First());
         foreach (var trackStream in trackStreams.Skip(1))
-            ffmpeg = ffmpeg.AddPipeInput(new StreamPipeSource(trackStream));
+            ffmpeg = ffmpeg.AddFileInput(trackStream);
 
 
         await ffmpeg
@@ -345,9 +355,9 @@ public class DawService
             .ProcessAsynchronously();
 
 
-        var DisposeTasks = trackStreams.Select(t => t.DisposeAsync()).ToList();
-        foreach (var disposeTask in DisposeTasks)
-            await disposeTask;
+        //var DisposeTasks = trackStreams.Select(t => t.DisposeAsync()).ToList();
+        //foreach (var disposeTask in DisposeTasks)
+        //    await disposeTask;
 
         try
         {
@@ -367,37 +377,7 @@ public class DawService
 
     }
 
-    public static MemoryCache Tokens { get; } = new MemoryCache(
-		new MemoryCacheOptions
-		{
-			SizeLimit = 100_000
-		}
-	);
 
-    public static MemoryCacheEntryOptions DefaultEntryOptions = new()
-	{
-		Size = 1,
-		SlidingExpiration = TimeSpan.FromMinutes(5),
-	};
 
-    public Guid GenerateToken(long resourceId, TokenType tokenType)
-	{
-		var token = Guid.NewGuid();
-		Tokens.Set(token, (resourceId, tokenType), DefaultEntryOptions);
-		return token;
-	}
-
-	internal bool ValidateToken(Guid token, long resourceId, TokenType tokenType)
-	{
-		Tokens.TryGetValue(token, out (long, TokenType) val);
-		if (val.Item1 != resourceId || val.Item2 != tokenType) return false;
-		return true;
-	}
-
-	public enum TokenType
-	{
-		File,
-		DawProject
-	}
 
 }
