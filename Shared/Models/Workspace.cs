@@ -53,7 +53,7 @@ public static class WorkspaceUserRoleExtensions
 		return role switch
 		{
 			WorkspaceUserRole.Admin => "Administrator",
-			WorkspaceUserRole.Supervisor => "Supervisor",
+			WorkspaceUserRole.Supervisor => "Moderator",
 			WorkspaceUserRole.Member => "Member",
 			_ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
 		};

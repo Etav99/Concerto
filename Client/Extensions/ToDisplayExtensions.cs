@@ -230,7 +230,7 @@ public static class FolderContentItemExtensions
         return role switch
         {
             Role.Admin => "Administrator",
-            Role.Teacher => "Teacher",
+            Role.Teacher => "Moderator",
             Role.User => "User",
             Role.Unverified => "Unverified",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
