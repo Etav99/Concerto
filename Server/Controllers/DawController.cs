@@ -199,7 +199,7 @@ public class DawController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Guid>> GetProjectToken(long projectId)
 	{
-		if(!!User.IsAdmin() && await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		var token = _storageService.GenerateToken(projectId, StorageService.TokenType.DawProject);
 		return Ok(token);
 	}
