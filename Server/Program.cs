@@ -153,6 +153,38 @@ app.MapHub<DawHub>("/daw");
 
 app.MapFallbackToFile("index.html");
 
+app.MapGet("manifest.json", async (HttpContext context) =>
+{
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(
+	$@"
+		{{
+		  ""name"": ""Concerto"",
+		  ""description"": ""Collaborative music"",
+		  ""short_name"": ""Concerto"",
+		  ""start_url"": ""{AppSettings.Web.AppUrl}"",
+		  ""display"": ""standalone"",
+		  ""background_color"": ""#ffffff"",
+		  ""theme_color"": ""#03173d"",
+		  ""prefer_related_applications"": false,
+		  ""icons"": [
+			{{
+			  ""src"": ""icon-512.png"",
+			  ""type"": ""image/png"",
+			  ""sizes"": ""512x512""
+			}},
+			{{
+			  ""src"": ""icon-192.png"",
+			  ""type"": ""image/png"",
+			  ""sizes"": ""192x192""
+			}}
+		  ]
+		}}
+	"
+	);
+});
+
+
 var diagnosticSource = app.Services.GetRequiredService<DiagnosticListener>();
 using var badRequestListener = new BadRequestEventListener(diagnosticSource, (badRequestExceptionFeature) =>
 {

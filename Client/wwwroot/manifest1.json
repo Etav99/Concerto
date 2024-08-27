@@ -1,5 +1,6 @@
 {
   "name": "Concerto",
+  "description": "Collaborative music",
   "short_name": "Concerto",
   "start_url": "./",
   "display": "standalone",

@@ -8,7 +8,7 @@ public static class AppSettings
 	public static class Web
 	{
 		public static string AppUrl => $"{PublicUrl}{BasePath}";
-		public static string PublicUrl = EnvironmentHelper.GetVariable("CONCERTO_PUBLIC_URL");
+		public static string PublicUrl = EnvironmentHelper.GetVariable("CONCERTO_BASE_URL");
 		public static string BasePath = EnvironmentHelper.GetVariable("CONCERTO_BASE_PATH").IsNullOrEmpty()
 										? ""
 										: EnvironmentHelper.GetVariable("CONCERTO_BASE_PATH");
