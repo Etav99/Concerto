@@ -145,8 +145,8 @@
         _disposed = true;
     }
 
-    private bool _dawInitialized = false;
-    private bool _dawVisible = false;
+    private bool _dawInitialized = true;
+    private bool _dawVisible = true;
     private const string MeetingStyleBase = "display: grid; height: 100%; max-height: 100%;";
     private string MeetingStyle => _dawVisible
                             ? $"{MeetingStyleBase} grid-template-rows: 1fr; grid-template-columns: 1fr min-content 1fr;"

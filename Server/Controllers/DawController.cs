@@ -36,7 +36,8 @@ public class DawController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Dto.DawProject>> GetProject(long sessionId)
 	{
-		if(!await _sessionService.CanAccessSession(sessionId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(sessionId, UserId)) return Forbid();
+
 		var project = await _dawService.GetProject(sessionId, UserId);
 		if (project == null) return NotFound();
 
@@ -47,7 +48,7 @@ public class DawController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Dto.Track>> GetTrack(long projectId, long trackId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		var track = await _dawService.GetTrack(projectId, trackId, UserId);
 		if (track == null) return NotFound();
 		return track;
@@ -56,7 +57,7 @@ public class DawController : ControllerBase
 	[HttpDelete]
 	public async Task<ActionResult> DeleteTrack(long projectId, long trackId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		
 		if(await _dawService.DeleteTrack(projectId, trackId, UserId))
 			await NotifyProjectChanged(projectId);
@@ -67,7 +68,7 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<IActionResult> AddTrack(long projectId, string? trackName)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		if (trackName == null) trackName = string.Empty;
 
 		if(await _dawService.AddTrack(projectId, trackName))
@@ -78,7 +79,7 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<IActionResult> SetTrackStartTime(long projectId, long trackId, float startTime)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		
 		if(await _dawService.SetTrackStartTime(projectId, trackId, startTime, UserId))
 			await NotifyProjectChanged(projectId);
@@ -89,7 +90,7 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<IActionResult> SetTrackVolume(long projectId, long trackId, float volume)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
 		if(await _dawService.SetTrackVolume(projectId, trackId, volume, UserId))
 			await NotifyProjectChanged(projectId);
@@ -100,7 +101,7 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<IActionResult> SelectTrack(long projectId, long trackId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
 		if(await _dawService.SelectTrack(projectId, trackId, UserId))
 			await NotifyProjectChanged(projectId);
@@ -111,7 +112,7 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<IActionResult> UnselectTrack(long projectId, long trackId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
 		if(await _dawService.UnselectTrack(projectId, trackId, UserId))
 			await NotifyProjectChanged(projectId);
@@ -123,7 +124,7 @@ public class DawController : ControllerBase
 	[RequestFormLimits(MemoryBufferThreshold = 1024 * 1024 * 1024)]
 	public async Task<IActionResult> SetTrackSource([FromForm] long projectId, [FromForm]long trackId, [FromForm] IFormFile file, [FromForm] float? startTime, [FromForm] float? volume)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
 		if(await _dawService.SetTrackSource(projectId, trackId, file, UserId, startTime, volume))
 			await NotifyProjectChanged(projectId);
@@ -136,7 +137,7 @@ public class DawController : ControllerBase
 	public async Task<IActionResult> SetTrackName(long projectId, long trackId, string? name)
 	{
 		if(name is null) name = string.Empty;
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 
 		if(await _dawService.SetTrackName(projectId, trackId, name, UserId))
 			await NotifyProjectChanged(projectId);
@@ -181,15 +182,15 @@ public class DawController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<bool>> GenerateProjectSource(long projectId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		return await _dawService.GenerateProjectSource(projectId);
     }
 
 	[HttpPost]
 	public async Task<IActionResult> SaveProjectSource(long projectId, long destinationFolder, string filename)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
-		if(!await _storageService.CanWriteInFolder(UserId, destinationFolder)) return Forbid();
+		if(!User.IsAdmin() && !await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!User.IsAdmin() && !await _storageService.CanWriteInFolder(UserId, destinationFolder)) return Forbid();
 
 		await _dawService.SaveProjectSource(projectId, destinationFolder, filename, UserId);
 		return Ok();
@@ -198,7 +199,7 @@ public class DawController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Guid>> GetProjectToken(long projectId)
 	{
-		if(!await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
+		if(!!User.IsAdmin() && await _sessionService.CanAccessSession(projectId, UserId)) return Forbid();
 		var token = _storageService.GenerateToken(projectId, StorageService.TokenType.DawProject);
 		return Ok(token);
 	}

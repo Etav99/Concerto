@@ -50,13 +50,12 @@ public partial class Daw : IAsyncDisposable
     private Task _updateProjectTask = Task.CompletedTask;
     private CancellationTokenSource _updateProjectCancellationTokenSource = new();
 
-    private DawProject? _project;
-    private DawProject Project
-    {
-        get => _project ?? throw new NullReferenceException("Project is not initialized");
-        set => _project = value;
-    }
+
+    private DawProject? Project { get; set; }
     public Guid ProjectToken => Project.Token;
+
+
+    private bool IsProjectUpdating => _updateProjectTask.Status == TaskStatus.Running;
 
     private bool ShouldUpdate {get; set; }
 
@@ -77,31 +76,36 @@ public partial class Daw : IAsyncDisposable
         if (SessionId == _sessionId || SessionId is null) return;
         _sessionId = SessionId.Value;
 
+        if (DawInitialized)
+        {
+            await DawInterop.ClearProject();
+            await UpdateProject();
+        }
+
         if (_dawHub != null) await _dawHub.DisposeAsync();
         DawHub = DawService.CreateHubConnection();
         await DawHub.StartAsync();
         DawHub.On<long>(DawHubMethods.Client.OnProjectChanged, OnProjectChanged);
         DawHub.On(DawHubMethods.Client.OnRequestStopSharingVideo, OnRequestStopSharing.InvokeAsync);
-
         await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
-
-        if (!DawInitialized)
-            await DawInterop.Initialize(JS, dawId);
-        else
-            await DawInterop.ClearProject();
-
-        Project = await DawService.GetProjectAsync(_sessionId);
-        await DawInterop.LoadProject(Project);
-
-        if (!DawInitialized)
-            DawInitialized = true;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DawInterop.Initialize(JS, dawId);
+            DawInitialized = true;
+            await UpdateProject();
+        }
+    }
+
 
     public async Task OnProjectChanged(long sessionId)
     {
         if(sessionId != _sessionId) return;
 
-        if(IsPlaying || IsRecording || IsRecordingPending)
+        if (!DawInitialized || IsPlaying || IsRecording || IsRecordingPending)
             ShouldUpdate = true;
         else
             await UpdateProject();
@@ -109,6 +113,8 @@ public partial class Daw : IAsyncDisposable
 
     public async Task UpdateProject()
     {
+        Console.WriteLine("UpdateProject");
+
         ShouldUpdate = false;
 
         try
@@ -124,17 +130,25 @@ public partial class Daw : IAsyncDisposable
         }
 
         _updateProjectTask = UpdateProjectTask(_updateProjectCancellationTokenSource.Token);
+        StateHasChanged();
 
         try
         {
             await _updateProjectTask;
         }
         catch (OperationCanceledException) { }
+        StateHasChanged();
     }
 
     public async Task UpdateProjectTask(CancellationToken cancellation)
     {
-        var oldProjectState = Project;
+        DawProject oldProjectState;
+        
+        if(Project is null)
+            Project = new DawProject{Token = await DawService.GetProjectTokenAsync(SessionId)};
+        oldProjectState = Project;
+
+
         DawProject newProjectState;
         try
         {
@@ -142,11 +156,13 @@ public partial class Daw : IAsyncDisposable
         }
         catch (OperationCanceledException) { throw; }
 
+        Project = newProjectState;
 
         bool shouldRestartPlay = false;
         foreach (var newTrack in newProjectState.Tracks)
         {
             var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == newTrack.Id);
+            
             if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
 
             if (oldTrack is null)
@@ -159,7 +175,9 @@ public partial class Daw : IAsyncDisposable
                 {
                     shouldRestartPlay = shouldRestartPlay || oldTrack.ShouldBeRestarted(newTrack);
                     newTrack.CopyLocalState(oldTrack);
-                    await DawInterop.UpdateTrack(newTrack, oldTrack.SourceId != newTrack.SourceId);
+                   
+                    bool sourceChanged = oldTrack.SourceId != newTrack.SourceId;
+                    await DawInterop.UpdateTrack(newTrack, sourceChanged);
                 }
             }
         }
@@ -173,10 +191,8 @@ public partial class Daw : IAsyncDisposable
         if (shouldRestartPlay)
             await DawInterop.RestartPlay();
 
-        await DawInterop.ReRender();
-
         Project = newProjectState;
-        StateHasChanged();
+        await DawInterop.ReRender();
     }
 
     public async Task Play()
@@ -213,6 +229,7 @@ public partial class Daw : IAsyncDisposable
     {
         if (!IsRecordingPending) return;
         if (TrackRecording is null) throw new InvalidOperationException("TrackRecording is null");
+        if (Project is null) throw new InvalidOperationException("Project is null");
 
         var originalTrack = Project.TracksById[TrackRecording.Id];
         await DawInterop.UpdateTrack(originalTrack, true);
@@ -229,6 +246,7 @@ public partial class Daw : IAsyncDisposable
         if (!IsRecordingPending) return;
         if (TrackRecording is null) throw new InvalidOperationException("TrackRecording is null");
         if (TrackRecording.Blob is null) throw new InvalidOperationException("TrackRecording.Blob is null");
+        if(Project is null) throw new InvalidOperationException("Project is null");
 
 
         Project.TracksById[TrackRecording.Id].StartTime = TrackRecording.StartTime;
@@ -337,7 +355,7 @@ public partial class Daw : IAsyncDisposable
         _shiftActive = true;
     }
 
-    private bool ListenTogetherDisabled => IsRecording || IsRecordingPending || ListenTogetherPending || !(_project?.Tracks.Any(t => t.SourceId is not null) ?? true);
+    private bool ListenTogetherDisabled => IsRecording || IsRecordingPending || ListenTogetherPending || !(Project?.Tracks.Any(t => t.SourceId is not null) ?? false);
     public async Task ListenTogether()
     {
         if (ListenTogetherDisabled) return;
@@ -359,7 +377,7 @@ public partial class Daw : IAsyncDisposable
         await OnRequestStopSharing.InvokeAsync();
     }
 
-    private bool SaveProjectOutputDisabled => IsRecording || IsRecordingPending || ListenTogetherPending || !(_project?.Tracks.Any(t => t.SourceId is not null) ?? true);
+    private bool SaveProjectOutputDisabled => IsRecording || IsRecordingPending || ListenTogetherPending || !(Project?.Tracks.Any(t => t.SourceId is not null) ?? false);
     public async Task SaveProjectOutput()
     {
         if(SaveProjectOutputDisabled) return;

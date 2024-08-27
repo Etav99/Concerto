@@ -131,6 +131,7 @@
         }
 
     .daw-track-controls-buttons {
+        width: 152px;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -295,7 +296,7 @@
                 var trackControlsDisabled = IsPlaying || IsRecording || IsRecordingPending;
                 var tracksVolumeDisabled = IsRecording || IsRecordingPending;
 
-                foreach (var track in Project.Tracks)
+                foreach (var track in Project?.Tracks ?? Enumerable.Empty<Track>())
                 {
                     <div class="daw-track-selectedby">
                         @if (track.SelectionState is not TrackSelectionState.None)
@@ -404,6 +405,11 @@
 
                     </div>
                 }
+            }
+           
+            @if(!DawInitialized || IsProjectUpdating)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Large" />
             }
 
         </div>
