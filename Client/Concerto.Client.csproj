@@ -35,7 +35,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<RunAOTCompilation>true</RunAOTCompilation>
+		<RunAOTCompilation>false_jit</RunAOTCompilation>
 	</PropertyGroup>
 
 </Project>

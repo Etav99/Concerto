@@ -82,12 +82,19 @@ public partial class Daw : IAsyncDisposable
             await UpdateProject();
         }
 
-        if (_dawHub != null) await _dawHub.DisposeAsync();
-        DawHub = DawService.CreateHubConnection();
-        await DawHub.StartAsync();
-        DawHub.On<long>(DawHubMethods.Client.OnProjectChanged, OnProjectChanged);
-        DawHub.On(DawHubMethods.Client.OnRequestStopSharingVideo, OnRequestStopSharing.InvokeAsync);
-        await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
+        try
+        {
+            if (_dawHub != null) await _dawHub.DisposeAsync();
+            DawHub = DawService.CreateHubConnection();
+            await DawHub.StartAsync();
+            DawHub.On<long>(DawHubMethods.Client.OnProjectChanged, OnProjectChanged);
+            DawHub.On(DawHubMethods.Client.OnRequestStopSharingVideo, OnRequestStopSharing.InvokeAsync);
+            await DawHub.InvokeAsync(DawHubMethods.Server.JoinDawProject, _sessionId);
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e.StackTrace);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -134,9 +141,16 @@ public partial class Daw : IAsyncDisposable
 
         try
         {
+ 
             await _updateProjectTask;
         }
+        // catch OperationCanceledException and object disposed exception
+        catch (ObjectDisposedException){ }
         catch (OperationCanceledException) { }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.StackTrace);
+        }
         StateHasChanged();
     }
 
