@@ -156,57 +156,64 @@ public partial class Daw : IAsyncDisposable
 
     public async Task UpdateProjectTask(CancellationToken cancellation)
     {
-        DawProject oldProjectState;
-        
-        if(Project is null)
-            Project = new DawProject{Token = await DawService.GetProjectTokenAsync(SessionId)};
-        oldProjectState = Project;
-
-
-        DawProject newProjectState;
         try
         {
-            newProjectState = await DawService.GetProjectAsync(_sessionId, cancellation);
-        }
-        catch (OperationCanceledException) { throw; }
+            DawProject oldProjectState;
+        
+            if(Project is null)
+                Project = new DawProject{Token = await DawService.GetProjectTokenAsync(SessionId)};
+            oldProjectState = Project;
 
-        Project = newProjectState;
 
-        bool shouldRestartPlay = false;
-        foreach (var newTrack in newProjectState.Tracks)
-        {
-            var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == newTrack.Id);
-            
-            if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
-
-            if (oldTrack is null)
+            DawProject newProjectState;
+            try
             {
-                await DawInterop.AddTrack(newTrack);
+                newProjectState = await DawService.GetProjectAsync(_sessionId, cancellation);
             }
-            else
+            catch (OperationCanceledException) { throw; }
+
+            Project = newProjectState;
+
+            bool shouldRestartPlay = false;
+            foreach (var newTrack in newProjectState.Tracks)
             {
-                if(oldTrack.ShouldBeUpdated(newTrack))
+                var oldTrack = oldProjectState.Tracks.FirstOrDefault(t => t.Id == newTrack.Id);
+            
+                if (oldTrack != null) oldProjectState.Tracks.Remove(oldTrack);
+
+                if (oldTrack is null)
                 {
-                    shouldRestartPlay = shouldRestartPlay || oldTrack.ShouldBeRestarted(newTrack);
-                    newTrack.CopyLocalState(oldTrack);
+                    await DawInterop.AddTrack(newTrack);
+                }
+                else
+                {
+                    if(oldTrack.ShouldBeUpdated(newTrack))
+                    {
+                        shouldRestartPlay = shouldRestartPlay || oldTrack.ShouldBeRestarted(newTrack);
+                        newTrack.CopyLocalState(oldTrack);
                    
-                    bool sourceChanged = oldTrack.SourceId != newTrack.SourceId;
-                    await DawInterop.UpdateTrack(newTrack, sourceChanged);
+                        bool sourceChanged = oldTrack.SourceId != newTrack.SourceId;
+                        await DawInterop.UpdateTrack(newTrack, sourceChanged);
+                    }
                 }
             }
+
+            foreach (var track in oldProjectState.Tracks)
+                await DawInterop.RemoveTrack(track);
+
+            if (newProjectState.Tracks.Any())
+                await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Id));
+
+            if (shouldRestartPlay)
+                await DawInterop.RestartPlay();
+
+            Project = newProjectState;
+            await DawInterop.ReRender();
         }
-
-        foreach (var track in oldProjectState.Tracks)
-            await DawInterop.RemoveTrack(track);
-
-        if (newProjectState.Tracks.Any())
-            await DawInterop.ReorderTracks(newProjectState.Tracks.Select(t => t.Id));
-
-        if (shouldRestartPlay)
-            await DawInterop.RestartPlay();
-
-        Project = newProjectState;
-        await DawInterop.ReRender();
+        catch (Exception e)
+        {
+            Console.WriteLine(e.StackTrace);
+        }
     }
 
     public async Task Play()
